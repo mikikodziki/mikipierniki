@@ -1,0 +1,18 @@
+---
+// Visible "draft" banner for legal pages (regulamin, polityka prywatności).
+// Remove once a lawyer has verified the text.
+interface Props {
+  updated: string;
+}
+const { updated } = Astro.props;
+---
+<aside class="draft" role="note">
+  <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją. Fragmenty w nawiasach kwadratowych, np. [nazwa działalności, NIP], zostaną uzupełnione.</p>
+  <p class="updated">Ostatnia aktualizacja: {updated}</p>
+</aside>
+
+<style>
+  .draft { display: grid; gap: 6px; max-width: 68ch; padding: 16px 20px; border-radius: var(--radius); border: 1.5px dashed var(--berry); color: var(--ink); }
+  .draft strong { color: var(--berry); }
+  .updated { font-size: .88rem; color: var(--ink-soft); }
+</style>

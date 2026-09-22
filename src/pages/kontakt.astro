@@ -1,0 +1,141 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import InquiryForm from "@/components/InquiryForm.astro";
+import Cookie from "@/components/Cookie.astro";
+import { getVenues } from "@/lib/api";
+import { site } from "@/lib/site";
+
+const venues = await getVenues();
+const home = venues[0];
+
+const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
+
+const mapHref = (v: (typeof venues)[number]) =>
+  v.mapUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.address}, ${v.city}`)}`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: site.name,
+  description: site.tagline,
+  url: new URL("/", Astro.site).href,
+  email: site.email,
+  telephone: site.phone,
+  sameAs: [site.instagram, site.facebook, site.tiktok],
+  ...(home && {
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: home.address,
+      addressLocality: home.city,
+      addressCountry: "PL",
+    },
+  }),
+};
+---
+<Base
+  title="Kontakt"
+  description="Napisz do Miki Pierniki: pytania o warsztaty, warsztaty dla firm, pierniki na zamówienie i vouchery. Odpowiadam w ciągu 24 godzin."
+  jsonLd={jsonLd}
+>
+  <PageHead
+    eyebrow="Kontakt"
+    title="Napisz do mnie"
+    lead="Pytanie o termin, warsztaty dla Twojej firmy, zestaw pierników na prezent? Wybierz, co jest dla Ciebie wygodniejsze: formularz, e-mail albo telefon."
+  />
+
+  <section class="section contact-section">
+    <div class="wrap contact">
+      <div class="details">
+        <dl class="channels">
+          <div>
+            <dt>E-mail</dt>
+            <dd><a href={`mailto:${site.email}`}>{site.email}</a></dd>
+          </div>
+          <div>
+            <dt>Telefon</dt>
+            <dd><a href={site.phoneHref}>{site.phone}</a></dd>
+          </div>
+          <div>
+            <dt>Obserwuj</dt>
+            <dd class="socials">
+              <a href={site.instagram} rel="noopener">Instagram</a>
+              <a href={site.facebook} rel="noopener">Facebook</a>
+              <a href={site.tiktok} rel="noopener">TikTok</a>
+            </dd>
+          </div>
+        </dl>
+        <p class="note">
+          <Cookie shape="heart" class="note-cookie" />
+          <span>Odpisuję najpóźniej w ciągu 24 godzin, zwykle tego samego dnia. W trakcie warsztatów nie odbieram telefonu, więc jeśli się nie dodzwonisz, napisz SMS albo e-mail, na pewno oddzwonię.</span>
+        </p>
+      </div>
+
+      <div class="form-box">
+        <h2 class="form-title">Formularz kontaktowy</h2>
+        <InquiryForm
+          kind="kontakt"
+          id="contact-form"
+          submitLabel="Wyślij wiadomość"
+          messagePlaceholder="Napisz, w czym mogę pomóc. Przy warsztatach podaj liczbę osób i preferowany termin."
+        >
+          <label class="field" for="contact-form-topic">Temat
+            <select class="input" id="contact-form-topic" name="topic" data-detail="temat">
+              {topics.map((t) => <option value={t}>{t}</option>)}
+            </select>
+          </label>
+        </InquiryForm>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunk" aria-labelledby="venues-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Gdzie się spotykamy</span>
+        <h2 id="venues-title">Miejsca warsztatów</h2>
+        <p class="lead">Warsztaty prowadzę w swojej pracowni i w zaprzyjaźnionej kawiarni. Dokładne miejsce każdego terminu znajdziesz przy zapisie. Warsztaty dla firm mogę poprowadzić też u Was.</p>
+      </div>
+      <ul class="venues">
+        {venues.map((v) => (
+          <li class="venue">
+            <div class="map ph" data-label={`mapa: ${v.name}`} aria-hidden="true"></div>
+            <div class="venue-body">
+              <h3>{v.name}</h3>
+              <address>{v.address}<br />{v.city}</address>
+              <a class="map-link" href={mapHref(v)} rel="noopener">Pokaż na mapie</a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact-section { padding-top: 0; }
+  .contact { display: grid; gap: 40px; }
+  @media (min-width: 900px) { .contact { grid-template-columns: 0.9fr 1.1fr; gap: 64px; align-items: start; } }
+
+  .details { display: grid; gap: 28px; }
+  .channels { margin: 0; display: grid; gap: 20px; }
+  .channels dt { font-size: .78rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .channels dd { margin: 4px 0 0; font-family: var(--display); font-size: clamp(1.3rem, 3vw, 1.6rem); line-height: 1.2; overflow-wrap: anywhere; }
+  .channels dd a { text-decoration-color: var(--ginger); text-underline-offset: 4px; }
+  .socials { display: flex; flex-wrap: wrap; gap: 4px 20px; }
+
+  .note { display: flex; gap: 14px; align-items: start; color: var(--ink-soft); max-width: 48ch; padding-top: 24px; border-top: 1.5px dashed var(--ginger); }
+  .note :global(.note-cookie) { width: 36px; height: 36px; flex: none; }
+
+  .form-box { display: grid; gap: 20px; min-width: 0; }
+  .form-title { font-size: clamp(1.5rem, 3vw, 1.9rem); }
+
+  .venues { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; }
+  @media (min-width: 700px) { .venues { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .venue { display: grid; gap: 16px; }
+  .map { aspect-ratio: 16 / 9; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
+  .map.ph[data-label]::after { background: var(--sunk); }
+  .venue-body { display: grid; gap: 4px; }
+  address { font-style: normal; color: var(--ink-soft); }
+  .map-link { justify-self: start; margin-top: 6px; font-weight: 600; color: var(--ginger-text); text-underline-offset: 4px; }
+</style>

@@ -1,0 +1,55 @@
+/*
+ * Design tokens. Every colour in components comes from here.
+ * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
+ */
+:root {
+  --ground: #FBF8F4;
+  --surface: #FFFFFF;
+  --sunk: #F2ECE4;
+  --ink: #2B1A12;
+  --ink-soft: #6E5A4E;
+  --line: #E6DCD0;
+  --ginger: #B86B35;
+  --ginger-deep: #8E4E22;
+  --ginger-text: #8E4E22;
+  --icing: #FFFDF8;
+  --berry: #B8323F;
+  --accent: #1F4D3A;
+  --accent-ink: #FFFFFF;
+  --accent-tint: #E4EEE8;
+  --shadow-cookie: rgba(60, 30, 10, .18);
+
+  --tile-1: #E9D9C6;
+  --tile-2: #D6E3DA;
+  --tile-3: #EFD6D9;
+  --tile-4: #E4E0CC;
+
+  --radius: 14px;
+  --radius-lg: 28px;
+  --display: "Gloock", "Georgia", "Times New Roman", serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --wrap: 1160px;
+}
+:root[data-season="wielkanoc"] { --accent: #56662A; --accent-tint: #ECEFDD; }
+:root[data-season="rok"] { --accent: #9B2F4A; --accent-tint: #F5E3E7; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: #1A120D; --surface: #241912; --sunk: #2E2118;
+    --ink: #F3E9DE; --ink-soft: #BFAC9D; --line: #3E2E23;
+    --ginger-text: #E5A06C; --berry: #F0707C;
+    --accent: #7DBE9C; --accent-ink: #10231A; --accent-tint: #1F3329;
+    --tile-1: #3A2A1E; --tile-2: #22342A; --tile-3: #3A2328; --tile-4: #33301F;
+  }
+  :root:not([data-theme="light"])[data-season="wielkanoc"] { --accent: #B9CB7A; --accent-ink: #1E2409; --accent-tint: #2A2F18; }
+  :root:not([data-theme="light"])[data-season="rok"] { --accent: #EE93A9; --accent-ink: #2E0F17; --accent-tint: #3A1C24; }
+}
+:root[data-theme="dark"] {
+  --ground: #1A120D; --surface: #241912; --sunk: #2E2118;
+  --ink: #F3E9DE; --ink-soft: #BFAC9D; --line: #3E2E23;
+  --ginger-text: #E5A06C; --berry: #F0707C;
+  --accent: #7DBE9C; --accent-ink: #10231A; --accent-tint: #1F3329;
+  --tile-1: #3A2A1E; --tile-2: #22342A; --tile-3: #3A2328; --tile-4: #33301F;
+}
+:root[data-theme="dark"][data-season="wielkanoc"] { --accent: #B9CB7A; --accent-ink: #1E2409; --accent-tint: #2A2F18; }
+:root[data-theme="dark"][data-season="rok"] { --accent: #EE93A9; --accent-ink: #2E0F17; --accent-tint: #3A1C24; }

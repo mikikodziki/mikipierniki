@@ -1,0 +1,45 @@
+---
+import Base from "@/layouts/Base.astro";
+import Cookie from "@/components/Cookie.astro";
+---
+<Base title="Nie znaleziono strony" description="Tej strony nie ma. Wróć na stronę główną albo zobacz terminy warsztatów." mobileCta={false}>
+  <section class="section lost">
+    <div class="wrap lost-grid">
+      <div class="art" aria-hidden="true">
+        <Cookie shape="man" class="fallen" />
+        <span class="crumb c1"></span>
+        <span class="crumb c2"></span>
+        <span class="crumb c3"></span>
+      </div>
+      <div class="copy">
+        <span class="eyebrow">Błąd 404</span>
+        <h1>Ups, ten piernik się pokruszył</h1>
+        <p class="lead">Strony, której szukasz, nie ma. Może zmieniła adres, a może ktoś ją zjadł, zanim lukier zdążył wyschnąć. Nic straconego, spróbuj stąd:</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="/">Strona główna</a>
+          <a class="btn btn-ghost" href="/warsztaty">Terminy warsztatów</a>
+        </div>
+        <p class="more">Szukasz czegoś konkretnego? <a href="/kontakt">Napisz do mnie</a>, pomogę.</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost-grid { display: grid; gap: 32px; justify-items: center; text-align: center; }
+  @media (min-width: 760px) { .lost-grid { grid-template-columns: 0.8fr 1.2fr; justify-items: start; text-align: left; align-items: center; } }
+
+  .art { position: relative; width: min(260px, 70vw); aspect-ratio: 1; justify-self: center; }
+  .art :global(.fallen) { width: 78%; position: absolute; left: 8%; top: 18%; transform: rotate(-104deg); }
+  /* Illustration crumbs: gingerbread colours are allowed as literals per README (illustrations). */
+  .crumb { position: absolute; background: #B86B35; border: 1.5px solid #8E4E22; border-radius: 40% 55% 45% 60%; }
+  .c1 { width: 16px; height: 12px; right: 12%; bottom: 14%; transform: rotate(20deg); }
+  .c2 { width: 10px; height: 9px; right: 4%; bottom: 24%; }
+  .c3 { width: 8px; height: 7px; right: 24%; bottom: 8%; transform: rotate(-30deg); }
+
+  .copy { display: grid; gap: 18px; justify-items: inherit; }
+  .copy h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); max-width: 16ch; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+  @media (min-width: 760px) { .actions { justify-content: flex-start; } }
+  .more { color: var(--ink-soft); }
+</style>

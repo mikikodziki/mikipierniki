@@ -1,0 +1,25 @@
+---
+import type { CookieShape } from "@/lib/types";
+
+interface Props {
+  shape: CookieShape;
+  class?: string;
+  style?: string;
+  /** Accessible label; omit for decorative use */
+  label?: string;
+}
+const { shape, class: className, style, label } = Astro.props;
+---
+<svg
+  class:list={["cookie", className]}
+  style={style}
+  viewBox="0 0 100 100"
+  role={label ? "img" : undefined}
+  aria-label={label}
+  aria-hidden={label ? undefined : "true"}
+  data-shape={shape}
+><use href={`#ck-${shape}`} /></svg>
+
+<style>
+  .cookie { display: block; filter: drop-shadow(0 8px 10px var(--shadow-cookie)); }
+</style>

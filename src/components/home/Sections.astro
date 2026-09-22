@@ -1,0 +1,101 @@
+---
+/**
+ * Mid-page homepage sections: how workshops work, audiences, custom orders.
+ */
+import Cookie from "../Cookie.astro";
+import SectionHead from "../SectionHead.astro";
+import type { CookieShape } from "@/lib/types";
+
+const facts = [
+  { num: "3 h", title: "Spokojne tempo", text: "Czas na naukę technik, próby na kartce i dekorowanie bez pośpiechu. Po drodze herbata i pierniczki do schrupania." },
+  { num: "12", title: "Pierników do domu", text: "Upieczone wcześniej przeze mnie, gotowe do zdobienia. Pakujemy je w pudełko z kokardą." },
+  { num: "0", title: "Doświadczenia potrzeba", text: "Zaczynamy od trzymania rękawa. Konturowanie, zalewanie i mokre na mokrym przychodzą same." },
+  { num: "6", title: "Kolorów lukru", text: "Lukier królewski, rękawy, pisaki spożywcze i posypki. Wszystko w cenie, fartuch też." },
+];
+
+const audiences: { shape: CookieShape; title: string; text: string; href: string; go: string }[] = [
+  { shape: "star", title: "Dla dorosłych", text: "Popołudnie tylko dla siebie albo w duecie z przyjaciółką.", href: "/warsztaty", go: "Terminy" },
+  { shape: "man", title: "Rodzinne", text: "Dzieci od 6 lat z rodzicem. Prostsze wzory i więcej posypek.", href: "/warsztaty", go: "Terminy" },
+  { shape: "tree", title: "Firmowe", text: "Integracja przed świętami u Was w biurze albo w mojej pracowni.", href: "/warsztaty#firmy", go: "Zapytaj o ofertę" },
+  { shape: "heart", title: "Prywatne okazje", text: "Urodziny, wieczór panieński, spotkanie z przyjaciółmi.", href: "/warsztaty#firmy", go: "Zapytaj o termin" },
+];
+
+const orders: { shape: CookieShape; title: string; text: string; deadline: string; href: string }[] = [
+  { shape: "tree", title: "Boże Narodzenie", text: "Choinki, gwiazdki, domki i zawieszki na choinkę. Zestawy w pudełkach od 6 sztuk.", deadline: "1 grudnia", href: "/zamowienia#swieta" },
+  { shape: "egg", title: "Wielkanoc", text: "Pisanki, zajączki i baranki z lukru. Do koszyczka albo jako upominek na stół.", deadline: "2 tygodni przed świętami", href: "/zamowienia#wielkanoc" },
+  { shape: "heart", title: "Okazje", text: "Urodziny, walentynki, Halloween, chrzciny, śluby, podziękowania dla gości i gadżety firmowe z logo.", deadline: "3 tygodni przed okazją", href: "/zamowienia#okazje" },
+];
+---
+<section class="section section--sunk">
+  <div class="wrap">
+    <SectionHead eyebrow="Jak wyglądają warsztaty" title="Przychodzisz z pustymi rękami, wychodzisz z pudełkiem pierników" />
+    <div class="facts">
+      {facts.map((f) => (
+        <div class="fact"><span class="num">{f.num}</span><h3>{f.title}</h3><p>{f.text}</p></div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <SectionHead eyebrow="Dla kogo" title="Warsztaty dopasowane do okazji" />
+    <div class="aud">
+      {audiences.map((a) => (
+        <a class="card" href={a.href}>
+          <Cookie shape={a.shape} class="aud-cookie" />
+          <h3>{a.title}</h3>
+          <p>{a.text}</p>
+          <span class="go">{a.go} →</span>
+        </a>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section section--sunk">
+  <div class="wrap">
+    <SectionHead eyebrow="Pierniki na zamówienie" title="Ręcznie dekorowane na każdą okazję" lead="Na prezent, na stół albo jako upominek dla gości czy klientów firmy. Każdy zestaw projektuję pod Ciebie." />
+    <div class="orders">
+      {orders.map((o) => (
+        <article class="order card">
+          <div class="pic ph"><Cookie shape={o.shape} class="order-cookie" /></div>
+          <div class="body">
+            <h3>{o.title}</h3>
+            <p>{o.text}</p>
+            <span class="deadline">Zamówienia najpóźniej do <span>{o.deadline}</span></span>
+            <a class="btn btn-ghost btn-small" href={o.href}>Zobacz i zapytaj o wycenę</a>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .fact { display: grid; gap: 8px; align-content: start; }
+  .num { font-family: var(--display); font-size: 2.4rem; color: var(--ginger); line-height: 1; }
+  .fact h3 { font: 700 1.15rem var(--body); }
+  .fact p { color: var(--ink-soft); font-size: .95rem; }
+
+  .aud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .aud a { display: grid; gap: 10px; align-content: start; text-decoration: none; padding: 22px; transition: border-color .15s ease; }
+  .aud a:hover { border-color: var(--accent); }
+  .aud :global(.aud-cookie) { width: 54px; height: 54px; }
+  .aud p { color: var(--ink-soft); font-size: .92rem; }
+  .go { font-weight: 600; font-size: .9rem; color: var(--accent); }
+
+  .orders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .order { display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+  .pic { aspect-ratio: 4 / 3; max-width: 100%; display: grid; place-items: center; }
+  .pic :global(.order-cookie) { width: 46%; }
+  .body { display: grid; gap: 10px; padding: 22px; align-content: start; justify-items: start; }
+  .body p { color: var(--ink-soft); font-size: .95rem; }
+  .deadline { font-size: .85rem; font-weight: 600; }
+  .deadline span { color: var(--berry); }
+
+  @media (max-width: 960px) { .aud { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 860px) { .facts { grid-template-columns: repeat(2, 1fr); } .orders { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .facts, .aud { grid-template-columns: 1fr; } }
+</style>

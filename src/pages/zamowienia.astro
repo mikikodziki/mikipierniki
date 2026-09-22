@@ -1,0 +1,260 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Piping from "@/components/Piping.astro";
+import FaqList from "@/components/FaqList.astro";
+import InquiryForm from "@/components/InquiryForm.astro";
+import OrderCategory from "@/components/zamowienia/OrderCategory.astro";
+import type { ExampleSet } from "@/components/zamowienia/OrderCategory.astro";
+import { getFaq } from "@/lib/api";
+import { site } from "@/lib/site";
+
+const faq = await getFaq("zamowienia");
+
+/*
+ * PRZYKŁADOWE CENY: orientacyjne kwoty "od X zł" do czasu, aż Dominika poda
+ * swój cennik. Zmieniaj je tylko tutaj.
+ */
+const setsSwieta: ExampleSet[] = [
+  { name: "Pudełko 6 pierników", note: "choinki, gwiazdki i ludziki", price: "od 69 zł" },
+  { name: "12 zawieszek na choinkę", note: "ze wstążkami, w białym lukrze", price: "od 120 zł" },
+  { name: "Domek z piernika", note: "składany i dekorowany w całości", price: "od 180 zł" },
+  { name: "Upominki dla pracowników i klientów", note: "przy zamówieniu od 20 sztuk", price: "od 15 zł / szt." },
+];
+const setsWielkanoc: ExampleSet[] = [
+  { name: "Pudełko 6 pisanek", note: "pastelowe wzory", price: "od 65 zł" },
+  { name: "Zajączki z imionami", note: "jako winietki na świąteczny stół", price: "od 12 zł / szt." },
+  { name: "Zestaw do koszyczka", note: "baranek, pisanka i kurczaczek", price: "od 39 zł" },
+];
+const setsOkazje: ExampleSet[] = [
+  { name: "Pierniki urodzinowe z imieniem i wiekiem", price: "od 16 zł / szt." },
+  { name: "Walentynkowe serce w pudełku", note: "z Twoim napisem", price: "od 35 zł" },
+  { name: "Halloweenowy zestaw 6 sztuk", note: "dynie, duszki i nietoperze", price: "od 69 zł" },
+  { name: "Podziękowania dla gości", note: "chrzciny, komunie, śluby", price: "od 12 zł / szt." },
+  { name: "Upominki firmowe z logo", note: "przy zamówieniu od 30 sztuk", price: "od 16 zł / szt." },
+];
+
+const steps = [
+  { title: "Zapytanie", text: "Wypełniasz formularz poniżej: okazja, liczba sztuk, termin i to, co Ci się podoba. Możesz dołączyć zdjęcia z inspiracjami." },
+  { title: "Projekt i wycena", text: "W ciągu 24 godzin odpisuję z propozycją wzorów i wyceną. Przy logo czy nietypowym kształcie wysyłam szkic do akceptacji." },
+  { title: "Zadatek", text: "Termin rezerwuję po wpłacie zadatku. Od tej chwili Twoje pierniki mają swoje miejsce w moim kalendarzu pieczenia." },
+  { title: "Odbiór lub wysyłka", text: "Odbierasz pierniki w pracowni albo wysyłam je kurierem, zapakowane tak, żeby dojechały w całości." },
+];
+
+const occasions = [
+  "Boże Narodzenie",
+  "Wielkanoc",
+  "Urodziny",
+  "Walentynki",
+  "Halloween",
+  "Chrzciny lub komunia",
+  "Ślub i wesele",
+  "Upominki firmowe z logo",
+  "Inna okazja",
+];
+---
+<Base
+  title="Pierniki na zamówienie"
+  description="Ręcznie dekorowane pierniki na zamówienie: na Boże Narodzenie, Wielkanoc, urodziny, śluby, chrzciny i jako firmowe upominki z logo. Odbiór osobisty lub wysyłka kurierem."
+>
+  <PageHead
+    eyebrow="Na zamówienie"
+    title="Pierniki na zamówienie"
+    lead="Każdy zestaw piekę i dekoruję ręcznie, od pierwszej kreski lukru do kokardy na pudełku. Na prezent, na świąteczny stół, dla gości weselnych albo klientów Twojej firmy."
+  >
+    <p class="season-note" data-for-season="swieta">Sezon świąteczny: zamówienia przyjmuję do 1 grudnia, a wolne terminy w grudniu szybko się kończą.</p>
+    <p class="season-note" data-for-season="wielkanoc">Wielkanoc: zamówienia przyjmuję do 2 tygodni przed świętami.</p>
+    <p class="season-note" data-for-season="rok">Planujesz urodziny, wesele albo firmowe wydarzenie? Napisz najlepiej 3 tygodnie wcześniej.</p>
+    <nav class="jump" aria-label="Kategorie zamówień">
+      <a class="chip" href="#swieta">Boże Narodzenie</a>
+      <a class="chip" href="#wielkanoc">Wielkanoc</a>
+      <a class="chip" href="#okazje">Okazje</a>
+      <a class="chip" href="#jak-zamowic">Jak zamówić</a>
+    </nav>
+  </PageHead>
+
+  <Piping />
+
+  <div class="section">
+    <div class="wrap cats">
+      <OrderCategory
+        id="swieta"
+        occasion="Boże Narodzenie"
+        eyebrow="Boże Narodzenie"
+        title="Świąteczne pierniki w pudełkach"
+        shapes={["tree", "star"]}
+        tile={2}
+        photoLabel="zdjęcie: otwarte pudełko z choinkami i gwiazdkami na lnianym obrusie"
+        deadlineLead="Zamówienia świąteczne przyjmuję do"
+        deadline="1 grudnia"
+        sets={setsSwieta}
+      >
+        <p>Choinki, gwiazdki, bałwanki, domki i zawieszki na choinkę. Klasycznie w bieli albo w kolorach, które pasują do Twojego stołu.</p>
+        <p>Świetnie sprawdzają się jako prezent dla nauczycielki, sąsiadów czy całego zespołu. Na pudełku mogę umieścić bilecik z Twoimi życzeniami.</p>
+      </OrderCategory>
+
+      <OrderCategory
+        id="wielkanoc"
+        occasion="Wielkanoc"
+        eyebrow="Wielkanoc"
+        title="Pisanki, zajączki i baranki"
+        shapes={["egg", "heart"]}
+        tile={4}
+        photoLabel="zdjęcie: pastelowe piernikowe pisanki w wiklinowym koszyczku"
+        deadlineLead="Zamówienia wielkanocne przyjmuję do"
+        deadline="2 tygodni przed świętami"
+        sets={setsWielkanoc}
+        flip
+      >
+        <p>Wiosenne pastele, kropki, kwiatki i koronkowe wzory. Do koszyczka, jako winietki z imionami gości albo drobny upominek na świąteczny stół.</p>
+      </OrderCategory>
+
+      <OrderCategory
+        id="okazje"
+        occasion="Urodziny"
+        eyebrow="Okazje przez cały rok"
+        title="Na urodziny, śluby i dla firm"
+        shapes={["heart", "pumpkin"]}
+        tile={3}
+        photoLabel="zdjęcie: pierniki z imionami gości ułożone przy nakryciach na weselnym stole"
+        deadlineLead="Najlepiej napisz"
+        deadline="3 tygodnie wcześniej"
+        sets={setsOkazje}
+      >
+        <p>Urodziny, walentynki, Halloween, chrzciny, komunie i śluby. Pierniki z imionami, datą, motywem przyjęcia albo w kolorach dekoracji sali.</p>
+        <p>Dla firm robię upominki z logo: dla klientów, na konferencje i na firmowe święta. Przy większych nakładach wysyłam próbny piernik do akceptacji.</p>
+      </OrderCategory>
+    </div>
+  </div>
+
+  <section class="section section--sunk" id="jak-zamowic" aria-labelledby="jak-zamowic-title">
+    <div class="wrap">
+      <SectionHead
+        id="jak-zamowic-title"
+        eyebrow="Jak zamówić"
+        title="Od pomysłu do pudełka w czterech krokach"
+      />
+      <ol class="steps">
+        {steps.map((s, i) => (
+          <li>
+            <span class="num" aria-hidden="true">{i + 1}</span>
+            <h3>{s.title}</h3>
+            <p>{s.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="wycena-title">
+    <div class="wrap split">
+      <div class="pitch">
+        <SectionHead
+          id="wycena-title"
+          eyebrow="Wycena"
+          title="Opowiedz mi o swoich piernikach"
+          lead="Im więcej szczegółów, tym szybciej przygotuję projekt i dokładną wycenę. Odpisuję w ciągu 24 godzin."
+        />
+        <ul class="tips">
+          <li><b>Okazja i data</b> pomagają mi zaplanować pieczenie i suszenie lukru, które trwa kilka dni.</li>
+          <li><b>Liczba sztuk</b> nie musi być ostateczna, wystarczy przybliżona.</li>
+          <li><b>Zdjęcia inspiracji</b>, zaproszenie ślubne czy logo firmy mówią więcej niż opis.</li>
+        </ul>
+        <p class="contact">Wolisz napisać bezpośrednio? <a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+      <div class="form-box card">
+        <h3>Poproś o wycenę</h3>
+        <InquiryForm
+          kind="zamowienie"
+          id="order-form"
+          submitLabel="Poproś o wycenę"
+          messageLabel="Opisz swoje wymarzone pierniki"
+          messagePlaceholder="Np. 40 pierników na wesele, z inicjałami pary młodej, w bieli i szałwiowej zieleni."
+          successText="Dziękuję! W ciągu 24 godzin odpiszę z propozycją projektu i wyceną."
+        >
+          <div class="row2">
+            <label class="field" for="order-form-occasion">Okazja
+              <select class="input" id="order-form-occasion" name="occasion" data-detail="okazja">
+                {occasions.map((o) => <option>{o}</option>)}
+              </select>
+            </label>
+            <label class="field" for="order-form-qty">Liczba sztuk
+              <input class="input" type="number" id="order-form-qty" name="quantity" data-detail="liczba_sztuk" min="1" max="2000" inputmode="numeric" />
+            </label>
+          </div>
+          <div class="row2">
+            <label class="field" for="order-form-date">Data odbioru
+              <input class="input" type="date" id="order-form-date" name="pickupDate" data-detail="data_odbioru" />
+            </label>
+            <label class="field" for="order-form-theme">Motyw i kolory
+              <input class="input" type="text" id="order-form-theme" name="theme" data-detail="motyw" placeholder="Np. zimowy las, biel i złoto" />
+            </label>
+          </div>
+          <label class="field" for="order-form-files">Inspiracje <span class="hint">opcjonalnie, zdjęcia lub logo</span>
+            <input class="input file" type="file" id="order-form-files" name="inspiration" data-detail="inspiracja" accept="image/*" multiple />
+          </label>
+        </InquiryForm>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunk" aria-labelledby="faq-title">
+    <div class="wrap faq-grid">
+      <SectionHead
+        id="faq-title"
+        eyebrow="FAQ"
+        title="Pytania o zamówienia"
+        lead="Nie ma tu Twojego pytania? Napisz, odpowiadam zwykle tego samego dnia."
+      />
+      <FaqList items={faq} />
+    </div>
+  </section>
+</Base>
+
+<script>
+  // "Zapytaj o wycenę" in a category preselects that occasion in the order form.
+  const select = document.getElementById("order-form-occasion") as HTMLSelectElement | null;
+  document.querySelectorAll<HTMLAnchorElement>("a[data-occasion]").forEach((a) =>
+    a.addEventListener("click", () => {
+      if (select && a.dataset.occasion) select.value = a.dataset.occasion;
+    }),
+  );
+</script>
+
+<style>
+  section[id], .section :global(h2[id]), .section :global(form[id]) { scroll-margin-top: 88px; }
+
+  .season-note { font-weight: 600; color: var(--accent); max-width: 60ch; }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .jump .chip { text-decoration: none; }
+  .jump .chip:hover { border-color: var(--ink-soft); }
+
+  .cats { display: grid; gap: clamp(56px, 8vw, 96px); }
+
+  /* Ordering process: a real sequence */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
+  .steps li { display: grid; gap: 8px; align-content: start; }
+  .num { font-family: var(--display); font-size: 2.4rem; line-height: 1; color: var(--ginger-text); }
+  .steps h3 { font-family: var(--body); font-weight: 700; font-size: 1.15rem; }
+  .steps p { color: var(--ink-soft); font-size: .95rem; }
+  @media (min-width: 560px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 960px) { .steps { grid-template-columns: repeat(4, 1fr); } }
+
+  .split { display: grid; gap: 32px; }
+  .pitch { display: grid; gap: 22px; align-content: start; }
+  .pitch :global(.section-head) { margin-bottom: 0; }
+  .tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .tips li { padding-left: 16px; border-left: 3px solid var(--accent); color: var(--ink-soft); }
+  .tips b { color: var(--ink); }
+  .contact { font-size: .95rem; overflow-wrap: anywhere; }
+  .form-box { display: grid; gap: 18px; padding: clamp(20px, 4vw, 32px); align-self: start; min-width: 0; }
+  .form-box h3 { font-size: 1.6rem; }
+  .form-box .file { padding: 10px; font-size: .9rem; }
+  @media (min-width: 900px) { .split { grid-template-columns: 1fr 1fr; gap: 56px; } }
+
+  .faq-grid { display: grid; gap: 8px; }
+  @media (min-width: 760px) {
+    .faq-grid { grid-template-columns: 0.8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: start; }
+  }
+</style>

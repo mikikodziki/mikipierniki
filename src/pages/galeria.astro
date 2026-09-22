@@ -1,0 +1,118 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import Cookie from "@/components/Cookie.astro";
+import Piping from "@/components/Piping.astro";
+import { getGallery } from "@/lib/api";
+import { site } from "@/lib/site";
+import type { GalleryItem } from "@/lib/types";
+
+const items = await getGallery();
+
+const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
+  { value: "all", label: "Wszystkie" },
+  { value: "warsztaty", label: "Z warsztatów" },
+  { value: "swieta", label: "Święta" },
+  { value: "wielkanoc", label: "Wielkanoc" },
+  { value: "okazje", label: "Okazje" },
+];
+---
+<Base
+  title="Galeria"
+  description="Pierniki z warsztatów i na zamówienie: święta, Wielkanoc, urodziny, walentynki i upominki firmowe. Zobacz, co powstaje w pracowni Miki Pierniki."
+>
+  <PageHead
+    eyebrow="Galeria"
+    title="Z pracowni i z warsztatów"
+    lead="Trochę tego, co powstaje u mnie na stole, i sporo tego, co wyczarowali uczestnicy warsztatów. Każdy piernik jest inny i o to właśnie chodzi."
+  />
+
+  <section class="section gal-section" aria-labelledby="gal-title">
+    <div class="wrap">
+      <h2 id="gal-title" class="visually-hidden">Zdjęcia pierników</h2>
+      <div class="chips" role="group" aria-label="Filtruj galerię">
+        {filters.map((f, i) => (
+          <button class="chip" type="button" data-filter={f.value} aria-pressed={i === 0 ? "true" : "false"}>{f.label}</button>
+        ))}
+      </div>
+      <p class="visually-hidden" id="gal-status" role="status" aria-live="polite"></p>
+
+      <ul class="gallery" id="gallery">
+        {items.map((item) => (
+          <li data-category={item.category}>
+            <figure class="tile" style={`--tile: var(--tile-${item.tile})`}>
+              {item.src ? (
+                <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+              ) : (
+                <div class="tile-ph" role="img" aria-label={item.alt}>
+                  <Cookie shape={item.shape} />
+                </div>
+              )}
+              <figcaption>{item.caption}</figcaption>
+            </figure>
+          </li>
+        ))}
+      </ul>
+      <p class="empty" id="gal-empty" hidden>W tej kategorii nie ma jeszcze zdjęć. Zajrzyj na Instagram, tam wrzucam wszystko na bieżąco.</p>
+    </div>
+  </section>
+
+  <Piping />
+
+  <section class="section">
+    <div class="wrap cta">
+      <div class="cta-copy">
+        <h2>Więcej na Instagramie</h2>
+        <p class="lead">Na bieżąco pokazuję tam nowe wzory, kulisy pieczenia i pierniki prosto z warsztatów. Zajrzyj, a jeśli coś wpadnie Ci w oko, napisz, zrobię podobne dla Ciebie.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href={site.instagram} rel="noopener">Obserwuj {site.instagramHandle}</a>
+        <a class="btn btn-ghost" href="/warsztaty">Zrób własne na warsztatach</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const chips = document.querySelectorAll<HTMLButtonElement>(".chip[data-filter]");
+  const tiles = document.querySelectorAll<HTMLElement>("#gallery > li");
+  const empty = document.getElementById("gal-empty")!;
+  const status = document.getElementById("gal-status")!;
+
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const value = chip.dataset.filter;
+      chips.forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+      let shown = 0;
+      tiles.forEach((t) => {
+        const hit = value === "all" || t.dataset.category === value;
+        t.hidden = !hit;
+        if (hit) shown++;
+      });
+      empty.hidden = shown > 0;
+      status.textContent = `Widoczne zdjęcia: ${shown}`;
+    });
+  });
+</script>
+
+<style>
+  .gal-section { padding-top: 0; }
+  .chips { margin-bottom: 24px; }
+
+  .gallery { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  @media (min-width: 700px) { .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .gallery { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+  .tile { margin: 0; aspect-ratio: 1; border-radius: 12px; position: relative; overflow: hidden; background: var(--tile); }
+  .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .tile-ph { width: 100%; height: 100%; display: grid; place-items: center; }
+  .tile-ph :global(.cookie) { width: 52%; }
+  .tile figcaption { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font-size: .75rem; background: var(--surface); color: var(--ink-soft); padding: 3px 10px; border-radius: 999px; }
+
+  .empty { color: var(--ink-soft); margin-top: 8px; }
+
+  .cta { display: grid; gap: 24px; align-items: center; }
+  .cta-copy { display: grid; gap: 12px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  @media (min-width: 860px) { .cta { grid-template-columns: 1.2fr 1fr; } .cta-actions { justify-content: flex-end; } }
+</style>

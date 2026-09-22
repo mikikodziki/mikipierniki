@@ -1,0 +1,105 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import DraftNote from "@/components/pages/DraftNote.astro";
+import { site } from "@/lib/site";
+
+/*
+ * DRAFT: to be verified by a lawyer before launch.
+ * Every [bracketed] fragment is a placeholder for real company data.
+ */
+---
+<Base
+  title="Regulamin warsztatów"
+  description="Regulamin warsztatów dekorowania pierników Miki Pierniki: rezerwacja, płatność, rezygnacja, bezpieczeństwo i reklamacje."
+>
+  <PageHead eyebrow="Dokumenty" title="Regulamin warsztatów">
+    <DraftNote updated="[data]" />
+  </PageHead>
+
+  <section class="section legal">
+    <div class="wrap">
+      <div class="prose">
+        <h2 id="organizator">1. Organizator</h2>
+        <p>Organizatorką warsztatów dekorowania pierników „{site.name}” jest [imię i nazwisko], prowadząca działalność gospodarczą pod firmą [nazwa działalności], [adres siedziby], NIP [NIP], REGON [REGON], zwana dalej „Organizatorką”.</p>
+        <p>Kontakt z Organizatorką: e-mail <a href={`mailto:${site.email}`}>{site.email}</a>, telefon <a href={site.phoneHref}>{site.phone}</a>.</p>
+        <p>Regulamin określa zasady zapisów, płatności, udziału i rezygnacji z warsztatów otwartych ogłaszanych na stronie mikipierniki.pl. Warsztaty zamknięte (dla firm i prywatnych grup) mogą mieć warunki ustalane indywidualnie.</p>
+
+        <h2 id="rezerwacja">2. Rezerwacja</h2>
+        <ol>
+          <li>Na warsztaty zapisujesz się przez formularz na stronie, wybierając termin i liczbę miejsc.</li>
+          <li>Wysłanie formularza oznacza akceptację niniejszego regulaminu.</li>
+          <li>Rezerwacja staje się wiążąca po zaksięgowaniu płatności. Potwierdzenie otrzymasz e-mailem.</li>
+          <li>Każdy uczestnik, również dziecko, zajmuje osobne miejsce.</li>
+          <li>Gdy na wybrany termin nie ma już wolnych miejsc, możesz zapisać się na listę rezerwową. O zwolnionym miejscu poinformuję Cię e-mailem.</li>
+        </ol>
+
+        <h2 id="platnosc">3. Płatność</h2>
+        <ol>
+          <li>Ceny podane na stronie są cenami brutto za jedno miejsce i obejmują wszystkie materiały: pierniki, lukier, narzędzia, fartuch oraz pudełko na gotowe pierniki.</li>
+          <li>Możesz zapłacić online (BLIK, karta płatnicza) za pośrednictwem operatora płatności [nazwa operatora] albo tradycyjnym przelewem na rachunek [numer rachunku].</li>
+          <li>Przy wyborze przelewu wpłata powinna zostać zaksięgowana w ciągu 3 dni od dokonania rezerwacji. Po tym czasie nieopłacona rezerwacja może zostać anulowana, a miejsce zwolnione.</li>
+          <li>Na życzenie wystawiam fakturę. Dane do faktury podaj w formularzu zapisu lub e-mailem.</li>
+        </ol>
+
+        <h2 id="rezygnacja">4. Rezygnacja uczestnika</h2>
+        <ol>
+          <li>Jeśli zrezygnujesz najpóźniej 7 dni przed terminem warsztatów, zwrócę Ci całą wpłaconą kwotę albo przeniosę rezerwację na inny termin, jeśli są na nim wolne miejsca.</li>
+          <li>Przy rezygnacji później niż 7 dni przed terminem wpłata nie podlega zwrotowi, ale możesz przekazać swoje miejsce innej osobie. Wystarczy, że podasz mi jej imię i nazwisko e-mailem przed warsztatami.</li>
+          <li>Rezygnację zgłaszasz e-mailem na adres {site.email}. Liczy się data otrzymania wiadomości.</li>
+          <li>Zwrot następuje w ciągu 14 dni, tą samą metodą, którą dokonano płatności, chyba że ustalimy inaczej.</li>
+          <li>[Do weryfikacji przez prawnika: zakres prawa odstąpienia od umowy zawartej na odległość w przypadku usług związanych z wypoczynkiem i rozrywką w określonym terminie, art. 38 ustawy o prawach konsumenta.]</li>
+        </ol>
+
+        <h2 id="odwolanie">5. Odwołanie lub zmiana warsztatów przez Organizatorkę</h2>
+        <ol>
+          <li>Zastrzegam sobie prawo do odwołania warsztatów z ważnych przyczyn, np. choroby lub zbyt małej liczby zapisanych osób (poniżej [liczba] uczestników).</li>
+          <li>O odwołaniu poinformuję Cię e-mailem lub telefonicznie najszybciej, jak to możliwe, a w przypadku zbyt małej liczby osób najpóźniej [liczba] dni przed terminem.</li>
+          <li>W takiej sytuacji wybierasz: pełny zwrot wpłaty albo przeniesienie rezerwacji na inny termin.</li>
+          <li>Zmiana miejsca lub godziny warsztatów jest możliwa wyłącznie z ważnych przyczyn i zostanie Ci zakomunikowana z wyprzedzeniem. Jeśli nowy termin lub miejsce Ci nie odpowiada, zwrócę całą wpłatę.</li>
+        </ol>
+
+        <h2 id="dzieci">6. Udział dzieci</h2>
+        <ol>
+          <li>Na warsztaty rodzinne zapraszam dzieci od 6 lat.</li>
+          <li>Dzieci przez cały czas trwania warsztatów pozostają pod opieką rodzica lub opiekuna, który odpowiada za ich bezpieczeństwo.</li>
+          <li>Warsztaty dla dorosłych są przeznaczone dla osób pełnoletnich. [Do ustalenia: udział młodzieży od określonego wieku za zgodą opiekuna.]</li>
+        </ol>
+
+        <h2 id="alergeny">7. Alergeny i bezpieczeństwo</h2>
+        <ol>
+          <li>Pierniki i lukier zawierają gluten, jaja i miód. Mogą zawierać śladowe ilości orzechów, mleka i sezamu. [Do uzupełnienia: pełna lista alergenów.]</li>
+          <li>Alergie i nietolerancje pokarmowe zgłoś w formularzu zapisu. Postaram się przygotować, ale nie mogę zagwarantować całkowitego braku kontaktu z alergenami.</li>
+          <li>Uczestnicy korzystają z materiałów i narzędzi zgodnie z instrukcjami prowadzącej.</li>
+          <li>Na warsztatach wieczornych, na których serwowane jest wino, alkohol podawany jest wyłącznie osobom pełnoletnim.</li>
+        </ol>
+
+        <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>
+        <ol>
+          <li>W trakcie warsztatów mogę robić zdjęcia pierników i przebiegu zajęć.</li>
+          <li>Zdjęcia, na których widać Twój wizerunek (lub wizerunek Twojego dziecka), publikuję na stronie i w mediach społecznościowych wyłącznie za Twoją wyraźną zgodą, o którą zapytam na miejscu.</li>
+          <li>Zgodę możesz w każdej chwili wycofać, pisząc na {site.email}. Usunę wtedy zdjęcia z moich kanałów.</li>
+        </ol>
+
+        <h2 id="reklamacje">9. Reklamacje</h2>
+        <ol>
+          <li>Jeśli coś poszło nie tak, napisz do mnie na {site.email}. W reklamacji podaj swoje imię i nazwisko, termin warsztatów i opis problemu.</li>
+          <li>Odpowiem na reklamację w ciągu 14 dni od jej otrzymania.</li>
+          <li>Jako konsument możesz także skorzystać z pozasądowych sposobów rozpatrywania reklamacji, np. pomocy miejskiego lub powiatowego rzecznika konsumentów.</li>
+        </ol>
+
+        <h2 id="postanowienia">10. Postanowienia końcowe</h2>
+        <ol>
+          <li>Zasady przetwarzania danych osobowych opisuje <a href="/polityka-prywatnosci">polityka prywatności</a>.</li>
+          <li>W sprawach nieuregulowanych regulaminem stosuje się przepisy prawa polskiego, w szczególności Kodeksu cywilnego i ustawy o prawach konsumenta.</li>
+          <li>Regulamin obowiązuje od [data]. Zmiany regulaminu nie dotyczą rezerwacji dokonanych przed ich wprowadzeniem.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal { padding-top: 0; }
+  .prose h2 { scroll-margin-top: 96px; }
+</style>

@@ -1,0 +1,734 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Miki Pierniki</title>
+<meta name="description" content="Warsztaty dekorowania pierników i pierniki na zamówienie.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --ground: #FBF8F4;
+    --surface: #FFFFFF;
+    --sunk: #F2ECE4;
+    --ink: #2B1A12;
+    --ink-soft: #6E5A4E;
+    --line: #E6DCD0;
+    --ginger: #B86B35;
+    --ginger-deep: #8E4E22;
+    --icing: #FFFDF8;
+    --berry: #B8323F;
+    --accent: #1F4D3A;
+    --accent-ink: #FFFFFF;
+    --accent-tint: #E4EEE8;
+    --radius: 14px;
+    --display: "Gloock", "Georgia", "Times New Roman", serif;
+    --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .site[data-season="wielkanoc"] { --accent: #56662A; --accent-tint: #ECEFDD; }
+  .site[data-season="rok"] { --accent: #9B2F4A; --accent-tint: #F5E3E7; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #1A120D; --surface: #241912; --sunk: #2E2118;
+      --ink: #F3E9DE; --ink-soft: #BFAC9D; --line: #3E2E23;
+      --berry: #F0707C;
+      --accent: #7DBE9C; --accent-ink: #10231A; --accent-tint: #1F3329;
+    }
+    :root:not([data-theme="light"]) .site[data-season="wielkanoc"] { --accent: #B9CB7A; --accent-ink: #1E2409; --accent-tint: #2A2F18; }
+    :root:not([data-theme="light"]) .site[data-season="rok"] { --accent: #EE93A9; --accent-ink: #2E0F17; --accent-tint: #3A1C24; }
+  }
+  :root[data-theme="dark"] {
+    --ground: #1A120D; --surface: #241912; --sunk: #2E2118;
+    --ink: #F3E9DE; --ink-soft: #BFAC9D; --line: #3E2E23;
+    --berry: #F0707C;
+    --accent: #7DBE9C; --accent-ink: #10231A; --accent-tint: #1F3329;
+  }
+  :root[data-theme="dark"] .site[data-season="wielkanoc"] { --accent: #B9CB7A; --accent-ink: #1E2409; --accent-tint: #2A2F18; }
+  :root[data-theme="dark"] .site[data-season="rok"] { --accent: #EE93A9; --accent-ink: #2E0F17; --accent-tint: #3A1C24; }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+  body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 400; line-height: 1.1; margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+  h2 { font-size: clamp(1.9rem, 4vw, 2.7rem); }
+  h3 { font-size: 1.35rem; }
+  p { margin: 0; }
+  .wrap { max-width: 1160px; margin-inline: auto; padding-inline: 20px; }
+  .eyebrow { font-size: 0.78rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .lead { color: var(--ink-soft); font-size: 1.08rem; max-width: 60ch; }
+  .section { padding-block: clamp(56px, 8vw, 96px); }
+  .section-head { display: grid; gap: 12px; margin-bottom: 36px; max-width: 680px; }
+
+  /* piped royal-icing dots: the one signature detail */
+  .piping { height: 10px; background-image: radial-gradient(circle, var(--ginger) 2.6px, transparent 3px); background-size: 16px 10px; background-repeat: repeat-x; background-position: center; opacity: .55; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font: 600 0.98rem/1 var(--body); padding: 14px 22px; border-radius: 999px; border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: transform .15s ease, background-color .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--accent); color: var(--accent-ink); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+  .btn-ghost:hover { border-color: var(--ink-soft); }
+  .btn-small { padding: 10px 16px; font-size: 0.9rem; }
+
+  /* ---------- design preview bar (not part of final site) ---------- */
+  .preview { background: var(--ink); color: var(--ground); font-size: 0.85rem; }
+  .preview .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding-block: 8px; }
+  .preview span { opacity: .75; }
+  .seg { display: inline-flex; background: color-mix(in srgb, var(--ground) 14%, transparent); border-radius: 999px; padding: 3px; gap: 2px; }
+  .seg button { font: 500 0.82rem var(--body); color: inherit; background: none; border: 0; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--ground); color: var(--ink); }
+
+  /* ---------- header ---------- */
+  header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--ground) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 68px; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-size: 1.35rem; }
+  .logo svg { width: 34px; height: 34px; }
+  nav.main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
+  nav.main a { text-decoration: none; color: var(--ink-soft); }
+  nav.main a:hover { color: var(--ink); }
+  @media (max-width: 900px) { nav.main { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { padding-block: clamp(40px, 7vw, 84px) clamp(48px, 7vw, 88px); }
+  .hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
+  .hero-copy { display: grid; gap: 22px; }
+  .badge { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--accent-tint); color: var(--accent); font-weight: 600; font-size: 0.88rem; padding: 7px 14px; border-radius: 999px; }
+  .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.3rem); }
+  .hero h1 em { font-style: normal; color: var(--ginger); }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .hero-note { font-size: 0.9rem; color: var(--ink-soft); }
+  .tray { position: relative; aspect-ratio: 5 / 4; max-width: 100%; border-radius: 28px; background: var(--sunk); overflow: hidden; }
+  .tray::after { content: "zdjęcie: ręce przy dekorowaniu"; position: absolute; left: 16px; bottom: 14px; font-size: 0.75rem; color: var(--ink-soft); background: var(--surface); padding: 4px 10px; border-radius: 999px; }
+  .tray svg.c { position: absolute; filter: drop-shadow(0 8px 10px rgba(60, 30, 10, .18)); }
+  @media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; } }
+
+  /* ---------- workshops ---------- */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .chip { font: 500 0.9rem var(--body); padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+  .terms { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+  .term { display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  .term-date { display: flex; align-items: baseline; gap: 12px; }
+  .term-day { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+  .term-month { font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; }
+  .term-meta { color: var(--ink-soft); font-size: .88rem; }
+  .term-tag { justify-self: start; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ginger-deep); background: color-mix(in srgb, var(--ginger) 16%, transparent); padding: 4px 10px; border-radius: 6px; }
+  :root[data-theme="dark"] .term-tag { color: #E5A06C; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term-tag { color: #E5A06C; } }
+  .term ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .92rem; }
+  .seats { display: grid; gap: 6px; font-size: .85rem; }
+  .seats-bar { height: 6px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
+  .seats-bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+  .seats.low b { color: var(--berry); }
+  .seats.low .seats-bar i { background: var(--berry); }
+  .term-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .price { font-family: var(--display); font-size: 1.5rem; }
+  .price small { font-family: var(--body); font-size: .8rem; color: var(--ink-soft); }
+  .more-link { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; color: var(--ink-soft); font-size: .95rem; }
+
+  /* ---------- how it works ---------- */
+  .how { background: var(--sunk); }
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .fact { display: grid; gap: 8px; align-content: start; }
+  .fact-num { font-family: var(--display); font-size: 2.4rem; color: var(--ginger); line-height: 1; }
+  .fact h3 { font-size: 1.15rem; font-family: var(--body); font-weight: 700; }
+  .fact p { color: var(--ink-soft); font-size: .95rem; }
+  @media (max-width: 860px) { .facts { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .facts { grid-template-columns: 1fr; } }
+
+  /* ---------- audiences ---------- */
+  .aud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .aud a { display: grid; gap: 10px; align-content: start; text-decoration: none; padding: 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--surface); transition: border-color .15s ease; }
+  .aud a:hover { border-color: var(--accent); }
+  .aud svg { width: 54px; height: 54px; }
+  .aud p { color: var(--ink-soft); font-size: .92rem; }
+  .aud .go { font-weight: 600; font-size: .9rem; color: var(--accent); }
+  @media (max-width: 960px) { .aud { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .aud { grid-template-columns: 1fr; } }
+
+  /* ---------- orders ---------- */
+  .orders { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .order { display: grid; grid-template-rows: auto 1fr; border-radius: var(--radius); overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+  .order-pic { aspect-ratio: 4 / 3; max-width: 100%; display: grid; place-items: center; background: var(--sunk); }
+  .order-pic svg { width: 46%; filter: drop-shadow(0 8px 10px rgba(60, 30, 10, .18)); }
+  .order-body { display: grid; gap: 10px; padding: 22px; align-content: start; }
+  .order-body p { color: var(--ink-soft); font-size: .95rem; }
+  .deadline { font-size: .85rem; font-weight: 600; color: var(--ink); }
+  .deadline span { color: var(--berry); }
+  @media (max-width: 860px) { .orders { grid-template-columns: 1fr; } }
+
+  /* ---------- gallery ---------- */
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gallery figure { margin: 0; aspect-ratio: 1; max-width: 100%; border-radius: 12px; display: grid; place-items: center; position: relative; overflow: hidden; }
+  .gallery figure svg { width: 52%; filter: drop-shadow(0 6px 8px rgba(60, 30, 10, .2)); }
+  .gallery figcaption { position: absolute; left: 10px; bottom: 10px; font-size: .72rem; background: var(--surface); color: var(--ink-soft); padding: 3px 9px; border-radius: 99px; }
+  .g1 { background: #E9D9C6; } .g2 { background: #D6E3DA; } .g3 { background: #EFD6D9; } .g4 { background: #E4E0CC; }
+  @media (max-width: 700px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---------- testimonials ---------- */
+  .quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .quote { display: grid; grid-template-rows: auto 1fr auto; gap: 16px; padding: 26px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); margin: 0; }
+  .stars { color: var(--ginger); letter-spacing: 3px; font-size: .95rem; }
+  .quote blockquote { margin: 0; font-size: 1.02rem; }
+  .quote figcaption { font-size: .88rem; color: var(--ink-soft); }
+  .quote figcaption b { color: var(--ink); font-weight: 600; }
+  @media (max-width: 860px) { .quotes { grid-template-columns: 1fr; } }
+
+  /* ---------- voucher ---------- */
+  .voucher { display: grid; grid-template-columns: 1.2fr 1fr; gap: 32px; align-items: center; background: var(--accent); color: var(--accent-ink); border-radius: 28px; padding: clamp(28px, 5vw, 56px); }
+  .voucher .lead { color: inherit; opacity: .85; }
+  .voucher .btn { background: var(--accent-ink); color: var(--accent); }
+  .voucher-copy { display: grid; gap: 16px; }
+  .ticket { justify-self: center; width: 100%; max-width: 340px; aspect-ratio: 16 / 10; background: var(--icing); color: #2B1A12; border-radius: 16px; padding: 22px; display: grid; align-content: space-between; transform: rotate(-3deg); box-shadow: 0 18px 30px rgba(0, 0, 0, .22); position: relative; }
+  .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--accent); }
+  .ticket::before { left: -11px; } .ticket::after { right: -11px; }
+  .ticket b { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+  .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: #6E5A4E; }
+  @media (max-width: 760px) { .voucher { grid-template-columns: 1fr; } }
+
+  /* ---------- about ---------- */
+  .about { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
+  .portrait { aspect-ratio: 4 / 5; max-width: 100%; border-radius: 200px 200px 24px 24px; background: var(--sunk); display: grid; place-items: end center; overflow: hidden; position: relative; }
+  .portrait::after { content: "zdjęcie: Dominika w pracowni"; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: .78rem; color: var(--ink-soft); background: var(--surface); padding: 4px 10px; border-radius: 99px; white-space: nowrap; }
+  .about-copy { display: grid; gap: 18px; }
+  .about-copy p { max-width: 60ch; }
+  .signature { font-family: var(--display); font-size: 1.6rem; color: var(--ginger); }
+  @media (max-width: 760px) { .about { grid-template-columns: 1fr; } .portrait { max-width: 340px; } }
+
+  /* ---------- FAQ ---------- */
+  .faq-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(28px, 5vw, 64px); }
+  .faq details { border-bottom: 1px solid var(--line); }
+  .faq summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 18px; font-weight: 600; font-size: 1.02rem; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font-family: var(--display); font-size: 1.5rem; line-height: 1; color: var(--ginger); transition: transform .2s ease; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { padding-bottom: 18px; color: var(--ink-soft); max-width: 62ch; }
+  @media (max-width: 760px) { .faq-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- newsletter ---------- */
+  .news { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; padding: clamp(28px, 5vw, 48px); border-radius: 28px; border: 1.5px dashed var(--ginger); }
+  .news form { display: flex; flex-wrap: wrap; gap: 10px; }
+  .news input { flex: 1 1 220px; min-width: 0; }
+  .news-ok { font-weight: 600; color: var(--accent); }
+  @media (max-width: 760px) { .news { grid-template-columns: 1fr; } }
+
+  /* ---------- form controls ---------- */
+  input[type="text"], input[type="email"], input[type="tel"], input[type="number"], select, textarea { font: 400 1rem var(--body); color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px 14px; width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint); }
+  label { font-weight: 600; font-size: .9rem; display: grid; gap: 6px; }
+  .hint { font-weight: 400; color: var(--ink-soft); font-size: .82rem; }
+
+  /* ---------- footer ---------- */
+  footer { background: var(--sunk); padding-block: 56px 32px; margin-top: 24px; }
+  .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+  .foot h4 { margin: 0 0 10px; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .foot ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .foot a { text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  @media (max-width: 760px) { .foot { grid-template-columns: 1fr 1fr; } }
+
+  /* ---------- sticky mobile CTA ---------- */
+  .mobile-cta { display: none; }
+  @media (max-width: 900px) {
+    .mobile-cta { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; gap: 10px; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 20px rgba(0, 0, 0, .06); }
+    .mobile-cta .btn { flex: 1; }
+    footer { padding-bottom: 100px; }
+    header.top .btn { display: none; }
+  }
+
+  /* ---------- signup dialog ---------- */
+  dialog { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: 0 30px 60px rgba(0, 0, 0, .3); }
+  dialog::backdrop { background: rgba(26, 18, 13, .55); backdrop-filter: blur(3px); }
+  .dlg { display: grid; gap: 18px; padding: 28px; }
+  .dlg-head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+  .dlg-head h3 { font-size: 1.7rem; }
+  .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+  legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; }
+  .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer; }
+  .radio:has(input:checked) { border-color: var(--accent); background: var(--accent-tint); }
+  .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }
+  .check input, .radio input { accent-color: var(--accent); width: 18px; height: 18px; margin: 2px 0 0; flex: none; }
+  .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
+  .summary b { font-family: var(--display); font-weight: 400; font-size: 1.4rem; }
+  .done { text-align: center; justify-items: center; }
+  .done svg { width: 90px; }
+  .done p { color: var(--ink-soft); max-width: 40ch; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ck-star" viewBox="0 0 100 100">
+      <path d="M50 4 L62 36 L96 37 L69 58 L79 92 L50 72 L21 92 L31 58 L4 37 L38 36 Z" fill="#B86B35" stroke="#8E4E22" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M50 16 L59 40 L84 41 L64 56 L71 81 L50 66 L29 81 L36 56 L16 41 L41 40 Z" fill="none" stroke="#FFFDF8" stroke-width="2.6" stroke-linejoin="round" stroke-dasharray="1 5" stroke-linecap="round"/>
+      <circle cx="50" cy="50" r="6" fill="#FFFDF8"/>
+    </symbol>
+    <symbol id="ck-heart" viewBox="0 0 100 100">
+      <path d="M50 90 C18 68 6 50 6 32 C6 17 17 8 30 8 C40 8 46 14 50 22 C54 14 60 8 70 8 C83 8 94 17 94 32 C94 50 82 68 50 90 Z" fill="#B86B35" stroke="#8E4E22" stroke-width="2"/>
+      <path d="M50 78 C25 60 16 47 16 33 C16 23 23 18 31 18 C40 18 45 25 50 33 C55 25 60 18 69 18 C77 18 84 23 84 33 C84 47 75 60 50 78 Z" fill="none" stroke="#FFFDF8" stroke-width="3" stroke-linecap="round" stroke-dasharray="0.1 6"/>
+      <path d="M36 44 q14 -12 28 0" fill="none" stroke="#FFFDF8" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="ck-man" viewBox="0 0 100 100">
+      <g fill="#B86B35" stroke="#8E4E22" stroke-width="2">
+        <rect x="14" y="38" width="72" height="16" rx="8"/>
+        <rect x="26" y="68" width="18" height="30" rx="9" transform="rotate(14 35 70)"/>
+        <rect x="56" y="68" width="18" height="30" rx="9" transform="rotate(-14 65 70)"/>
+        <rect x="30" y="32" width="40" height="46" rx="16"/>
+        <circle cx="50" cy="20" r="16"/>
+      </g>
+      <g fill="#FFFDF8"><circle cx="44" cy="18" r="2.6"/><circle cx="56" cy="18" r="2.6"/><circle cx="50" cy="46" r="3"/><circle cx="50" cy="58" r="3"/></g>
+      <g fill="none" stroke="#FFFDF8" stroke-width="2.6" stroke-linecap="round">
+        <path d="M44 25 q6 5 12 0"/>
+        <path d="M18 42 q3 4 0 8 M24 42 q3 4 0 8 M82 42 q-3 4 0 8 M76 42 q-3 4 0 8"/>
+        <path d="M34 86 l8 2 M58 88 l8 -2"/>
+      </g>
+    </symbol>
+    <symbol id="ck-tree" viewBox="0 0 100 100">
+      <path d="M50 4 L74 36 L64 36 L84 64 L70 64 L92 90 L8 90 L30 64 L16 64 L36 36 L26 36 Z" fill="#B86B35" stroke="#8E4E22" stroke-width="2" stroke-linejoin="round"/>
+      <g fill="none" stroke="#FFFDF8" stroke-width="2.8" stroke-linecap="round">
+        <path d="M36 36 q14 8 28 0"/><path d="M28 64 q22 10 44 0"/>
+      </g>
+      <g fill="#FFFDF8"><circle cx="50" cy="22" r="3.4"/><circle cx="40" cy="50" r="3"/><circle cx="60" cy="52" r="3"/><circle cx="34" cy="78" r="3"/><circle cx="52" cy="80" r="3"/><circle cx="68" cy="78" r="3"/></g>
+    </symbol>
+    <symbol id="ck-egg" viewBox="0 0 100 100">
+      <path d="M50 4 C74 4 90 40 90 62 C90 84 72 96 50 96 C28 96 10 84 10 62 C10 40 26 4 50 4 Z" fill="#B86B35" stroke="#8E4E22" stroke-width="2"/>
+      <g fill="none" stroke="#FFFDF8" stroke-width="2.8" stroke-linecap="round">
+        <path d="M14 50 q9 -8 18 0 t18 0 t18 0 t18 0"/>
+        <path d="M12 70 q9 8 19 0 t19 0 t19 0 t19 0"/>
+      </g>
+      <g fill="#FFFDF8"><circle cx="50" cy="28" r="4"/><circle cx="36" cy="32" r="2.6"/><circle cx="64" cy="32" r="2.6"/><circle cx="32" cy="60" r="2.6"/><circle cx="50" cy="60" r="2.6"/><circle cx="68" cy="60" r="2.6"/></g>
+    </symbol>
+    <symbol id="ck-pumpkin" viewBox="0 0 100 100">
+      <path d="M50 20 C58 12 64 8 66 6" fill="none" stroke="#5B3A1E" stroke-width="5" stroke-linecap="round"/>
+      <path d="M50 22 C20 18 6 40 6 58 C6 80 24 94 50 94 C76 94 94 80 94 58 C94 40 80 18 50 22 Z" fill="#B86B35" stroke="#8E4E22" stroke-width="2"/>
+      <g fill="none" stroke="#FFFDF8" stroke-width="2.6" stroke-linecap="round">
+        <path d="M50 24 C40 44 40 74 50 92"/><path d="M50 24 C60 44 60 74 50 92"/>
+      </g>
+      <g fill="#FFFDF8"><path d="M26 50 l8 -6 l6 8 Z"/><path d="M74 50 l-8 -6 l-6 8 Z"/><path d="M28 70 q22 14 44 0 l-6 6 q-16 8 -32 0 Z"/></g>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="site" data-season="swieta" id="site">
+
+  <div class="preview" role="region" aria-label="Podgląd projektu">
+    <div class="wrap">
+      <span>Szkic · podgląd sezonu:</span>
+      <div class="seg" id="seasonSeg">
+        <button type="button" data-s="swieta" aria-pressed="true">Boże Narodzenie</button>
+        <button type="button" data-s="wielkanoc" aria-pressed="false">Wielkanoc</button>
+        <button type="button" data-s="rok" aria-pressed="false">Reszta roku</button>
+      </div>
+    </div>
+  </div>
+
+  <header class="top">
+    <div class="wrap">
+      <a class="logo" href="#top"><svg aria-hidden="true"><use href="#ck-man"/></svg>Miki Pierniki</a>
+      <nav class="main" aria-label="Główne">
+        <a href="#warsztaty">Warsztaty</a>
+        <a href="#zamowienia">Na zamówienie</a>
+        <a href="#galeria">Galeria</a>
+        <a href="#o-mnie">O mnie</a>
+        <a href="#faq">FAQ</a>
+        <a href="#kontakt">Kontakt</a>
+      </nav>
+      <a class="btn btn-primary btn-small" href="#warsztaty">Zapisz się</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-copy">
+          <span class="badge" id="heroBadge">Zapisy na sezon świąteczny 2026 otwarte</span>
+          <h1 id="heroTitle">Udekoruj swoje <em>pierwsze</em> świąteczne pierniki</h1>
+          <p class="lead" id="heroLead">Trzy godziny, lukier królewski i dwanaście pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#warsztaty">Zobacz terminy</a>
+            <a class="btn btn-ghost" href="#zamowienia">Zamów pierniki</a>
+          </div>
+          <p class="hero-note">Grupy do 10 osób · wszystkie materiały w cenie · voucher na prezent</p>
+        </div>
+        <div class="tray" aria-hidden="true" id="tray">
+          <svg class="c" style="width:38%;left:8%;top:10%;transform:rotate(-12deg)"><use href="#ck-man"/></svg>
+          <svg class="c" style="width:30%;left:52%;top:6%;transform:rotate(10deg)" id="trayA"><use href="#ck-star"/></svg>
+          <svg class="c" style="width:32%;left:58%;top:48%;transform:rotate(-6deg)" id="trayB"><use href="#ck-tree"/></svg>
+          <svg class="c" style="width:26%;left:22%;top:58%;transform:rotate(16deg)"><use href="#ck-heart"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap"><div class="piping"></div></div>
+
+    <!-- WORKSHOPS -->
+    <section class="section" id="warsztaty">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Najbliższe warsztaty</span>
+          <h2>Wybierz termin i zarezerwuj miejsce</h2>
+          <p class="lead">Rezerwacja zajmuje minutę. Płacisz online albo przelewem, a potwierdzenie przychodzi mailem.</p>
+        </div>
+        <div class="filters" role="group" aria-label="Filtruj warsztaty">
+          <button class="chip" type="button" data-f="all" aria-pressed="true">Wszystkie</button>
+          <button class="chip" type="button" data-f="dorosli" aria-pressed="false">Dla dorosłych</button>
+          <button class="chip" type="button" data-f="rodzinne" aria-pressed="false">Rodzinne</button>
+          <button class="chip" type="button" data-f="wieczor" aria-pressed="false">Wieczorne z winem</button>
+        </div>
+        <div class="terms" id="terms"></div>
+        <div class="more-link">
+          <span>Szukasz terminu dla firmy, klasy albo na wieczór panieński?</span>
+          <a class="btn btn-ghost btn-small" href="#kontakt">Zapytaj o warsztaty zamknięte</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="section how">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Jak wyglądają warsztaty</span>
+          <h2>Przychodzisz z pustymi rękami, wychodzisz z pudełkiem pierników</h2>
+        </div>
+        <div class="facts">
+          <div class="fact"><span class="fact-num">3 h</span><h3>Spokojne tempo</h3><p>Czas na naukę technik, próby na kartce i dekorowanie bez pośpiechu. Po drodze herbata i pierniczki do schrupania.</p></div>
+          <div class="fact"><span class="fact-num">12</span><h3>Pierników do domu</h3><p>Upieczone wcześniej przeze mnie, gotowe do zdobienia. Pakujemy je w pudełko z kokardą.</p></div>
+          <div class="fact"><span class="fact-num">0</span><h3>Doświadczenia potrzeba</h3><p>Zaczynamy od trzymania rękawa. Konturowanie, zalewanie i mokre na mokrym przychodzą same.</p></div>
+          <div class="fact"><span class="fact-num">6</span><h3>Kolorów lukru</h3><p>Lukier królewski, rękawy, pisaki spożywcze i posypki. Wszystko w cenie, fartuch też.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUDIENCES -->
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Dla kogo</span>
+          <h2>Warsztaty dopasowane do okazji</h2>
+        </div>
+        <div class="aud">
+          <a href="#warsztaty"><svg aria-hidden="true"><use href="#ck-star"/></svg><h3>Dla dorosłych</h3><p>Popołudnie tylko dla siebie albo w duecie z przyjaciółką.</p><span class="go">Terminy →</span></a>
+          <a href="#warsztaty"><svg aria-hidden="true"><use href="#ck-man"/></svg><h3>Rodzinne</h3><p>Dzieci od 6 lat z rodzicem. Prostsze wzory i więcej posypek.</p><span class="go">Terminy →</span></a>
+          <a href="#kontakt"><svg aria-hidden="true"><use href="#ck-tree"/></svg><h3>Firmowe</h3><p>Integracja przed świętami u Was w biurze albo w mojej pracowni.</p><span class="go">Zapytaj o ofertę →</span></a>
+          <a href="#kontakt"><svg aria-hidden="true"><use href="#ck-heart"/></svg><h3>Prywatne okazje</h3><p>Urodziny, wieczór panieński, spotkanie z przyjaciółmi.</p><span class="go">Zapytaj o termin →</span></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ORDERS -->
+    <section class="section how" id="zamowienia">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Pierniki na zamówienie</span>
+          <h2>Ręcznie dekorowane na każdą okazję</h2>
+          <p class="lead">Na prezent, na stół albo jako upominek dla gości czy klientów firmy. Każdy zestaw projektuję pod Ciebie.</p>
+        </div>
+        <div class="orders">
+          <article class="order"><div class="order-pic"><svg aria-hidden="true"><use href="#ck-tree"/></svg></div><div class="order-body"><h3>Boże Narodzenie</h3><p>Choinki, gwiazdki, domki i zawieszki na choinkę. Zestawy w pudełkach od 6 sztuk.</p><span class="deadline">Zamówienia do <span>1 grudnia</span></span><a class="btn btn-ghost btn-small" href="#kontakt">Zapytaj o wycenę</a></div></article>
+          <article class="order"><div class="order-pic"><svg aria-hidden="true"><use href="#ck-egg"/></svg></div><div class="order-body"><h3>Wielkanoc</h3><p>Pisanki, zajączki i baranki z lukru. Do koszyczka albo jako upominek na stół.</p><span class="deadline">Zamówienia do <span>2 tygodni przed świętami</span></span><a class="btn btn-ghost btn-small" href="#kontakt">Zapytaj o wycenę</a></div></article>
+          <article class="order"><div class="order-pic"><svg aria-hidden="true"><use href="#ck-heart"/></svg></div><div class="order-body"><h3>Okazje</h3><p>Urodziny, walentynki, Halloween, chrzciny, śluby, podziękowania dla gości i gadżety firmowe z logo.</p><span class="deadline">Najlepiej <span>3 tygodnie wcześniej</span></span><a class="btn btn-ghost btn-small" href="#kontakt">Zapytaj o wycenę</a></div></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- GALLERY -->
+    <section class="section" id="galeria">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Galeria</span>
+          <h2>Z pracowni i z warsztatów</h2>
+        </div>
+        <div class="gallery">
+          <figure class="g1"><svg aria-hidden="true"><use href="#ck-man"/></svg><figcaption>zdjęcie z warsztatów</figcaption></figure>
+          <figure class="g2"><svg aria-hidden="true"><use href="#ck-tree"/></svg><figcaption>zestaw świąteczny</figcaption></figure>
+          <figure class="g3"><svg aria-hidden="true"><use href="#ck-heart"/></svg><figcaption>walentynki</figcaption></figure>
+          <figure class="g4"><svg aria-hidden="true"><use href="#ck-egg"/></svg><figcaption>Wielkanoc</figcaption></figure>
+          <figure class="g2"><svg aria-hidden="true"><use href="#ck-star"/></svg><figcaption>zawieszki</figcaption></figure>
+          <figure class="g4"><svg aria-hidden="true"><use href="#ck-pumpkin"/></svg><figcaption>Halloween</figcaption></figure>
+          <figure class="g1"><svg aria-hidden="true"><use href="#ck-star"/></svg><figcaption>warsztaty firmowe</figcaption></figure>
+          <figure class="g3"><svg aria-hidden="true"><use href="#ck-man"/></svg><figcaption>urodziny</figcaption></figure>
+        </div>
+        <div class="more-link"><a class="btn btn-ghost btn-small" href="#galeria">Więcej na Instagramie @mikipierniki</a></div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="section how">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Opinie uczestników</span>
+          <h2>Co mówią po warsztatach</h2>
+        </div>
+        <div class="quotes">
+          <figure class="quote"><div class="stars" aria-label="5 na 5">★★★★★</div><blockquote>„Byłam pewna, że nic mi nie wyjdzie, a wyszłam z pudełkiem pierników, których szkoda było zjeść. Dominika tłumaczy wszystko spokojnie i z humorem.”</blockquote><figcaption><b>Kasia</b> · warsztaty świąteczne</figcaption></figure>
+          <figure class="quote"><div class="stars" aria-label="5 na 5">★★★★★</div><blockquote>„Najlepsza przedświąteczna integracja, jaką mieliśmy. Cały zespół wciągnął się tak, że przedłużyliśmy o godzinę.”</blockquote><figcaption><b>Marek</b> · warsztaty firmowe</figcaption></figure>
+          <figure class="quote"><div class="stars" aria-label="5 na 5">★★★★★</div><blockquote>„Byłyśmy z córką na warsztatach rodzinnych. Ona do dziś opowiada o swoim pierniczkowym reniferze.”</blockquote><figcaption><b>Agnieszka</b> · warsztaty rodzinne</figcaption></figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- VOUCHER -->
+    <section class="section">
+      <div class="wrap">
+        <div class="voucher">
+          <div class="voucher-copy">
+            <span class="eyebrow" style="color:inherit;opacity:.8">Voucher prezentowy</span>
+            <h2>Podaruj popołudnie z lukrem</h2>
+            <p class="lead">Voucher na dowolny termin warsztatów, ważny 12 miesięcy. Wysyłam PDF od ręki albo drukowany w kopercie.</p>
+            <div><a class="btn" href="#kontakt">Kup voucher</a></div>
+          </div>
+          <div class="ticket" aria-hidden="true">
+            <small>Voucher · warsztaty</small>
+            <b>Miki Pierniki</b>
+            <small>ważny 12 miesięcy · 1 osoba</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="o-mnie">
+      <div class="wrap about">
+        <div class="portrait" aria-hidden="true"></div>
+        <div class="about-copy">
+          <span class="eyebrow">O mnie</span>
+          <h2>Cześć, jestem Dominika</h2>
+          <p class="lead">Piekę i dekoruję pierniki od lat. Zaczęło się od świątecznych prezentów dla rodziny, a skończyło na pracowni, w której uczę innych, że lukier nie gryzie.</p>
+          <p>Na warsztatach najbardziej lubię moment, w którym ktoś patrzy na swój pierwszy gotowy piernik i mówi: „to naprawdę ja zrobiłam?”. Dla takich chwil to robię.</p>
+          <span class="signature">Dominika</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section how" id="faq">
+      <div class="wrap faq-grid">
+        <div class="section-head">
+          <span class="eyebrow">FAQ</span>
+          <h2>Najczęstsze pytania</h2>
+          <p class="lead">Nie ma tu Twojego pytania? Napisz, odpowiadam zwykle tego samego dnia.</p>
+        </div>
+        <div class="faq">
+          <details open><summary>Czy muszę mieć jakieś doświadczenie?</summary><p>Nie. Warsztaty są prowadzone od podstaw, a większość uczestników pierwszy raz trzyma rękaw cukierniczy.</p></details>
+          <details><summary>Od ilu lat dzieci mogą wziąć udział?</summary><p>Na warsztaty rodzinne zapraszam dzieci od 6 lat pod opieką rodzica. Każde dziecko to osobne miejsce.</p></details>
+          <details><summary>Co jeśli nie mogę przyjść?</summary><p>Do 7 dni przed terminem zwracam całą kwotę albo przenoszę rezerwację na inny termin. Później możesz przekazać miejsce innej osobie.</p></details>
+          <details><summary>Czy pierniki są odpowiednie dla alergików?</summary><p>Pierniki zawierają gluten, jajka i mogą zawierać śladowe ilości orzechów. Alergie wpisz w formularzu, a przygotuję się na miejscu.</p></details>
+          <details><summary>Jak długo pierniki są świeże?</summary><p>Udekorowane pierniki zachowują świeżość nawet 4–6 tygodni w szczelnym pudełku. Z czasem stają się coraz bardziej miękkie.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="section">
+      <div class="wrap">
+        <div class="news">
+          <div style="display:grid;gap:10px">
+            <h2 style="font-size:clamp(1.6rem,3vw,2.1rem)">Nie przegap zapisów</h2>
+            <p class="lead">Terminy świąteczne rozchodzą się w kilka dni. Zapisz się, a dam Ci znać jako pierwszej osobie.</p>
+          </div>
+          <div>
+            <form id="newsForm">
+              <label class="sr" for="newsEmail" style="position:absolute;left:-9999px">Adres e-mail</label>
+              <input type="email" id="newsEmail" placeholder="Twój adres e-mail" required>
+              <button class="btn btn-primary" type="submit">Powiadom mnie</button>
+            </form>
+            <p class="news-ok" id="newsOk" hidden>Gotowe. Napiszę, gdy tylko ruszą zapisy.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="kontakt">
+    <div class="wrap">
+      <div class="foot">
+        <div style="display:grid;gap:12px;align-content:start">
+          <a class="logo" href="#top"><svg aria-hidden="true"><use href="#ck-man"/></svg>Miki Pierniki</a>
+          <p style="color:var(--ink-soft);max-width:34ch">Warsztaty dekorowania pierników i pierniki na zamówienie.</p>
+        </div>
+        <div><h4>Kontakt</h4><ul><li><a href="mailto:kontakt@mikipierniki.pl">kontakt@mikipierniki.pl</a></li><li><a href="tel:+48000000000">+48 000 000 000</a></li><li>Pracownia, ul. Przykładowa 12</li></ul></div>
+        <div><h4>Na skróty</h4><ul><li><a href="#warsztaty">Terminy warsztatów</a></li><li><a href="#zamowienia">Zamówienia</a></li><li><a href="#faq">FAQ</a></li><li><a href="#kontakt">Regulamin</a></li></ul></div>
+        <div><h4>Obserwuj</h4><ul><li><a href="#kontakt">Instagram</a></li><li><a href="#kontakt">Facebook</a></li><li><a href="#kontakt">TikTok</a></li></ul></div>
+      </div>
+      <div class="copy"><span>© 2026 Miki Pierniki</span><span>Polityka prywatności · Regulamin warsztatów</span></div>
+    </div>
+  </footer>
+
+  <div class="mobile-cta">
+    <a class="btn btn-primary" href="#warsztaty">Zapisz się na warsztaty</a>
+  </div>
+
+  <!-- SIGNUP DIALOG -->
+  <dialog id="dlg" aria-labelledby="dlgTitle">
+    <form class="dlg" id="signup" method="dialog" novalidate>
+      <div class="dlg-head">
+        <div style="display:grid;gap:6px">
+          <span class="eyebrow" id="dlgEyebrow">Rezerwacja</span>
+          <h3 id="dlgTitle">Zapis na warsztaty</h3>
+        </div>
+        <button class="x" type="button" id="dlgClose" aria-label="Zamknij">✕</button>
+      </div>
+      <div id="formBody" style="display:grid;gap:16px">
+        <label for="fTerm">Termin<select id="fTerm" required></select></label>
+        <div class="row2">
+          <label for="fAdults">Dorośli<input type="number" id="fAdults" min="0" max="10" value="1"></label>
+          <label for="fKids">Dzieci (6+)<input type="number" id="fKids" min="0" max="10" value="0"></label>
+        </div>
+        <label for="fName">Imię i nazwisko<input type="text" id="fName" autocomplete="name" required></label>
+        <div class="row2">
+          <label for="fEmail">E-mail<input type="email" id="fEmail" autocomplete="email" required></label>
+          <label for="fPhone">Telefon<input type="tel" id="fPhone" autocomplete="tel" required></label>
+        </div>
+        <label for="fNotes">Alergie i uwagi <span class="hint">opcjonalnie</span><textarea id="fNotes" rows="2"></textarea></label>
+        <fieldset id="payBox">
+          <legend>Płatność</legend>
+          <label class="radio"><input type="radio" name="pay" id="payOnline" value="online" checked>Online (BLIK, karta), miejsce potwierdzone od razu</label>
+          <label class="radio"><input type="radio" name="pay" id="payTransfer" value="przelew">Przelew tradycyjny w ciągu 3 dni</label>
+        </fieldset>
+        <label class="check" for="fTerms"><input type="checkbox" id="fTerms" required>Akceptuję regulamin warsztatów i politykę prywatności.</label>
+        <p id="formErr" style="color:var(--berry);font-size:.9rem" hidden>Uzupełnij imię, poprawny e-mail, telefon i zaznacz zgodę na regulamin.</p>
+        <div class="summary" id="sumBox"><span id="sumLabel">Do zapłaty</span><b id="sumPrice">189 zł</b></div>
+        <button class="btn btn-primary" type="submit" id="submitBtn">Rezerwuję i płacę</button>
+      </div>
+      <div class="dlg done" id="doneBody" hidden style="padding:0">
+        <svg aria-hidden="true" viewBox="0 0 100 100"><use href="#ck-heart"/></svg>
+        <h3 id="doneTitle">Do zobaczenia przy lukrze!</h3>
+        <p id="doneText">Potwierdzenie i szczegóły dojazdu wysłałam na Twój e-mail. Dzień przed warsztatami przypomnę się SMS-em.</p>
+        <button class="btn btn-ghost" type="button" id="doneClose">Zamknij</button>
+      </div>
+    </form>
+  </dialog>
+</div>
+
+<script>
+  // example data: terms, prices and seats are placeholders
+  const TERMS = [
+    { id: "t1", type: "dorosli", tag: "Dla dorosłych", title: "Świąteczne klasyki", day: "14", month: "listopada", dow: "sobota", time: "11:00–14:00", place: "Pracownia Miki", price: 189, seats: 10, left: 4 },
+    { id: "t2", type: "rodzinne", tag: "Rodzinne", title: "Pierniczki z dzieciakami", day: "15", month: "listopada", dow: "niedziela", time: "10:00–12:30", place: "Pracownia Miki", price: 149, kidPrice: 99, seats: 12, left: 7 },
+    { id: "t3", type: "wieczor", tag: "Wieczorne", title: "Lukier i grzane wino", day: "20", month: "listopada", dow: "piątek", time: "18:00–21:00", place: "Kawiarnia Lukier", price: 219, seats: 10, left: 2 },
+    { id: "t4", type: "dorosli", tag: "Dla dorosłych", title: "Zawieszki na choinkę", day: "28", month: "listopada", dow: "sobota", time: "11:00–14:00", place: "Pracownia Miki", price: 199, seats: 10, left: 0 },
+    { id: "t5", type: "rodzinne", tag: "Rodzinne", title: "Mikołajkowe pierniki", day: "6", month: "grudnia", dow: "niedziela", time: "10:00–12:30", place: "Pracownia Miki", price: 149, kidPrice: 99, seats: 12, left: 9 },
+    { id: "t6", type: "wieczor", tag: "Wieczorne", title: "Domki z piernika", day: "11", month: "grudnia", dow: "piątek", time: "18:00–21:30", place: "Kawiarnia Lukier", price: 249, seats: 8, left: 5 }
+  ];
+
+  const SEASONS = {
+    swieta: { badge: "Zapisy na sezon świąteczny 2026 otwarte", title: "Udekoruj swoje <em>pierwsze</em> świąteczne pierniki", lead: "Trzy godziny, lukier królewski i dwanaście pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.", a: "#ck-star", b: "#ck-tree" },
+    wielkanoc: { badge: "Warsztaty wielkanocne: marzec i kwiecień", title: "Pisanki, które <em>pachną</em> piernikiem", lead: "Wiosenne kolory lukru, zajączki i pisanki do koszyczka. Warsztaty dla dorosłych i całych rodzin, w małych grupach.", a: "#ck-egg", b: "#ck-heart" },
+    rok: { badge: "Pierniki na urodziny, walentynki i Halloween", title: "Pierniki na <em>każdą</em> okazję", lead: "Ręcznie dekorowane zestawy na prezent, podziękowania dla gości i firmowe upominki. A dla grup prywatne warsztaty przez cały rok.", a: "#ck-pumpkin", b: "#ck-heart" }
+  };
+
+  const $ = (s) => document.querySelector(s);
+  const termsEl = $("#terms");
+  let filter = "all";
+  let current = null;
+  let waitlist = false;
+
+  function renderTerms() {
+    termsEl.innerHTML = TERMS.filter(t => filter === "all" || t.type === filter).map(t => {
+      const pct = Math.round((t.seats - t.left) / t.seats * 100);
+      const low = t.left <= 3;
+      const seatsText = t.left === 0 ? "<b>Brak miejsc</b> · zapisz się na listę rezerwową" : low ? `<b>Zostały ${t.left} miejsca</b> z ${t.seats}` : `${t.left} wolnych miejsc z ${t.seats}`;
+      const btn = t.left === 0
+        ? `<button class="btn btn-ghost btn-small" type="button" data-book="${t.id}" data-wait="1">Lista rezerwowa</button>`
+        : `<button class="btn btn-primary btn-small" type="button" data-book="${t.id}">Zapisz się</button>`;
+      return `<article class="term">
+        <div class="term-date"><span class="term-day">${t.day}</span><div><div class="term-month">${t.month}</div><div class="term-meta">${t.dow} · ${t.time}</div></div></div>
+        <div style="display:grid;gap:8px"><span class="term-tag">${t.tag}</span><h3>${t.title}</h3></div>
+        <ul><li>${t.place}</li><li>12 pierników do domu</li></ul>
+        <div style="display:grid;gap:14px;align-content:end">
+          <div class="seats ${low ? "low" : ""}"><span>${seatsText}</span><div class="seats-bar"><i style="width:${pct}%"></i></div></div>
+          <div class="term-foot"><span class="price">${t.price} zł <small>/ os.</small></span>${btn}</div>
+        </div>
+      </article>`;
+    }).join("");
+  }
+
+  document.querySelectorAll(".filters .chip").forEach(c => c.addEventListener("click", () => {
+    filter = c.dataset.f;
+    document.querySelectorAll(".filters .chip").forEach(x => x.setAttribute("aria-pressed", x === c));
+    renderTerms();
+  }));
+
+  document.querySelectorAll("#seasonSeg button").forEach(b => b.addEventListener("click", () => {
+    const s = SEASONS[b.dataset.s];
+    $("#site").dataset.season = b.dataset.s;
+    document.querySelectorAll("#seasonSeg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    $("#heroBadge").textContent = s.badge;
+    $("#heroTitle").innerHTML = s.title;
+    $("#heroLead").textContent = s.lead;
+    $("#trayA use").setAttribute("href", s.a);
+    $("#trayB use").setAttribute("href", s.b);
+  }));
+
+  // signup dialog
+  const dlg = $("#dlg");
+  const fTerm = $("#fTerm");
+  fTerm.innerHTML = TERMS.map(t => `<option value="${t.id}">${t.day} ${t.month} · ${t.title}${t.left === 0 ? " (lista rezerwowa)" : ""}</option>`).join("");
+
+  function updateSum() {
+    current = TERMS.find(t => t.id === fTerm.value);
+    waitlist = current.left === 0;
+    const adults = Math.max(0, +$("#fAdults").value || 0);
+    const kids = Math.max(0, +$("#fKids").value || 0);
+    const total = adults * current.price + kids * (current.kidPrice || current.price);
+    $("#sumPrice").textContent = `${total} zł`;
+    $("#sumLabel").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
+    $("#payBox").hidden = waitlist;
+    $("#dlgEyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
+    $("#dlgTitle").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
+    const online = $("#payOnline").checked;
+    $("#submitBtn").textContent = waitlist ? "Dopisz mnie do listy" : online ? "Rezerwuję i płacę" : "Rezerwuję miejsce";
+  }
+  ["#fTerm", "#fAdults", "#fKids", "#payOnline", "#payTransfer"].forEach(s => $(s).addEventListener("input", updateSum));
+
+  function openDlg(id) {
+    fTerm.value = id;
+    $("#formBody").hidden = false;
+    $("#doneBody").hidden = true;
+    $("#formErr").hidden = true;
+    updateSum();
+    dlg.showModal();
+  }
+  termsEl.addEventListener("click", e => {
+    const b = e.target.closest("[data-book]");
+    if (b) openDlg(b.dataset.book);
+  });
+  $("#dlgClose").addEventListener("click", () => dlg.close());
+  $("#doneClose").addEventListener("click", () => dlg.close());
+  dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+  $("#signup").addEventListener("submit", e => {
+    e.preventDefault();
+    const ok = ["#fName", "#fEmail", "#fPhone", "#fTerms"].every(s => $(s).checkValidity()) && (+$("#fAdults").value + +$("#fKids").value) > 0;
+    if (!ok) { $("#formErr").hidden = false; return; }
+    $("#formBody").hidden = true;
+    $("#doneBody").hidden = false;
+    $("#doneTitle").textContent = waitlist ? "Jesteś na liście rezerwowej" : "Do zobaczenia przy lukrze!";
+    $("#doneText").textContent = waitlist
+      ? `Gdy zwolni się miejsce na ${current.day} ${current.month}, napiszę do Ciebie jako pierwszej osoby z listy.`
+      : `Potwierdzenie rezerwacji na ${current.day} ${current.month} i szczegóły dojazdu wysłałam na Twój e-mail. Dzień przed warsztatami przypomnę się SMS-em.`;
+  });
+
+  $("#newsForm").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!$("#newsEmail").checkValidity()) return;
+    $("#newsForm").hidden = true;
+    $("#newsOk").hidden = false;
+  });
+
+  renderTerms();
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+---
+interface Props {
+  href?: string;
+  label?: string;
+}
+const { href = "/warsztaty", label = "Zapisz się na warsztaty" } = Astro.props;
+---
+<div class="mobile-cta">
+  <a class="btn btn-primary" href={href}>{label}</a>
+</div>
+
+<style>
+  .mobile-cta { display: none; }
+  @media (max-width: 900px) {
+    .mobile-cta {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+      padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));
+      background: var(--surface); border-top: 1px solid var(--line);
+      box-shadow: 0 -8px 20px rgba(0, 0, 0, .06);
+    }
+    .mobile-cta .btn { flex: 1; }
+  }
+</style>

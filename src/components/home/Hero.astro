@@ -1,0 +1,70 @@
+---
+import Cookie from "../Cookie.astro";
+import type { CookieShape, Season } from "@/lib/types";
+
+const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shapes: [CookieShape, CookieShape, CookieShape, CookieShape] }[] = [
+  {
+    season: "swieta",
+    badge: "Zapisy na sezon świąteczny 2026 otwarte",
+    title: "Udekoruj swoje ", em: "pierwsze", after: " świąteczne pierniki",
+    lead: "Trzy godziny, lukier królewski i dwanaście pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
+    shapes: ["man", "star", "tree", "heart"],
+  },
+  {
+    season: "wielkanoc",
+    badge: "Warsztaty wielkanocne: marzec i kwiecień",
+    title: "Pisanki, które ", em: "pachną", after: " piernikiem",
+    lead: "Wiosenne kolory lukru, zajączki i pisanki do koszyczka. Warsztaty dla dorosłych i całych rodzin, w małych grupach.",
+    shapes: ["egg", "heart", "egg", "star"],
+  },
+  {
+    season: "rok",
+    badge: "Pierniki na urodziny, walentynki i Halloween",
+    title: "Pierniki na ", em: "każdą", after: " okazję",
+    lead: "Ręcznie dekorowane zestawy na prezent, podziękowania dla gości i firmowe upominki. A dla grup prywatne warsztaty przez cały rok.",
+    shapes: ["heart", "pumpkin", "man", "star"],
+  },
+];
+---
+<section class="hero">
+  <div class="wrap grid">
+    {variants.map((v) => (
+      <div class="copy" data-for-season={v.season}>
+        <span class="badge">{v.badge}</span>
+        <h1>{v.title}<em>{v.em}</em>{v.after}</h1>
+        <p class="lead">{v.lead}</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="/warsztaty">Zobacz terminy</a>
+          <a class="btn btn-ghost" href="/zamowienia">Zamów pierniki</a>
+        </div>
+        <p class="note">Grupy do 10 osób · wszystkie materiały w cenie · voucher na prezent</p>
+      </div>
+    ))}
+    {variants.map((v) => (
+      <div class="tray ph" data-label="zdjęcie: ręce przy dekorowaniu" data-for-season={v.season} aria-hidden="true">
+        <Cookie shape={v.shapes[0]} class="c c1" />
+        <Cookie shape={v.shapes[1]} class="c c2" />
+        <Cookie shape={v.shapes[2]} class="c c3" />
+        <Cookie shape={v.shapes[3]} class="c c4" />
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .hero { padding-block: clamp(40px, 7vw, 84px) clamp(48px, 7vw, 88px); }
+  .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
+  .copy { display: grid; gap: 22px; }
+  .badge { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--accent-tint); color: var(--accent); font-weight: 600; font-size: 0.88rem; padding: 7px 14px; border-radius: 999px; }
+  .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  h1 em { font-style: normal; color: var(--ginger); }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .note { font-size: 0.9rem; color: var(--ink-soft); }
+  .tray { aspect-ratio: 5 / 4; max-width: 100%; border-radius: var(--radius-lg); }
+  .tray :global(.c) { position: absolute; }
+  .tray :global(.c1) { width: 38%; left: 8%; top: 10%; transform: rotate(-12deg); }
+  .tray :global(.c2) { width: 30%; left: 52%; top: 6%; transform: rotate(10deg); }
+  .tray :global(.c3) { width: 32%; left: 58%; top: 48%; transform: rotate(-6deg); }
+  .tray :global(.c4) { width: 26%; left: 22%; top: 58%; transform: rotate(16deg); }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+</style>

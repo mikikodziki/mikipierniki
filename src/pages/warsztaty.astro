@@ -1,0 +1,338 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Piping from "@/components/Piping.astro";
+import Cookie from "@/components/Cookie.astro";
+import FaqList from "@/components/FaqList.astro";
+import InquiryForm from "@/components/InquiryForm.astro";
+import TermsList from "@/components/workshops/TermsList.astro";
+import SignupDialog from "@/components/workshops/SignupDialog.astro";
+import { getFaq, getTerms, venueById } from "@/lib/api";
+import { pln } from "@/lib/format";
+import { site } from "@/lib/site";
+
+const terms = await getTerms();
+const faq = [...(await getFaq("warsztaty")), ...(await getFaq("platnosci"))];
+
+// Cheapest adult seat drives the "voucher od X zł" line, so it follows the real price list.
+const adultPrices = terms.filter((t) => t.type === "dorosli").map((t) => t.price);
+const voucherFrom = adultPrices.length ? Math.min(...adultPrices) : undefined;
+
+const siteUrl = Astro.site?.href.replace(/\/$/, "") ?? "";
+const organizer = { "@type": "Organization", name: site.name, url: siteUrl, email: site.email };
+
+const jsonLd = terms.map((t) => {
+  const venue = venueById(t.venueId);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: `${t.title} · warsztaty dekorowania pierników`,
+    description: `Warsztaty dekorowania pierników lukrem królewskim w małej grupie (do ${t.capacity} osób). Wszystkie materiały w cenie, pierniki zabierasz do domu.`,
+    startDate: t.startsAt,
+    endDate: t.endsAt,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: {
+      "@type": "Place",
+      name: venue.name,
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: venue.address,
+        addressLocality: venue.city,
+        addressCountry: "PL",
+      },
+    },
+    offers: {
+      "@type": "Offer",
+      price: t.price,
+      priceCurrency: "PLN",
+      availability: t.seatsLeft > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+      url: `${siteUrl}/warsztaty?termin=${t.id}`,
+    },
+    organizer,
+    performer: { "@type": "Person", name: site.owner },
+  };
+});
+
+const flow = [
+  { time: "ok. 15 min", title: "Powitanie i herbata", text: "Zakładasz fartuch, nalewam herbatę, a na stole czeka Twój zestaw: upieczone pierniki, rękawy z lukrem i karta ze wzorami. Chwila na poznanie się i rozgrzanie dłoni." },
+  { time: "ok. 25 min", title: "Konsystencja lukru i trzymanie rękawa", text: "Pokazuję, jak rozpoznać lukier do konturów, a jak do zalewania, i jak trzymać rękaw, żeby ręka się nie męczyła. Najpierw ćwiczysz na kartce, dopiero potem na pierniku." },
+  { time: "ok. 30 min", title: "Konturowanie", text: "Gęstszym lukrem obrysowujesz kształt piernika. Uczę prowadzić linię nad powierzchnią, a nie po niej, dzięki temu wychodzi równa, nawet jeśli ręka lekko drży." },
+  { time: "ok. 30 min", title: "Zalewanie", text: "Rzadszym lukrem wypełniasz kontury, a wykałaczką rozprowadzasz go do brzegów i przebijasz pęcherzyki powietrza. To moment, w którym piernik robi się gładki jak porcelana." },
+  { time: "ok. 60 min", title: "Mokre na mokrym i detale", text: "Kropki, serduszka i marmurki wtopione w świeży lukier, a gdy spód trochę przeschnie: napisy, perełki, śnieżynki i posypki. Tu każdy piernik zaczyna wyglądać po Twojemu." },
+  { time: "ok. 20 min", title: "Pakowanie do pudełka", text: "Pierniki układamy w pudełku z przekładkami, żeby dojechały w całości. Dostajesz ściągę, jak je dosuszyć i przechowywać, żeby długo zostały ładne." },
+];
+
+const included = [
+  "pierniki upieczone przeze mnie dzień wcześniej, gotowe do zdobienia",
+  "lukier królewski w kilku kolorach, rękawy cukiernicze i wykałaczki",
+  "posypki, perełki i pisaki spożywcze",
+  "fartuch na czas warsztatów",
+  "herbata, kawa i coś słodkiego do schrupania",
+  "pudełko z przekładkami, w którym zabierasz pierniki",
+  "ściąga z proporcjami lukru, żeby powtórzyć wszystko w domu",
+];
+
+const occasions = [
+  { title: "Integracje firmowe", text: "Przedświąteczne spotkanie zespołu, na którym nikt nie siedzi w telefonie." },
+  { title: "Wieczory panieńskie", text: "Lukier, muzyka i pierniki z motywem przewodnim, które Panna Młoda zabiera na pamiątkę." },
+  { title: "Urodziny", text: "Dla dzieci i dorosłych, z piernikami w kształcie ulubionych bohaterów solenizanta." },
+  { title: "Klasy szkolne", text: "Prostsze wzory, więcej posypek i dużo cierpliwości. Pierniki trafiają do domu w pudełkach." },
+];
+---
+<Base
+  title="Warsztaty dekorowania pierników"
+  description="Warsztaty dekorowania pierników lukrem królewskim w małych grupach do 10–12 osób. Materiały w cenie, pierniki do zabrania, bez doświadczenia. Terminy, warsztaty dla firm i vouchery."
+  mobileCta={false}
+  jsonLd={jsonLd}
+>
+  <PageHead
+    eyebrow="Warsztaty"
+    title="Trzy godziny z lukrem i pudełko pierników na wynos"
+    lead="Pracujemy w małych grupach do 10–12 osób, więc mam czas dla każdej osoby przy stole. Wszystkie materiały są w cenie, a udekorowane pierniki zabierasz do domu. Nie potrzebujesz doświadczenia, wszystkiego Cię nauczę."
+  >
+    <nav class="jump" aria-label="Na tej stronie">
+      <a class="btn btn-primary" href="#terminy">Zobacz terminy</a>
+      <a class="btn btn-ghost" href="#firmy">Dla firm i grup</a>
+      <a class="btn btn-ghost" href="#voucher">Voucher na prezent</a>
+    </nav>
+  </PageHead>
+
+  <Piping />
+
+  <section class="section" aria-labelledby="terminy">
+    <div class="wrap">
+      <SectionHead
+        id="terminy"
+        eyebrow="Kalendarz"
+        title="Wybierz termin i zarezerwuj miejsce"
+        lead="Warsztaty dla dorosłych, rodzinne z dziećmi od 6 lat i wieczorne w kawiarni. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem."
+      />
+      <TermsList terms={terms} />
+    </div>
+  </section>
+
+  <section class="section section--sunk" aria-labelledby="przebieg">
+    <div class="wrap">
+      <SectionHead
+        id="przebieg"
+        eyebrow="Jak wygląda warsztat"
+        title="Krok po kroku, od pierwszej kreski do pełnego pudełka"
+        lead="Tak mniej więcej mijają nam trzy godziny. Tempo dopasowuję do grupy, więc nikt nie zostaje w tyle."
+      />
+      <div class="flow-grid">
+        <ol class="flow">
+          {flow.map((s, i) => (
+            <li>
+              <span class="num" aria-hidden="true">{i + 1}</span>
+              <div class="step">
+                <h3>{s.title} <span class="time">{s.time}</span></h3>
+                <p>{s.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <aside class="included" aria-labelledby="w-cenie">
+          <Cookie shape="star" class="inc-cookie" />
+          <h3 id="w-cenie">Co jest w cenie</h3>
+          <ul>
+            {included.map((x) => <li>{x}</li>)}
+          </ul>
+          <p class="inc-note">Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu i z ochotą na odrobinę bałaganu.</p>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="firmy" aria-labelledby="firmy-title">
+    <div class="wrap split">
+      <div class="pitch">
+        <SectionHead
+          id="firmy-title"
+          eyebrow="Warsztaty zamknięte"
+          title="Warsztaty tylko dla Twojej grupy"
+          lead="Termin, motyw pierników i miejsce ustalamy razem. Przyjeżdżam z kompletem materiałów albo zapraszam do pracowni."
+        />
+        <ul class="occasions">
+          {occasions.map((o) => (
+            <li><b>{o.title}</b><span>{o.text}</span></li>
+          ))}
+        </ul>
+        <p class="pitch-note">U Ciebie potrzebuję tylko stołów i krzeseł dla wszystkich. Pierniki mogę przygotować z logo firmy albo w kolorach wesela. Na życzenie wystawiam fakturę.</p>
+      </div>
+      <div class="form-box card">
+        <h3>Zapytaj o termin</h3>
+        <InquiryForm
+          kind="warsztaty-zamkniete"
+          id="firmy-form"
+          messageLabel="Opowiedz coś więcej o grupie"
+          messagePlaceholder="Np. zespół 14 osób, chcemy świąteczne motywy i ok. 2,5 godziny."
+          successText="Dziękuję! Odpiszę w ciągu 24 godzin z propozycją terminu i wyceną."
+        >
+          <div class="row2">
+            <label class="field" for="firmy-form-size">Liczba osób
+              <input class="input" type="number" id="firmy-form-size" name="groupSize" data-detail="liczba_osob" min="4" max="60" inputmode="numeric" />
+            </label>
+            <label class="field" for="firmy-form-date">Preferowany termin
+              <input class="input" type="date" id="firmy-form-date" name="preferredDate" data-detail="termin" />
+            </label>
+          </div>
+          <div class="row2">
+            <label class="field" for="firmy-form-place">Miejsce
+              <select class="input" id="firmy-form-place" name="place" data-detail="miejsce">
+                <option>U mnie w pracowni</option>
+                <option>U Was (dojazd)</option>
+              </select>
+            </label>
+            <label class="field" for="firmy-form-occasion">Okazja
+              <select class="input" id="firmy-form-occasion" name="occasion" data-detail="okazja">
+                <option>Integracja firmowa</option>
+                <option>Wieczór panieński</option>
+                <option>Urodziny</option>
+                <option>Klasa szkolna</option>
+                <option>Inna okazja</option>
+              </select>
+            </label>
+          </div>
+        </InquiryForm>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunk" id="voucher" aria-labelledby="voucher-title">
+    <div class="wrap split">
+      <div class="pitch">
+        <SectionHead
+          id="voucher-title"
+          eyebrow="Voucher prezentowy"
+          title="Podaruj popołudnie z lukrem"
+          lead="Osoba obdarowana sama wybiera termin z kalendarza. Voucher jest ważny 12 miesięcy od zakupu."
+        />
+        <ul class="voucher-facts">
+          <li>PDF wysyłam mailem od ręki, idealny na ostatnią chwilę.</li>
+          <li>Wersję drukowaną dostajesz w kopercie, gotową do położenia pod choinką.</li>
+          <li>Mogę dopisać Twoją dedykację.</li>
+          {voucherFrom && <li>Cena jak za miejsce na warsztatach, od {pln(voucherFrom)} za osobę.</li>}
+        </ul>
+        <div class="ticket" aria-hidden="true">
+          <small>Voucher · warsztaty</small>
+          <b>{site.name}</b>
+          <small>ważny 12 miesięcy</small>
+        </div>
+      </div>
+      <div class="form-box card">
+        <h3>Zamów voucher</h3>
+        <InquiryForm
+          kind="voucher"
+          id="voucher-form"
+          submitLabel="Zamawiam voucher"
+          messageLabel="Dla kogo i na jaką okazję?"
+          messagePlaceholder="Np. dla mamy na urodziny, najchętniej na warsztaty świąteczne."
+          successText="Dziękuję! W ciągu 24 godzin wyślę dane do płatności, a po wpłacie voucher."
+        >
+          <div class="row2">
+            <label class="field" for="voucher-form-people">Liczba osób
+              <input class="input" type="number" id="voucher-form-people" name="people" data-detail="liczba_osob" min="1" max="10" value="1" inputmode="numeric" />
+            </label>
+            <label class="field" for="voucher-form-delivery">Forma
+              <select class="input" id="voucher-form-delivery" name="delivery" data-detail="forma">
+                <option>PDF mailem</option>
+                <option>Drukowany w kopercie</option>
+              </select>
+            </label>
+          </div>
+          <label class="field" for="voucher-form-dedication">Dedykacja <span class="hint">opcjonalnie</span>
+            <textarea class="input" id="voucher-form-dedication" name="dedication" data-detail="dedykacja" rows="2" maxlength="200"></textarea>
+          </label>
+        </InquiryForm>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="faq-title">
+    <div class="wrap faq-grid">
+      <SectionHead
+        id="faq-title"
+        eyebrow="FAQ"
+        title="Pytania przed zapisem"
+        lead="Nie ma tu Twojego pytania? Napisz, odpowiadam zwykle tego samego dnia."
+      >
+        <div><a class="btn btn-ghost btn-small" href="/kontakt">Napisz do mnie</a></div>
+      </SectionHead>
+      <FaqList items={faq} />
+    </div>
+  </section>
+
+  <SignupDialog slot="end" terms={terms} />
+</Base>
+
+<style>
+  /* Keep anchored headings clear of the sticky header */
+  section[id], .section :global(h2[id]), .section :global(form[id]) { scroll-margin-top: 88px; }
+  .jump { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+
+  /* Workshop flow: a real sequence, so it is an ordered list */
+  .flow-grid { display: grid; gap: 32px; }
+  .flow { list-style: none; margin: 0; padding: 0; display: grid; }
+  .flow li { display: grid; grid-template-columns: 44px 1fr; gap: 16px; position: relative; padding-bottom: 26px; }
+  .flow li:not(:last-child)::before {
+    content: ""; position: absolute; left: 21px; top: 46px; bottom: 4px;
+    border-left: 2px dotted var(--ginger); opacity: .6;
+  }
+  .num {
+    display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+    font-family: var(--display); font-size: 1.35rem; color: var(--ginger-text);
+    background: var(--surface); border: 1.5px solid var(--line);
+  }
+  .step { display: grid; gap: 6px; padding-top: 8px; }
+  .step h3 { font-family: var(--body); font-weight: 700; font-size: 1.1rem; line-height: 1.3; }
+  .time { font-weight: 500; font-size: .82rem; color: var(--ink-soft); white-space: nowrap; margin-left: 4px; }
+  .step p { color: var(--ink-soft); font-size: .95rem; max-width: 58ch; }
+
+  .included { position: relative; display: grid; gap: 14px; align-content: start; padding: 26px; border-radius: var(--radius-lg); background: var(--surface); border: 1.5px dashed var(--ginger); }
+  .included :global(.inc-cookie) { position: absolute; width: 58px; right: 18px; top: -22px; transform: rotate(12deg); }
+  .included h3 { padding-right: 60px; }
+  .included ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+  .included li { position: relative; padding-left: 22px; }
+  .included li::before { content: ""; position: absolute; left: 4px; top: .6em; width: 8px; height: 8px; border-radius: 50%; background: var(--ginger); }
+  .inc-note { color: var(--ink-soft); font-size: .92rem; padding-top: 12px; border-top: 1px dashed var(--line); }
+
+  @media (min-width: 900px) {
+    .flow-grid { grid-template-columns: 1.4fr 1fr; gap: 56px; align-items: start; }
+    .included { position: sticky; top: 96px; }
+  }
+
+  /* Private workshops and voucher: pitch next to the form */
+  .split { display: grid; gap: 32px; }
+  .pitch { display: grid; gap: 22px; align-content: start; min-width: 0; }
+  .pitch :global(.section-head) { margin-bottom: 0; }
+  .occasions { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .occasions li { display: grid; gap: 2px; padding-left: 16px; border-left: 3px solid var(--accent); }
+  .occasions span { color: var(--ink-soft); font-size: .95rem; }
+  .pitch-note { font-size: .95rem; max-width: 56ch; }
+  .form-box { display: grid; gap: 18px; padding: clamp(20px, 4vw, 32px); align-self: start; min-width: 0; }
+  .form-box h3 { font-size: 1.6rem; }
+
+  .voucher-facts { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+  .ticket {
+    justify-self: start; width: calc(100% - 28px); max-width: 320px; aspect-ratio: 16 / 10; margin: 8px 14px 0;
+    display: grid; align-content: space-between; padding: 22px;
+    background: var(--surface); color: var(--ink); border: 1.5px dashed var(--ginger); border-radius: 16px;
+    transform: rotate(-3deg); box-shadow: 0 18px 30px var(--shadow-cookie); position: relative;
+  }
+  .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--sunk); }
+  .ticket::before { left: -12px; }
+  .ticket::after { right: -12px; }
+  .ticket b { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+  .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+
+  @media (min-width: 900px) {
+    .split { grid-template-columns: 1fr 1fr; gap: 56px; }
+  }
+
+  .faq-grid { display: grid; gap: 8px; }
+  @media (min-width: 760px) {
+    .faq-grid { grid-template-columns: 0.8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: start; }
+  }
+</style>

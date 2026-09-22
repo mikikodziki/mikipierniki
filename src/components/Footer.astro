@@ -1,0 +1,60 @@
+---
+import { site } from "@/lib/site";
+import Cookie from "./Cookie.astro";
+const year = new Date().getFullYear();
+---
+<footer class="foot-wrap">
+  <div class="wrap">
+    <div class="foot">
+      <div class="brand">
+        <a class="logo" href="/"><Cookie shape="man" class="logo-mark" />{site.name}</a>
+        <p>{site.tagline}.</p>
+      </div>
+      <div>
+        <h2 class="h">Kontakt</h2>
+        <ul>
+          <li><a href={`mailto:${site.email}`}>{site.email}</a></li>
+          <li><a href={site.phoneHref}>{site.phone}</a></li>
+          <li><a href="/kontakt">Formularz kontaktowy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="h">Na skróty</h2>
+        <ul>
+          <li><a href="/warsztaty">Terminy warsztatów</a></li>
+          <li><a href="/warsztaty#firmy">Warsztaty dla firm</a></li>
+          <li><a href="/zamowienia">Pierniki na zamówienie</a></li>
+          <li><a href="/faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2 class="h">Obserwuj</h2>
+        <ul>
+          <li><a href={site.instagram} rel="noopener">Instagram</a></li>
+          <li><a href={site.facebook} rel="noopener">Facebook</a></li>
+          <li><a href={site.tiktok} rel="noopener">TikTok</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copy">
+      <span>© {year} {site.name}</span>
+      <span><a href="/regulamin">Regulamin warsztatów</a> · <a href="/polityka-prywatnosci">Polityka prywatności</a></span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot-wrap { background: var(--sunk); padding-block: 56px 32px; margin-top: 24px; }
+  .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+  .brand { display: grid; gap: 12px; align-content: start; }
+  .brand p { color: var(--ink-soft); max-width: 34ch; }
+  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-size: 1.35rem; }
+  .logo :global(.logo-mark) { width: 34px; height: 34px; filter: none; }
+  .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  a { text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  @media (max-width: 760px) { .foot { grid-template-columns: 1fr 1fr; } .brand { grid-column: 1 / -1; } }
+  @media (max-width: 900px) { .foot-wrap { padding-bottom: 100px; } }
+</style>

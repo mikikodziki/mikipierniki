@@ -1,0 +1,54 @@
+---
+interface Props {
+  title?: string;
+  lead?: string;
+}
+const {
+  title = "Nie przegap zapisów",
+  lead = "Terminy świąteczne rozchodzą się w kilka dni. Zapisz się, a dam Ci znać jako pierwszej osobie.",
+} = Astro.props;
+---
+<section class="section">
+  <div class="wrap">
+    <div class="news">
+      <div class="copy">
+        <h2>{title}</h2>
+        <p class="lead">{lead}</p>
+      </div>
+      <div>
+        <form class="form" id="news-form" novalidate>
+          <label class="visually-hidden" for="news-email">Adres e-mail</label>
+          <input class="input" type="email" id="news-email" placeholder="Twój adres e-mail" autocomplete="email" required />
+          <button class="btn btn-primary" type="submit">Powiadom mnie</button>
+        </form>
+        <p class="form-error" id="news-err" role="alert" hidden>Wpisz poprawny adres e-mail, np. imie@gmail.com.</p>
+        <p class="form-ok" id="news-ok" role="status" hidden>Gotowe. Napiszę, gdy tylko ruszą zapisy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { subscribeNewsletter } from "@/lib/api";
+  const form = document.getElementById("news-form") as HTMLFormElement | null;
+  const input = document.getElementById("news-email") as HTMLInputElement | null;
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const bad = !input || !input.checkValidity() || !input.value.trim();
+    document.getElementById("news-err")!.hidden = !bad;
+    if (bad) return;
+    await subscribeNewsletter(input.value.trim());
+    form.hidden = true;
+    document.getElementById("news-ok")!.hidden = false;
+  });
+</script>
+
+<style>
+  .news { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; padding: clamp(28px, 5vw, 48px); border-radius: var(--radius-lg); border: 1.5px dashed var(--ginger); }
+  .copy { display: grid; gap: 10px; }
+  .copy h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
+  .form { display: flex; flex-wrap: wrap; gap: 10px; }
+  .form .input { flex: 1 1 220px; min-width: 0; width: auto; }
+  .form-error { margin-top: 8px; }
+  @media (max-width: 760px) { .news { grid-template-columns: 1fr; } }
+</style>

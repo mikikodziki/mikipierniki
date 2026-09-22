@@ -1,0 +1,87 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import FaqList from "@/components/FaqList.astro";
+import Piping from "@/components/Piping.astro";
+import { getFaq } from "@/lib/api";
+import { site } from "@/lib/site";
+import type { FaqItem } from "@/lib/types";
+
+const faq = await getFaq();
+
+const topics: { id: FaqItem["topic"]; title: string }[] = [
+  { id: "warsztaty", title: "Warsztaty" },
+  { id: "platnosci", title: "Płatności i rezygnacja" },
+  { id: "zamowienia", title: "Pierniki na zamówienie" },
+];
+const groups = topics
+  .map((t) => ({ ...t, items: faq.filter((f) => f.topic === t.id) }))
+  .filter((g) => g.items.length > 0);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+---
+<Base
+  title="Najczęstsze pytania"
+  description="Odpowiedzi na najczęstsze pytania o warsztaty dekorowania pierników, płatności, rezygnację i pierniki na zamówienie."
+  jsonLd={jsonLd}
+>
+  <PageHead
+    eyebrow="FAQ"
+    title="Najczęstsze pytania"
+    lead="Zebrałam tu to, o co pytacie najczęściej. Nie ma Twojego pytania? Napisz, odpowiadam zwykle tego samego dnia."
+  >
+    <nav class="chips topics" aria-label="Tematy pytań">
+      {groups.map((g) => <a class="chip" href={`#${g.id}`}>{g.title}</a>)}
+    </nav>
+  </PageHead>
+
+  <section class="section faq-section">
+    <div class="wrap groups">
+      {groups.map((g) => (
+        <section class="group" aria-labelledby={g.id}>
+          <h2 id={g.id}>{g.title}</h2>
+          <FaqList items={g.items} openFirst={false} />
+        </section>
+      ))}
+    </div>
+  </section>
+
+  <Piping />
+
+  <section class="section">
+    <div class="wrap cta">
+      <div class="cta-copy">
+        <h2>Nadal masz pytanie?</h2>
+        <p class="lead">Napisz do mnie przez formularz albo na <a href={`mailto:${site.email}`}>{site.email}</a>. Chętnie pomogę wybrać termin, rodzaj warsztatów albo zestaw pierników.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href="/kontakt">Napisz do mnie</a>
+        <a class="btn btn-ghost" href="/warsztaty">Terminy warsztatów</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .topics { margin-top: 8px; }
+  .topics .chip { text-decoration: none; }
+
+  .faq-section { padding-top: 0; }
+  .groups { display: grid; gap: clamp(40px, 6vw, 64px); }
+  .group { display: grid; gap: 8px; scroll-margin-top: 96px; }
+  @media (min-width: 900px) { .group { grid-template-columns: 1fr 2fr; gap: 48px; align-items: start; } }
+  .group h2 { font-size: clamp(1.5rem, 3vw, 1.9rem); scroll-margin-top: 96px; }
+
+  .cta { display: grid; gap: 24px; align-items: center; }
+  .cta-copy { display: grid; gap: 12px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  @media (min-width: 860px) { .cta { grid-template-columns: 1.2fr 1fr; } .cta-actions { justify-content: flex-end; } }
+</style>

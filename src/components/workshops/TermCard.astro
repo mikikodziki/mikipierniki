@@ -1,0 +1,74 @@
+---
+import type { Term } from "@/lib/types";
+import { venueById } from "@/lib/api";
+import { day, LOW_SEATS, month, pln, seatsWord, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+
+interface Props {
+  term: Term;
+}
+const { term } = Astro.props;
+const venue = venueById(term.venueId);
+const soldOut = term.seatsLeft === 0;
+const low = !soldOut && term.seatsLeft <= LOW_SEATS;
+const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100);
+---
+<article class="term card" data-type={term.type} data-term-id={term.id}>
+  <div class="date">
+    <span class="d">{day(term.startsAt)}</span>
+    <div>
+      <div class="m">{month(term.startsAt)}</div>
+      <div class="meta">{weekday(term.startsAt)} · {timeRange(term)}</div>
+    </div>
+  </div>
+  <div class="title">
+    <span class="tag">{workshopTypeLabel[term.type]}</span>
+    <h3>{term.title}</h3>
+  </div>
+  <ul class="facts">
+    <li>{venue.name}, {venue.address}</li>
+    <li>{term.cookies === 1 ? "1 duży domek z piernika" : `${term.cookies} pierników do domu`}</li>
+    {term.kidPrice && <li>Dziecko (6+): {pln(term.kidPrice)}</li>}
+  </ul>
+  <div class="bottom">
+    <div class:list={["seats", { low, soldOut }]}>
+      <span>
+        {soldOut ? (
+          <><b>Brak miejsc</b> · zapisz się na listę rezerwową</>
+        ) : low ? (
+          <><b>Zostały {term.seatsLeft} {seatsWord(term.seatsLeft)}</b> z {term.capacity}</>
+        ) : (
+          <>{term.seatsLeft} wolnych {seatsWord(term.seatsLeft)} z {term.capacity}</>
+        )}
+      </span>
+      <div class="bar" role="presentation"><i style={`width:${pct}%`}></i></div>
+    </div>
+    <div class="foot">
+      <span class="price">{pln(term.price)} <small>/ os.</small></span>
+      {soldOut ? (
+        <button class="btn btn-ghost btn-small" type="button" data-book={term.id}>Lista rezerwowa</button>
+      ) : (
+        <button class="btn btn-primary btn-small" type="button" data-book={term.id}>Zapisz się</button>
+      )}
+    </div>
+  </div>
+</article>
+
+<style>
+  .term { display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; padding: 22px; }
+  .date { display: flex; align-items: baseline; gap: 12px; }
+  .d { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+  .m { font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; }
+  .meta { color: var(--ink-soft); font-size: .88rem; }
+  .title { display: grid; gap: 8px; }
+  .tag { justify-self: start; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ginger-text); background: color-mix(in srgb, var(--ginger) 16%, transparent); padding: 4px 10px; border-radius: 6px; }
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .92rem; }
+  .bottom { display: grid; gap: 14px; align-content: end; }
+  .seats { display: grid; gap: 6px; font-size: .85rem; }
+  .bar { height: 6px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+  .seats.low b, .seats.soldOut b { color: var(--berry); }
+  .seats.low .bar i, .seats.soldOut .bar i { background: var(--berry); }
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .price { font-family: var(--display); font-size: 1.5rem; }
+  .price small { font-family: var(--body); font-size: .8rem; color: var(--ink-soft); }
+</style>

@@ -1,0 +1,79 @@
+---
+import "@/styles/global.css";
+import CookieSprite from "@/components/CookieSprite.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import MobileCta from "@/components/MobileCta.astro";
+import { seasonFor, seasonRanges, site } from "@/lib/site";
+
+interface Props {
+  /** Page name; the site name is appended automatically */
+  title?: string;
+  description?: string;
+  /** Hide the sticky mobile "Zapisz się" bar (e.g. on the workshops page itself) */
+  mobileCta?: boolean;
+  /** JSON-LD object(s) for structured data */
+  jsonLd?: object | object[];
+}
+
+const {
+  title,
+  description = `${site.tagline}. Małe grupy, wszystkie materiały w cenie, pierniki do zabrania do domu.`,
+  mobileCta = true,
+  jsonLd,
+} = Astro.props;
+
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const buildSeason = seasonFor(new Date());
+const ranges = JSON.stringify(seasonRanges.map((r) => [r.season, r.from[0] * 100 + r.from[1], r.to[0] * 100 + r.to[1]]));
+const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+<!doctype html>
+<html lang="pl" data-season={buildSeason}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="theme-color" content="#FBF8F4" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap" />
+    <script is:inline define:vars={{ ranges }}>
+      // Pick the season from the visitor's date (or ?sezon=) before first paint.
+      (function () {
+        var p = new URLSearchParams(location.search).get("sezon");
+        var d = new Date(), md = (d.getMonth() + 1) * 100 + d.getDate(), s = "rok";
+        JSON.parse(ranges).forEach(function (r) { if (md >= r[1] && md <= r[2]) s = r[0]; });
+        if (p === "swieta" || p === "wielkanoc" || p === "rok") s = p;
+        document.documentElement.dataset.season = s;
+      })();
+    </script>
+    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+  </head>
+  <body>
+    <CookieSprite />
+    <a class="skip" href="#main">Przejdź do treści</a>
+    <Header />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer />
+    {mobileCta && <MobileCta />}
+    <slot name="end" />
+  </body>
+</html>
+
+<style>
+  .skip { position: absolute; left: 16px; top: -60px; z-index: 50; background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 10px; text-decoration: none; }
+  .skip:focus { top: 12px; }
+</style>

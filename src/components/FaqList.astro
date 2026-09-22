@@ -1,0 +1,27 @@
+---
+import type { FaqItem } from "@/lib/types";
+
+interface Props {
+  items: FaqItem[];
+  /** Open the first question by default */
+  openFirst?: boolean;
+}
+const { items, openFirst = true } = Astro.props;
+---
+<div class="faq">
+  {items.map((f, i) => (
+    <details open={openFirst && i === 0}>
+      <summary>{f.q}</summary>
+      <p>{f.a}</p>
+    </details>
+  ))}
+</div>
+
+<style>
+  details { border-bottom: 1px solid var(--line); }
+  summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 18px; font-weight: 600; font-size: 1.02rem; }
+  summary::-webkit-details-marker { display: none; }
+  summary::after { content: "+"; font-family: var(--display); font-size: 1.5rem; line-height: 1; color: var(--ginger); transition: transform .2s ease; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details p { padding-bottom: 18px; color: var(--ink-soft); max-width: 62ch; }
+</style>

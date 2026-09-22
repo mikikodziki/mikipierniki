@@ -1,0 +1,206 @@
+---
+/**
+ * Booking dialog. Render once per page that lists terms; any element with
+ * data-book="<termId>" opens it with that term preselected.
+ */
+import type { Term } from "@/lib/types";
+import { shortDate, pln } from "@/lib/format";
+import Cookie from "../Cookie.astro";
+
+interface Props {
+  terms: Term[];
+}
+const { terms } = Astro.props;
+const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
+---
+<dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
+  <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload)} />
+  <form class="body" id="signup-form" novalidate>
+    <div class="head">
+      <div class="head-text">
+        <span class="eyebrow" id="signup-eyebrow">Rezerwacja</span>
+        <h2 id="signup-title">Zapis na warsztaty</h2>
+      </div>
+      <button class="x" type="button" data-close aria-label="Zamknij">✕</button>
+    </div>
+
+    <div class="form-grid" id="signup-fields">
+      <label class="field" for="su-term">Termin
+        <select class="input" id="su-term" name="termId" required>
+          {payload.map((t) => (
+            <option value={t.id}>{t.label}{t.seatsLeft === 0 ? " (lista rezerwowa)" : ""}</option>
+          ))}
+        </select>
+      </label>
+      <div class="row2">
+        <label class="field" for="su-adults">Dorośli
+          <input class="input" type="number" id="su-adults" name="adults" min="0" max="10" value="1" inputmode="numeric" />
+        </label>
+        <label class="field" for="su-kids" id="su-kids-wrap">Dzieci (6+)
+          <input class="input" type="number" id="su-kids" name="kids" min="0" max="10" value="0" inputmode="numeric" />
+        </label>
+      </div>
+      <label class="field" for="su-name">Imię i nazwisko
+        <input class="input" type="text" id="su-name" name="name" autocomplete="name" required />
+      </label>
+      <div class="row2">
+        <label class="field" for="su-email">E-mail
+          <input class="input" type="email" id="su-email" name="email" autocomplete="email" required />
+        </label>
+        <label class="field" for="su-phone">Telefon
+          <input class="input" type="tel" id="su-phone" name="phone" autocomplete="tel" required pattern="[0-9 +()\-]{9,}" />
+        </label>
+      </div>
+      <label class="field" for="su-notes">Alergie i uwagi <span class="hint">opcjonalnie</span>
+        <textarea class="input" id="su-notes" name="notes" rows="2"></textarea>
+      </label>
+      <fieldset id="su-pay">
+        <legend>Płatność</legend>
+        <label class="radio" for="su-pay-online"><input type="radio" name="payment" id="su-pay-online" value="online" checked />Online (BLIK, karta), miejsce potwierdzone od razu</label>
+        <label class="radio" for="su-pay-transfer"><input type="radio" name="payment" id="su-pay-transfer" value="przelew" />Przelew tradycyjny w ciągu 3 dni</label>
+      </fieldset>
+      <label class="check" for="su-terms"><input type="checkbox" id="su-terms" name="acceptedTerms" required />
+        <span>Akceptuję <a href="/regulamin" target="_blank">regulamin warsztatów</a> i <a href="/polityka-prywatnosci" target="_blank">politykę prywatności</a>.</span>
+      </label>
+      <p class="form-error" id="su-error" role="alert" hidden></p>
+      <div class="summary"><span id="su-sum-label">Do zapłaty</span><b id="su-sum">{pln(payload[0]?.price ?? 0)}</b></div>
+      <button class="btn btn-primary" type="submit" id="su-submit">Rezerwuję i płacę</button>
+    </div>
+
+    <div class="done" id="signup-done" hidden>
+      <Cookie shape="heart" class="done-cookie" />
+      <h2 id="su-done-title">Do zobaczenia przy lukrze!</h2>
+      <p id="su-done-text"></p>
+      <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  import { bookingTotal, createBooking } from "@/lib/api";
+  import type { BookingRequest, PaymentMethod, Term } from "@/lib/types";
+
+  type T = Term & { label: string };
+  const dlg = document.getElementById("signup-dialog") as HTMLDialogElement | null;
+  const dataEl = document.getElementById("signup-terms");
+  if (dlg && dataEl) {
+    const terms: T[] = JSON.parse(dataEl.textContent || "[]");
+    const $ = <E extends HTMLElement>(id: string) => document.getElementById(id) as E;
+    const form = $<HTMLFormElement>("signup-form");
+    const sel = $<HTMLSelectElement>("su-term");
+    const adults = $<HTMLInputElement>("su-adults");
+    const kids = $<HTMLInputElement>("su-kids");
+    const kidsWrap = $("su-kids-wrap");
+    const err = $("su-error");
+    const submit = $<HTMLButtonElement>("su-submit");
+    const pay = () => (form.querySelector<HTMLInputElement>('input[name="payment"]:checked')?.value ?? "online") as PaymentMethod;
+    const current = () => terms.find((t) => t.id === sel.value)!;
+    const n = (el: HTMLInputElement) => Math.max(0, Math.floor(Number(el.value) || 0));
+
+    function sync() {
+      const t = current();
+      const family = t.type === "rodzinne";
+      kidsWrap.hidden = !family;
+      if (!family) kids.value = "0";
+      const waitlist = t.seatsLeft === 0;
+      $("su-pay").hidden = waitlist;
+      $("su-eyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
+      $("signup-title").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
+      $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
+      $("su-sum").textContent = `${bookingTotal(t, n(adults), n(kids))} zł`;
+      submit.textContent = waitlist ? "Dopisz mnie do listy" : pay() === "online" ? "Rezerwuję i płacę" : "Rezerwuję miejsce";
+    }
+
+    function open(id: string) {
+      sel.value = id;
+      $("signup-fields").hidden = false;
+      $("signup-done").hidden = true;
+      err.hidden = true;
+      form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+      sync();
+      dlg!.showModal();
+    }
+
+    function validate(): string | null {
+      const t = current();
+      const people = n(adults) + n(kids);
+      const bad: string[] = [];
+      for (const id of ["su-name", "su-email", "su-phone"]) {
+        const el = $<HTMLInputElement>(id);
+        const ok = el.checkValidity() && el.value.trim() !== "";
+        el.setAttribute("aria-invalid", String(!ok));
+        if (!ok) bad.push(id);
+      }
+      if (people < 1) return "Dodaj co najmniej jedną osobę.";
+      if (t.seatsLeft > 0 && people > t.seatsLeft) return `Na ten termin zostało ${t.seatsLeft} miejsc. Zmniejsz liczbę osób albo wybierz inny termin.`;
+      if (bad.length) return "Uzupełnij imię i nazwisko, poprawny e-mail i numer telefonu.";
+      if (!$<HTMLInputElement>("su-terms").checked) return "Zaznacz akceptację regulaminu, żeby zarezerwować miejsce.";
+      return null;
+    }
+
+    form.addEventListener("input", sync);
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const problem = validate();
+      err.hidden = !problem;
+      err.textContent = problem ?? "";
+      if (problem) return;
+      const t = current();
+      const req: BookingRequest = {
+        termId: t.id, adults: n(adults), kids: n(kids),
+        name: $<HTMLInputElement>("su-name").value.trim(),
+        email: $<HTMLInputElement>("su-email").value.trim(),
+        phone: $<HTMLInputElement>("su-phone").value.trim(),
+        notes: $<HTMLTextAreaElement>("su-notes").value.trim() || undefined,
+        payment: pay(), acceptedTerms: true,
+      };
+      submit.disabled = true;
+      const label = submit.textContent;
+      submit.textContent = "Zapisuję…";
+      try {
+        const res = await createBooking(req, t);
+        if (res.checkoutUrl) { location.href = res.checkoutUrl; return; }
+        const date = t.label.split(" · ")[0];
+        $("su-done-title").textContent = res.status === "waitlist" ? "Jesteś na liście rezerwowej" : "Do zobaczenia przy lukrze!";
+        $("su-done-text").textContent =
+          res.status === "waitlist" ? `Gdy zwolni się miejsce na ${date}, napiszę do Ciebie jako pierwszej osoby z listy.`
+          : res.status === "awaiting_payment" ? `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) wysłałam na ${req.email}. Masz na wpłatę 3 dni.`
+          : `Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}. Dzień przed warsztatami przypomnę się SMS-em.`;
+        $("signup-fields").hidden = true;
+        $("signup-done").hidden = false;
+      } catch {
+        err.hidden = false;
+        err.textContent = "Nie udało się wysłać zapisu. Sprawdź połączenie z internetem i spróbuj ponownie.";
+      } finally {
+        submit.disabled = false;
+        submit.textContent = label;
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>("[data-book]");
+      if (b?.dataset.book) open(b.dataset.book);
+    });
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg || (e.target as HTMLElement).closest("[data-close]")) dlg.close();
+    });
+
+    const fromUrl = new URLSearchParams(location.search).get("termin");
+    if (fromUrl && terms.some((t) => t.id === fromUrl)) open(fromUrl);
+  }
+</script>
+
+<style>
+  .dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: 0 30px 60px rgba(0, 0, 0, .3); }
+  .dlg::backdrop { background: rgba(26, 18, 13, .55); backdrop-filter: blur(3px); }
+  .body { display: grid; gap: 18px; padding: 28px; }
+  .head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+  .head-text { display: grid; gap: 6px; }
+  .head h2, .done h2 { font-size: 1.7rem; }
+  .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
+  .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
+  .summary b { font-family: var(--display); font-weight: 400; font-size: 1.4rem; }
+  .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
+  .done :global(.done-cookie) { width: 90px; }
+  .done p { color: var(--ink-soft); max-width: 40ch; }
+</style>

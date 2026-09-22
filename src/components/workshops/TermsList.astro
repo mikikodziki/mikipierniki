@@ -1,0 +1,53 @@
+---
+import type { Term, WorkshopType } from "@/lib/types";
+import { workshopTypeLabel } from "@/lib/format";
+import TermCard from "./TermCard.astro";
+
+interface Props {
+  terms: Term[];
+  /** Show type filter chips */
+  filters?: boolean;
+}
+const { terms, filters = true } = Astro.props;
+const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
+---
+<div class="terms-list" data-terms-list>
+  {filters && types.length > 1 && (
+    <div class="chips" role="group" aria-label="Filtruj warsztaty">
+      <button class="chip" type="button" data-filter="all" aria-pressed="true">Wszystkie</button>
+      {types.map((t) => (
+        <button class="chip" type="button" data-filter={t} aria-pressed="false">{workshopTypeLabel[t]}</button>
+      ))}
+    </div>
+  )}
+  <div class="grid">
+    {terms.map((t) => <TermCard term={t} />)}
+  </div>
+  <p class="empty" hidden>Brak terminów w tej kategorii. <a href="/kontakt">Napisz</a>, a dam znać o nowych.</p>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>("[data-terms-list]").forEach((root) => {
+    const chips = root.querySelectorAll<HTMLButtonElement>("[data-filter]");
+    const cards = root.querySelectorAll<HTMLElement>("[data-type]");
+    const empty = root.querySelector<HTMLElement>(".empty");
+    chips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        const f = chip.dataset.filter;
+        chips.forEach((c) => c.setAttribute("aria-pressed", String(c === chip)));
+        let shown = 0;
+        cards.forEach((card) => {
+          card.hidden = f !== "all" && card.dataset.type !== f;
+          if (!card.hidden) shown++;
+        });
+        if (empty) empty.hidden = shown > 0;
+      }),
+    );
+  });
+</script>
+
+<style>
+  .terms-list { display: grid; gap: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+  .empty { color: var(--ink-soft); }
+</style>

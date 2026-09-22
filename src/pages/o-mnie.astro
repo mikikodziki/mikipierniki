@@ -1,0 +1,158 @@
+---
+import Base from "@/layouts/Base.astro";
+import Cookie from "@/components/Cookie.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Piping from "@/components/Piping.astro";
+import { site } from "@/lib/site";
+
+const values = [
+  {
+    shape: "man" as const,
+    title: "Małe grupy",
+    text: "Na warsztatach jest najwyżej kilkanaście osób. Dzięki temu mam czas podejść do każdego, poprawić chwyt rękawa i pokazać ruch jeszcze raz.",
+  },
+  {
+    shape: "heart" as const,
+    title: "Cierpliwość",
+    text: "Lukier nie lubi pośpiechu. Nikt u mnie nie musi skończyć pierwszy, a krzywa kreska to po prostu kolejna okazja, żeby spróbować jeszcze raz.",
+  },
+  {
+    shape: "star" as const,
+    title: "Prawdziwy lukier królewski",
+    text: "Robię go sama z białek i cukru pudru, bez gotowych mieszanek. Dobrze się nim pracuje, pięknie zasycha i tak smakuje, jak powinien.",
+  },
+  {
+    shape: "tree" as const,
+    title: "Dobre składniki",
+    text: "Miód, mąkę i jajka kupuję od lokalnych dostawców, a przyprawy korzenne mieszam sama. Piernik ma być przede wszystkim pyszny.",
+  },
+];
+
+/*
+ * PLACEHOLDER numbers: Dominika must confirm or replace them before launch.
+ * If they can't be confirmed, remove the whole "W liczbach" section.
+ */
+const facts = [
+  { value: "8", label: "lat dekorowania pierników" },
+  { value: "150+", label: "warsztatów za mną" },
+  { value: "1500+", label: "uczestników przy stole" },
+  { value: "12", label: "osób, najwięcej w jednej grupie" },
+];
+---
+<Base
+  title="O mnie"
+  description="Cześć, jestem Dominika. Piekę i dekoruję pierniki, a na warsztatach uczę, że lukier nie gryzie. Poznaj historię Miki Pierniki."
+>
+  <section class="section intro">
+    <div class="wrap about">
+      <div class="portrait ph" data-label="zdjęcie: Dominika w pracowni" aria-hidden="true">
+        <Cookie shape="man" class="portrait-cookie" />
+      </div>
+      <div class="about-copy">
+        <span class="eyebrow">O mnie</span>
+        <h1>Cześć, jestem Dominika</h1>
+        <p class="lead">Piekę i dekoruję pierniki od lat. Zaczęło się od świątecznych prezentów dla rodziny, a skończyło na pracowni, w której uczę innych, że lukier nie gryzie.</p>
+        <p>Na warsztatach najbardziej lubię moment, w którym ktoś patrzy na swój pierwszy gotowy piernik i mówi: „to naprawdę ja zrobiłam?”. Dla takich chwil to robię.</p>
+        <span class="signature">{site.owner}</span>
+      </div>
+    </div>
+  </section>
+
+  <Piping />
+
+  <section class="section">
+    <div class="wrap story">
+      <SectionHead eyebrow="Jak to się zaczęło" title="Od pudełka dla babci do własnej pracowni" />
+      <div class="prose">
+        <!-- DO POTWIERDZENIA: szczegóły biograficzne (babcia, rok, pierwsza praca, Instagram) są przykładowe -->
+        <p>Pierwsze pierniki dekorowałam z babcią, przy kuchennym stole zasypanym cukrem pudrem. Wychodziły krzywe, lukier spływał po brzegach, a i tak każdy znikał, zanim zdążył wyschnąć. Ten zapach miodu i cynamonu został ze mną na długo.</p>
+        <p>Po latach, już jako dorosła, zrobiłam na święta pudełko pierników dla rodziny. Potem dla znajomych. Potem znajomi znajomych zaczęli pytać, czy zrobię też dla nich. Po godzinach pracy uczyłam się nowych technik, psułam dziesiątki pierników i cierpliwie ćwiczyłam, aż kreska z lukru zaczęła mnie słuchać.</p>
+        <p>Kiedy zaczęłam wrzucać zdjęcia na Instagram, coraz częściej padało pytanie: „a pokażesz, jak to się robi?”. Tak powstały pierwsze warsztaty, najpierw dla kilku koleżanek w mojej kuchni, a dziś w pracowni, do której przychodzą całe rodziny, zespoły z firm i paczki przyjaciół.</p>
+        <p>Miki Pierniki to dziś dwie rzeczy: warsztaty, na których pokazuję, że dekorowanie jest dla każdego, i pierniki na zamówienie, które piekę i dekoruję sama, od ciasta po ostatnią kropkę lukru.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--sunk">
+    <div class="wrap">
+      <SectionHead eyebrow="Co jest dla mnie ważne" title="Tak pracuję" lead="Kilka zasad, których trzymam się przy każdym warsztacie i każdym zamówieniu." />
+      <ul class="values">
+        {values.map((v) => (
+          <li>
+            <Cookie shape={v.shape} class="value-cookie" />
+            <h3>{v.title}</h3>
+            <p>{v.text}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- DO POTWIERDZENIA: liczby w tej sekcji są przykładowe -->
+  <section class="section" aria-labelledby="facts-title">
+    <div class="wrap">
+      <span class="eyebrow">W liczbach</span>
+      <h2 id="facts-title" class="facts-title">Trochę lukru, trochę statystyki</h2>
+      <dl class="facts">
+        {facts.map((f) => (
+          <div>
+            <dt>{f.label}</dt>
+            <dd>{f.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
+  <Piping />
+
+  <section class="section">
+    <div class="wrap cta">
+      <div class="cta-copy">
+        <h2>Usiądź ze mną przy stole</h2>
+        <p class="lead">Nie musisz umieć rysować ani mieć wprawy. Wystarczy, że przyjdziesz. Resztę, łącznie z piernikami, lukrem i fartuchem, biorę na siebie.</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href="/warsztaty">Zobacz terminy warsztatów</a>
+        <a class="btn btn-ghost" href="/zamowienia">Pierniki na zamówienie</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .about { display: grid; gap: clamp(28px, 5vw, 64px); align-items: center; }
+  @media (min-width: 760px) { .about { grid-template-columns: 0.8fr 1.2fr; } }
+
+  .portrait { aspect-ratio: 4 / 5; width: 100%; max-width: 340px; border-radius: 200px 200px 24px 24px; display: grid; place-items: end center; }
+  @media (min-width: 760px) { .portrait { max-width: none; } }
+  .portrait :global(.portrait-cookie) { width: 46%; margin-bottom: 18%; opacity: .9; }
+  .portrait.ph[data-label]::after { left: 50%; bottom: auto; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; font-size: .78rem; }
+
+  .about-copy { display: grid; gap: 18px; }
+  .about-copy h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }
+  .about-copy p { max-width: 60ch; }
+  .signature { font-family: var(--display); font-size: 1.6rem; color: var(--ginger-text); }
+
+  .story { display: grid; gap: 8px; }
+  @media (min-width: 900px) { .story { grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: start; } }
+
+  .values { list-style: none; margin: 0; padding: 0; display: grid; gap: 32px; }
+  @media (min-width: 640px) { .values { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1000px) { .values { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .values li { display: grid; gap: 10px; align-content: start; }
+  .values :global(.value-cookie) { width: 56px; height: 56px; }
+  .values p { color: var(--ink-soft); }
+
+  .facts-title { margin: 12px 0 32px; }
+  .facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
+  @media (min-width: 860px) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .facts div { display: flex; flex-direction: column-reverse; gap: 4px; border-top: 1.5px dashed var(--ginger); padding-top: 16px; }
+  .facts dd { margin: 0; font-family: var(--display); font-size: clamp(2.2rem, 5vw, 3rem); line-height: 1; color: var(--ginger-text); }
+  .facts dt { color: var(--ink-soft); font-size: .95rem; }
+
+  .cta { display: grid; gap: 24px; align-items: center; }
+  .cta-copy { display: grid; gap: 12px; }
+  .cta-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  @media (min-width: 860px) { .cta { grid-template-columns: 1.2fr 1fr; } .cta-actions { justify-content: flex-end; } }
+</style>

@@ -1,0 +1,68 @@
+---
+import Base from "@/layouts/Base.astro";
+import Hero from "@/components/home/Hero.astro";
+import Sections from "@/components/home/Sections.astro";
+import Social from "@/components/home/Social.astro";
+import Piping from "@/components/Piping.astro";
+import SectionHead from "@/components/SectionHead.astro";
+import Newsletter from "@/components/Newsletter.astro";
+import FaqList from "@/components/FaqList.astro";
+import TermsList from "@/components/workshops/TermsList.astro";
+import SignupDialog from "@/components/workshops/SignupDialog.astro";
+import { getFaq, getTerms } from "@/lib/api";
+import { site } from "@/lib/site";
+
+const upcoming = (await getTerms()).filter((t) => t.seatsLeft > 0).slice(0, 3);
+const faq = (await getFaq()).slice(0, 5);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: site.name,
+  description: site.tagline,
+  email: site.email,
+  telephone: site.phone,
+  url: "https://mikipierniki.pl",
+  sameAs: [site.instagram, site.facebook, site.tiktok],
+};
+---
+<Base jsonLd={jsonLd}>
+  <Hero />
+  <Piping />
+
+  <section class="section" id="terminy">
+    <div class="wrap">
+      <SectionHead
+        eyebrow="Najbliższe warsztaty"
+        title="Wybierz termin i zarezerwuj miejsce"
+        lead="Rezerwacja zajmuje minutę. Płacisz online albo przelewem, a potwierdzenie przychodzi mailem."
+      />
+      <TermsList terms={upcoming} filters={false} />
+      <div class="more">
+        <a class="btn btn-primary" href="/warsztaty">Wszystkie terminy</a>
+        <span>Szukasz terminu dla firmy, klasy albo na wieczór panieński? <a href="/warsztaty#firmy">Zapytaj o warsztaty zamknięte</a></span>
+      </div>
+    </div>
+  </section>
+
+  <Sections />
+  <Social />
+
+  <section class="section section--sunk">
+    <div class="wrap faq-grid">
+      <SectionHead eyebrow="FAQ" title="Najczęstsze pytania" lead="Nie ma tu Twojego pytania? Napisz, odpowiadam zwykle tego samego dnia.">
+        <div><a class="btn btn-ghost btn-small" href="/faq">Wszystkie pytania</a></div>
+      </SectionHead>
+      <FaqList items={faq} />
+    </div>
+  </section>
+
+  <Newsletter />
+
+  <SignupDialog slot="end" terms={upcoming} />
+</Base>
+
+<style>
+  .more { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; color: var(--ink-soft); font-size: .95rem; }
+  .more a:not(.btn) { color: var(--ink); font-weight: 600; }
+</style>
