@@ -28,7 +28,7 @@ export const seatsWord = (n: number) => plural(n, "miejsce", "miejsca", "miejsc"
 
 export const workshopTypeLabel: Record<WorkshopType, string> = {
   dorosli: "Dla dorosłych",
-  rodzinne: "Rodzinne",
+  dzieci: "Dla dzieci",
   wieczor: "Wieczorne",
 };
 

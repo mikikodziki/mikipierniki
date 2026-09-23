@@ -19,7 +19,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
 ---
 <Base
   title="Galeria"
-  description="Pierniki z warsztatów i na zamówienie: święta, Wielkanoc, urodziny, walentynki i upominki firmowe. Zobacz, co powstaje w pracowni Miki Pierniki."
+  description="Pierniki z warsztatów i na zamówienie: święta, Wielkanoc, walentynki, okazje i upominki firmowe. Zobacz, co powstaje w pracowni Miki Pierniki przy ul. Długiej 55 we Wrocławiu."
 >
   <PageHead
     eyebrow="Galeria"
@@ -54,6 +54,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
         ))}
       </ul>
       <p class="empty" id="gal-empty" hidden>W tej kategorii nie ma jeszcze zdjęć. Zajrzyj na Instagram, tam wrzucam wszystko na bieżąco.</p>
+      <p class="consent">Zdjęcia z warsztatów publikuję tylko za zgodą uczestników — zawsze pytam o nią na miejscu.</p>
     </div>
   </section>
 
@@ -110,6 +111,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
   .tile figcaption { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font-size: .75rem; background: var(--surface); color: var(--ink-soft); padding: 3px 10px; border-radius: 999px; }
 
   .empty { color: var(--ink-soft); margin-top: 8px; }
+  .consent { color: var(--ink-soft); font-size: .92rem; margin-top: 16px; max-width: 62ch; }
 
   .cta { display: grid; gap: 24px; align-items: center; }
   .cta-copy { display: grid; gap: 12px; }

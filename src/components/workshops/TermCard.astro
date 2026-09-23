@@ -26,8 +26,9 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   </div>
   <ul class="facts">
     <li>{venue.name}, {venue.address}</li>
-    <li>{term.cookies === 1 ? "1 duży domek z piernika" : `${term.cookies} pierników do domu`}</li>
-    {term.kidPrice && <li>Dziecko (6+): {pln(term.kidPrice)}</li>}
+    <li>{term.cookies} pierników do zabrania do domu</li>
+    {term.type === "dzieci" && <li>Dzieci 6–12 lat z rodzicem</li>}
+    {term.type === "wieczor" && <li>Lampka grzanego wina w cenie</li>}
   </ul>
   <div class="bottom">
     <div class:list={["seats", { low, soldOut }]}>
@@ -43,7 +44,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
       <div class="bar" role="presentation"><i style={`width:${pct}%`}></i></div>
     </div>
     <div class="foot">
-      <span class="price">{pln(term.price)} <small>/ os.</small></span>
+      <span class="price">{pln(term.price)} <small>/ {term.priceUnit === "dziecko" ? "dziecko" : "os."}</small></span>
       {soldOut ? (
         <button class="btn btn-ghost btn-small" type="button" data-book={term.id}>Lista rezerwowa</button>
       ) : (

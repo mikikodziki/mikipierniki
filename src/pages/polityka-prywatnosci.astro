@@ -25,6 +25,7 @@ import { site } from "@/lib/site";
 
         <h2 id="administrator">1. Administrator danych</h2>
         <p>Administratorką Twoich danych osobowych jest [imię i nazwisko], prowadząca działalność gospodarczą pod firmą [nazwa działalności], [adres siedziby], NIP [NIP], REGON [REGON].</p>
+        <p>Pracownia, w której prowadzę warsztaty, mieści się przy ul. Długiej 55 we Wrocławiu.</p>
         <p>We wszystkich sprawach dotyczących danych osobowych możesz napisać na <a href={`mailto:${site.email}`}>{site.email}</a> lub zadzwonić: <a href={site.phoneHref}>{site.phone}</a>.</p>
 
         <h2 id="zakres">2. Jakie dane zbieram</h2>
@@ -33,6 +34,7 @@ import { site } from "@/lib/site";
           <li><strong>Zapytania i formularz kontaktowy</strong> (zamówienia, warsztaty dla firm, vouchery): imię i nazwisko, e-mail, opcjonalnie telefon, treść wiadomości i dodatkowe szczegóły, np. okazja, liczba sztuk, termin, wielkość grupy, załączone pliki.</li>
           <li><strong>Newsletter:</strong> adres e-mail.</li>
           <li><strong>Faktury:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP).</li>
+          <li><strong>Zdjęcia z warsztatów:</strong> wizerunek na zdjęciach, jeśli zgodzisz się na ich publikację.</li>
         </ul>
         <p>Informacje o alergiach mogą stanowić dane dotyczące zdrowia. Podajesz je dobrowolnie i wykorzystuję je wyłącznie po to, żeby bezpiecznie przygotować warsztaty.</p>
 
@@ -42,6 +44,7 @@ import { site } from "@/lib/site";
           <li>Odpowiedź na zapytanie wysłane przez formularz lub e-mail: mój prawnie uzasadniony interes, czyli kontakt z osobą, która do mnie pisze (art. 6 ust. 1 lit. f RODO).</li>
           <li>Wysyłka newslettera: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą możesz wycofać w każdej chwili.</li>
           <li>Informacje o alergiach: Twoja wyraźna zgoda (art. 9 ust. 2 lit. a RODO).</li>
+          <li>Publikacja zdjęć z warsztatów, na których widać Twój wizerunek: Twoja zgoda (art. 6 ust. 1 lit. a RODO), o którą pytam na miejscu.</li>
           <li>Wystawianie faktur i prowadzenie księgowości: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>
           <li>Dochodzenie roszczeń i obrona przed nimi: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
         </ul>
@@ -54,7 +57,7 @@ import { site } from "@/lib/site";
           <li>dostawca poczty e-mail i wysyłki wiadomości [nazwa dostawcy],</li>
           <li>dostawca narzędzia do newslettera [nazwa dostawcy],</li>
           <li>biuro rachunkowe [nazwa] – w zakresie danych z faktur,</li>
-          <li>firma kurierska – przy wysyłce zamówionych pierników.</li>
+          <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
         </ul>
         <p>[Do weryfikacji: jeśli któryś z dostawców przetwarza dane poza Europejskim Obszarem Gospodarczym, należy wskazać podstawę przekazania, np. standardowe klauzule umowne.]</p>
 
@@ -64,6 +67,7 @@ import { site } from "@/lib/site";
           <li>Dane z zapytań, które nie zakończyły się zamówieniem: [12 miesięcy] od ostatniego kontaktu.</li>
           <li>Adres e-mail w newsletterze: do czasu wypisania się lub wycofania zgody.</li>
           <li>Informacje o alergiach: do [30 dni] po warsztatach.</li>
+          <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
           <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>
         </ul>
 
@@ -86,9 +90,13 @@ import { site } from "@/lib/site";
         <p>Strona nie używa plików cookies reklamowych ani analitycznych. [Do aktualizacji, jeśli pojawi się analityka, np. statystyki odwiedzin.]</p>
         <p>Do wyświetlania czcionek strona korzysta z usługi Google Fonts (Google Ireland Limited). Przy ładowaniu strony Twoja przeglądarka łączy się z serwerami Google, które otrzymują m.in. Twój adres IP. Więcej informacji znajdziesz w <a href="https://policies.google.com/privacy?hl=pl" rel="noopener">polityce prywatności Google</a>. [Do rozważenia: hostowanie czcionek lokalnie, co eliminuje to połączenie.]</p>
         <p>Płatności online obsługuje zewnętrzny operator. Na jego stronie mogą być używane niezbędne pliki cookies, zgodnie z jego polityką prywatności.</p>
-        <p>Linki do Instagrama, Facebooka i TikToka prowadzą do serwisów zewnętrznych, które mają własne zasady prywatności.</p>
+        <p>Link do mojego profilu na Instagramie ({site.instagramHandle}) prowadzi do serwisu zewnętrznego, który ma własne zasady prywatności. Nie korzystam z innych mediów społecznościowych.</p>
 
-        <h2 id="zmiany">8. Zmiany polityki</h2>
+        <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>
+        <p>Na warsztatach robię zdjęcia pierników i przebiegu zajęć. Zanim opublikuję zdjęcie, na którym widać Twój wizerunek lub wizerunek Twojego dziecka, zawsze pytam o zgodę. Zgoda jest dobrowolna, a jej brak nie wpływa na udział w warsztatach.</p>
+        <p>Zgodę możesz wycofać w każdej chwili, pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>. Wtedy usunę zdjęcie ze strony i z Instagrama.</p>
+
+        <h2 id="zmiany">9. Zmiany polityki</h2>
         <p>Jeśli zmienię zasady przetwarzania danych, zaktualizuję ten dokument i datę na górze strony. Polityka obowiązuje od [data].</p>
       </div>
     </div>

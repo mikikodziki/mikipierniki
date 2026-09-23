@@ -11,13 +11,20 @@ import SignupDialog from "@/components/workshops/SignupDialog.astro";
 import { getFaq, getTerms, venueById } from "@/lib/api";
 import { pln } from "@/lib/format";
 import { site } from "@/lib/site";
+import type { WorkshopType } from "@/lib/types";
 
 const terms = await getTerms();
 const faq = [...(await getFaq("warsztaty")), ...(await getFaq("platnosci"))];
 
-// Cheapest adult seat drives the "voucher od X zł" line, so it follows the real price list.
-const adultPrices = terms.filter((t) => t.type === "dorosli").map((t) => t.price);
-const voucherFrom = adultPrices.length ? Math.min(...adultPrices) : undefined;
+// Wszystkie warsztaty otwarte odbywają się w pracowni — adres bierzemy z danych terminu.
+const studio = venueById(terms[0]?.venueId ?? "pracownia");
+
+// Ceny warsztatów otwartych (docs/dane.md). Voucher jest jeden, kwotowy.
+const voucherPrice = site.voucherPrice;
+const priceOf = (type: WorkshopType) => terms.find((t) => t.type === type)?.price;
+const adultPrice = priceOf("dorosli");
+const eveningPrice = priceOf("wieczor");
+const kidsPrice = priceOf("dzieci");
 
 const siteUrl = Astro.site?.href.replace(/\/$/, "") ?? "";
 const organizer = { "@type": "Organization", name: site.name, url: siteUrl, email: site.email };
@@ -28,7 +35,7 @@ const jsonLd = terms.map((t) => {
     "@context": "https://schema.org",
     "@type": "Event",
     name: `${t.title} · warsztaty dekorowania pierników`,
-    description: `Warsztaty dekorowania pierników lukrem królewskim w małej grupie (do ${t.capacity} osób). Wszystkie materiały w cenie, pierniki zabierasz do domu.`,
+    description: `Warsztaty dekorowania pierników lukrem w grupie od ${site.groupMin} do ${t.capacity} osób. Materiały w cenie, ${t.cookies} pierników zabierasz do domu.`,
     startDate: t.startsAt,
     endDate: t.endsAt,
     eventStatus: "https://schema.org/EventScheduled",
@@ -56,41 +63,41 @@ const jsonLd = terms.map((t) => {
 });
 
 const flow = [
-  { time: "ok. 15 min", title: "Powitanie i herbata", text: "Zakładasz fartuch, nalewam herbatę, a na stole czeka Twój zestaw: upieczone pierniki, rękawy z lukrem i karta ze wzorami. Chwila na poznanie się i rozgrzanie dłoni." },
-  { time: "ok. 25 min", title: "Konsystencja lukru i trzymanie rękawa", text: "Pokazuję, jak rozpoznać lukier do konturów, a jak do zalewania, i jak trzymać rękaw, żeby ręka się nie męczyła. Najpierw ćwiczysz na kartce, dopiero potem na pierniku." },
+  { time: "ok. 15 min", title: "Powitanie i fartuch", text: "Zakładasz fartuch, nalewam coś do picia, a na stole czeka już Twoje miejsce: upieczone przeze mnie pierniki i rękawy z lukrem. Chwila na poznanie się i rozgrzanie dłoni." },
+  { time: "ok. 25 min", title: "Konsystencja lukru i trzymanie rękawa", text: "Pokazuję, jak rozpoznać lukier do konturów, a jak do zalewania, i jak trzymać rękaw, żeby ręka się nie męczyła. Najpierw ćwiczysz obok piernika, dopiero potem na nim." },
   { time: "ok. 30 min", title: "Konturowanie", text: "Gęstszym lukrem obrysowujesz kształt piernika. Uczę prowadzić linię nad powierzchnią, a nie po niej, dzięki temu wychodzi równa, nawet jeśli ręka lekko drży." },
-  { time: "ok. 30 min", title: "Zalewanie", text: "Rzadszym lukrem wypełniasz kontury, a wykałaczką rozprowadzasz go do brzegów i przebijasz pęcherzyki powietrza. To moment, w którym piernik robi się gładki jak porcelana." },
-  { time: "ok. 60 min", title: "Mokre na mokrym i detale", text: "Kropki, serduszka i marmurki wtopione w świeży lukier, a gdy spód trochę przeschnie: napisy, perełki, śnieżynki i posypki. Tu każdy piernik zaczyna wyglądać po Twojemu." },
-  { time: "ok. 20 min", title: "Pakowanie do pudełka", text: "Pierniki układamy w pudełku z przekładkami, żeby dojechały w całości. Dostajesz ściągę, jak je dosuszyć i przechowywać, żeby długo zostały ładne." },
+  { time: "ok. 30 min", title: "Zalewanie", text: "Rzadszym lukrem wypełniasz kontury, rozprowadzasz go do brzegów i przebijasz pęcherzyki powietrza. To moment, w którym piernik robi się gładki jak porcelana." },
+  { time: "ok. 60 min", title: "Mokre na mokrym i detale", text: "Kropki, serduszka i marmurki wtopione w świeży lukier, a gdy spód trochę przeschnie — napisy i drobne wzory. Tu każdy piernik zaczyna wyglądać po Twojemu." },
+  { time: "ok. 20 min", title: "Pakowanie do pudełka", text: "Swoje pierniki układasz w pudełku, które masz w cenie, i zabierasz do domu wszystkie. Lukier, który Ci został, też możesz wziąć ze sobą." },
 ];
 
 const included = [
-  "pierniki upieczone przeze mnie dzień wcześniej, gotowe do zdobienia",
-  "lukier królewski w kilku kolorach, rękawy cukiernicze i wykałaczki",
-  "posypki, perełki i pisaki spożywcze",
+  "pierniki, które piekę przed warsztatami, gotowe do dekorowania",
+  "lukry, a ten, który Ci zostanie, zabierasz do domu",
+  "rękawy cukiernicze",
   "fartuch na czas warsztatów",
-  "herbata, kawa i coś słodkiego do schrupania",
-  "pudełko z przekładkami, w którym zabierasz pierniki",
-  "ściąga z proporcjami lukru, żeby powtórzyć wszystko w domu",
+  "napoje",
+  "pudełko, w którym zabierasz swoje pierniki",
+  "lampka grzanego wina na warsztatach wieczornych",
 ];
 
-const occasions = [
-  { title: "Integracje firmowe", text: "Przedświąteczne spotkanie zespołu, na którym nikt nie siedzi w telefonie." },
-  { title: "Wieczory panieńskie", text: "Lukier, muzyka i pierniki z motywem przewodnim, które Panna Młoda zabiera na pamiątkę." },
-  { title: "Urodziny", text: "Dla dzieci i dorosłych, z piernikami w kształcie ulubionych bohaterów solenizanta." },
-  { title: "Klasy szkolne", text: "Prostsze wzory, więcej posypek i dużo cierpliwości. Pierniki trafiają do domu w pudełkach." },
+const closedFacts = [
+  { title: "Wycena indywidualna", text: "Cena zależy od liczby osób i od tego, ile czasu chcecie spędzić przy stole. Napisz, ile Was będzie, a odeślę propozycję." },
+  { title: "U mnie albo u Was", text: `Spotykamy się w mojej pracowni (${studio.address}, ${studio.city}) albo przyjeżdżam pod wskazany adres z kompletem materiałów.` },
+  { title: "Większa grupa, krótszy cykl", text: "Przy dużych grupach robimy krótsze cykle: 1–2 pierniki na osobę i rotacja grup, żeby każdy zdążył usiąść przy stole." },
+  { title: "Stanowisko do lukrowania", text: "Zamiast pełnego warsztatu mogę ustawić stanowisko do lukrowania dla chętnych. Kto ma ochotę, przysiada się i dekoruje." },
 ];
 ---
 <Base
   title="Warsztaty dekorowania pierników"
-  description="Warsztaty dekorowania pierników lukrem królewskim w małych grupach do 10–12 osób. Materiały w cenie, pierniki do zabrania, bez doświadczenia. Terminy, warsztaty dla firm i vouchery."
+  description={`Warsztaty dekorowania pierników w pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
   mobileCta={false}
   jsonLd={jsonLd}
 >
   <PageHead
     eyebrow="Warsztaty"
-    title="Trzy godziny z lukrem i pudełko pierników na wynos"
-    lead="Pracujemy w małych grupach do 10–12 osób, więc mam czas dla każdej osoby przy stole. Wszystkie materiały są w cenie, a udekorowane pierniki zabierasz do domu. Nie potrzebujesz doświadczenia, wszystkiego Cię nauczę."
+    title="Kilka godzin z lukrem i pudełko pierników na wynos"
+    lead={`Pracujemy w grupie od ${site.groupMin} do ${site.groupMax} osób w mojej pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu, więc mam czas dla każdej osoby przy stole. Wszystkie materiały są w cenie, a udekorowane pierniki zabierasz do domu. Nie potrzebujesz doświadczenia, wszystkiego Cię nauczę.`}
   >
     <nav class="jump" aria-label="Na tej stronie">
       <a class="btn btn-primary" href="#terminy">Zobacz terminy</a>
@@ -107,9 +114,15 @@ const occasions = [
         id="terminy"
         eyebrow="Kalendarz"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead="Warsztaty dla dorosłych, rodzinne z dziećmi od 6 lat i wieczorne w kawiarni. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem."
+        lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne z lampką grzanego wina (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}, od 18 lat) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Wszystkie prowadzę w jednym miejscu — w mojej pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
       />
+      <!-- DO UZUPEŁNIENIA: prawdziwy grafik terminów i liczba wolnych miejsc (terminy w mock-data są przykładowe) -->
       <TermsList terms={terms} />
+      <ul class="terms-notes">
+        <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat razem z rodzicem. Starsze dzieci radzą sobie same i mogą przyjść bez opiekuna. W sezonie mam tylko dwa takie terminy.</li>
+        <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać — wtedy zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
+        <li>Każda osoba dekoruje 6–8 pierników i zabiera do domu wszystkie.</li>
+      </ul>
     </div>
   </section>
 
@@ -119,7 +132,7 @@ const occasions = [
         id="przebieg"
         eyebrow="Jak wygląda warsztat"
         title="Krok po kroku, od pierwszej kreski do pełnego pudełka"
-        lead="Tak mniej więcej mijają nam trzy godziny. Tempo dopasowuję do grupy, więc nikt nie zostaje w tyle."
+        lead="Tak mniej więcej mijają nam trzy do czterech godzin na warsztatach dla dorosłych i wieczornych. Z dziećmi przechodzimy tę samą drogę w dwie godziny. Tempo dopasowuję do grupy, więc nikt nie zostaje w tyle."
       />
       <div class="flow-grid">
         <ol class="flow">
@@ -139,7 +152,7 @@ const occasions = [
           <ul>
             {included.map((x) => <li>{x}</li>)}
           </ul>
-          <p class="inc-note">Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu i z ochotą na odrobinę bałaganu.</p>
+          <p class="inc-note">Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu i z ochotą na odrobinę bałaganu. Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów — alergie wpisz w formularzu zapisu.</p>
         </aside>
       </div>
     </div>
@@ -152,14 +165,14 @@ const occasions = [
           id="firmy-title"
           eyebrow="Warsztaty zamknięte"
           title="Warsztaty tylko dla Twojej grupy"
-          lead="Termin, motyw pierników i miejsce ustalamy razem. Przyjeżdżam z kompletem materiałów albo zapraszam do pracowni."
+          lead="Warsztaty firmowe i prywatne, tylko dla osób, które zaprosisz. Wycenę przygotowuję indywidualnie, bo zależy od liczby osób i długości warsztatu. Termin, motyw pierników i miejsce ustalamy razem."
         />
         <ul class="occasions">
-          {occasions.map((o) => (
+          {closedFacts.map((o) => (
             <li><b>{o.title}</b><span>{o.text}</span></li>
           ))}
         </ul>
-        <p class="pitch-note">U Ciebie potrzebuję tylko stołów i krzeseł dla wszystkich. Pierniki mogę przygotować z logo firmy albo w kolorach wesela. Na życzenie wystawiam fakturę.</p>
+        <p class="pitch-note">Napisz, ile Was będzie, ile mamy czasu i gdzie chcecie się spotkać, a odeślę propozycję razem z wyceną.</p>
       </div>
       <div class="form-box card">
         <h3>Zapytaj o termin</h3>
@@ -167,12 +180,13 @@ const occasions = [
           kind="warsztaty-zamkniete"
           id="firmy-form"
           messageLabel="Opowiedz coś więcej o grupie"
-          messagePlaceholder="Np. zespół 14 osób, chcemy świąteczne motywy i ok. 2,5 godziny."
+          messagePlaceholder="Np. zespół 14 osób, mamy jakieś dwie godziny, chcielibyśmy u nas w biurze."
           successText="Dziękuję! Odpiszę w ciągu 24 godzin z propozycją terminu i wyceną."
         >
+          <!-- DO UZUPEŁNIENIA: maksymalna wielkość grupy na warsztatach zamkniętych -->
           <div class="row2">
             <label class="field" for="firmy-form-size">Liczba osób
-              <input class="input" type="number" id="firmy-form-size" name="groupSize" data-detail="liczba_osob" min="4" max="60" inputmode="numeric" />
+              <input class="input" type="number" id="firmy-form-size" name="groupSize" data-detail="liczba_osob" min="1" inputmode="numeric" />
             </label>
             <label class="field" for="firmy-form-date">Preferowany termin
               <input class="input" type="date" id="firmy-form-date" name="preferredDate" data-detail="termin" />
@@ -185,13 +199,12 @@ const occasions = [
                 <option>U Was (dojazd)</option>
               </select>
             </label>
-            <label class="field" for="firmy-form-occasion">Okazja
-              <select class="input" id="firmy-form-occasion" name="occasion" data-detail="okazja">
-                <option>Integracja firmowa</option>
-                <option>Wieczór panieński</option>
-                <option>Urodziny</option>
-                <option>Klasa szkolna</option>
-                <option>Inna okazja</option>
+            <label class="field" for="firmy-form-format">Formuła
+              <select class="input" id="firmy-form-format" name="format" data-detail="formula">
+                <option>Pełny warsztat</option>
+                <option>Krótszy cykl dla większej grupy</option>
+                <option>Stanowisko do lukrowania</option>
+                <option>Jeszcze nie wiem</option>
               </select>
             </label>
           </div>
@@ -207,18 +220,18 @@ const occasions = [
           id="voucher-title"
           eyebrow="Voucher prezentowy"
           title="Podaruj popołudnie z lukrem"
-          lead="Osoba obdarowana sama wybiera termin z kalendarza. Voucher jest ważny 12 miesięcy od zakupu."
+          lead={`Voucher kosztuje ${pln(voucherPrice)} i jest ważny rok. Osoba obdarowana sama wybiera termin z kalendarza.`}
         />
         <ul class="voucher-facts">
-          <li>PDF wysyłam mailem od ręki, idealny na ostatnią chwilę.</li>
-          <li>Wersję drukowaną dostajesz w kopercie, gotową do położenia pod choinką.</li>
-          <li>Mogę dopisać Twoją dedykację.</li>
-          {voucherFrom && <li>Cena jak za miejsce na warsztatach, od {pln(voucherFrom)} za osobę.</li>}
+          <li>Wystarcza na dowolne warsztaty: dla dorosłych, wieczorne z winem albo dla dzieci.</li>
+          <li>Wersję PDF wysyłam mailem, więc sprawdza się nawet na ostatnią chwilę.</li>
+          <li>Wersję drukowaną przygotowuję wyłącznie do odbioru osobistego w pracowni.</li>
+          <li>Realizacja jest prosta: obdarowana osoba zapisuje się na wybrany termin i przy płatności zaznacza kartę podarunkową.</li>
         </ul>
         <div class="ticket" aria-hidden="true">
           <small>Voucher · warsztaty</small>
           <b>{site.name}</b>
-          <small>ważny 12 miesięcy</small>
+          <small>{pln(voucherPrice)} · ważny rok</small>
         </div>
       </div>
       <div class="form-box card">
@@ -232,19 +245,16 @@ const occasions = [
           successText="Dziękuję! W ciągu 24 godzin wyślę dane do płatności, a po wpłacie voucher."
         >
           <div class="row2">
-            <label class="field" for="voucher-form-people">Liczba osób
-              <input class="input" type="number" id="voucher-form-people" name="people" data-detail="liczba_osob" min="1" max="10" value="1" inputmode="numeric" />
+            <label class="field" for="voucher-form-count">Liczba voucherów
+              <input class="input" type="number" id="voucher-form-count" name="count" data-detail="liczba_voucherow" min="1" value="1" inputmode="numeric" />
             </label>
             <label class="field" for="voucher-form-delivery">Forma
               <select class="input" id="voucher-form-delivery" name="delivery" data-detail="forma">
                 <option>PDF mailem</option>
-                <option>Drukowany w kopercie</option>
+                <option>Drukowany, odbiór osobisty w pracowni</option>
               </select>
             </label>
           </div>
-          <label class="field" for="voucher-form-dedication">Dedykacja <span class="hint">opcjonalnie</span>
-            <textarea class="input" id="voucher-form-dedication" name="dedication" data-detail="dedykacja" rows="2" maxlength="200"></textarea>
-          </label>
         </InquiryForm>
       </div>
     </div>
@@ -271,6 +281,9 @@ const occasions = [
   /* Keep anchored headings clear of the sticky header */
   section[id], .section :global(h2[id]), .section :global(form[id]) { scroll-margin-top: 88px; }
   .jump { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+
+  .terms-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: .92rem; color: var(--ink-soft); max-width: 70ch; }
+  .terms-notes li { padding-left: 16px; border-left: 3px solid var(--line); }
 
   /* Workshop flow: a real sequence, so it is an ordered list */
   .flow-grid { display: grid; gap: 32px; }

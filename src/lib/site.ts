@@ -4,13 +4,20 @@ export const site = {
   name: "Miki Pierniki",
   owner: "Dominika",
   tagline: "Warsztaty dekorowania pierników i pierniki na zamówienie",
-  email: "kontakt@mikipierniki.pl",
-  phone: "+48 000 000 000",
-  phoneHref: "tel:+48000000000",
+  email: "dominika.saczynska@gmail.com",
+  phone: "880 122 269",
+  phoneHref: "tel:+48880122269",
   instagram: "https://instagram.com/mikipierniki",
   instagramHandle: "@mikipierniki",
-  facebook: "https://facebook.com/mikipierniki",
-  tiktok: "https://tiktok.com/@mikipierniki",
+  /** Studio where all open workshops take place */
+  address: "ul. Długa 55",
+  addressLocative: "ul. Długiej 55",
+  city: "Wrocław",
+  /** Gift card price in PLN */
+  voucherPrice: 500,
+  /** Group size on open workshops */
+  groupMin: 4,
+  groupMax: 10,
 };
 
 export const nav = [

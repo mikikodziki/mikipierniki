@@ -5,7 +5,7 @@
 
 export type Season = "swieta" | "wielkanoc" | "rok";
 
-export type WorkshopType = "dorosli" | "rodzinne" | "wieczor";
+export type WorkshopType = "dorosli" | "dzieci" | "wieczor";
 
 export interface Term {
   id: string;
@@ -15,14 +15,14 @@ export interface Term {
   startsAt: string;
   endsAt: string;
   venueId: string;
-  /** Price per adult in PLN (whole złoty) */
+  /** Price per participant in PLN (whole złoty) */
   price: number;
-  /** Price per child in PLN; only for family workshops */
-  kidPrice?: number;
+  /** What one paid place means: an adult seat or a child's seat */
+  priceUnit: "osoba" | "dziecko";
   capacity: number;
   seatsLeft: number;
-  /** Number of gingerbread cookies each participant takes home */
-  cookies: number;
+  /** How many cookies a participant decorates and takes home, e.g. "6–8" */
+  cookies: string;
   season: Season;
 }
 
@@ -32,19 +32,27 @@ export interface Venue {
   address: string;
   city: string;
   mapUrl?: string;
+  /** Locative form for Polish prose: "przy ul. Długiej 55" */
+  addressLocative?: string;
+  /** True while the address is not settled yet: pages hide the address and the map */
+  addressPending?: boolean;
 }
 
-export type PaymentMethod = "online" | "przelew";
+export type PaymentMethod = "online" | "przelew" | "voucher";
 
 export interface BookingRequest {
   termId: string;
-  adults: number;
-  kids: number;
+  /** Number of paid places (adults, or children on a children's workshop) */
+  people: number;
+  /** Adults coming along on a children's workshop; they don't pay */
+  guardians?: number;
   name: string;
   email: string;
   phone: string;
   notes?: string;
   payment: PaymentMethod;
+  /** Gift card code when payment === "voucher" */
+  voucherCode?: string;
   acceptedTerms: true;
 }
 

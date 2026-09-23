@@ -33,11 +33,11 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
         </select>
       </label>
       <div class="row2">
-        <label class="field" for="su-adults">Dorośli
-          <input class="input" type="number" id="su-adults" name="adults" min="0" max="10" value="1" inputmode="numeric" />
+        <label class="field" for="su-people"><span id="su-people-label">Liczba osób</span>
+          <input class="input" type="number" id="su-people" name="people" min="1" max="10" value="1" inputmode="numeric" />
         </label>
-        <label class="field" for="su-kids" id="su-kids-wrap">Dzieci (6+)
-          <input class="input" type="number" id="su-kids" name="kids" min="0" max="10" value="0" inputmode="numeric" />
+        <label class="field" for="su-guardians" id="su-guardians-wrap">Rodzice na sali <span class="hint">bez opłaty</span>
+          <input class="input" type="number" id="su-guardians" name="guardians" min="0" max="10" value="1" inputmode="numeric" />
         </label>
       </div>
       <label class="field" for="su-name">Imię i nazwisko
@@ -58,6 +58,10 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
         <legend>Płatność</legend>
         <label class="radio" for="su-pay-online"><input type="radio" name="payment" id="su-pay-online" value="online" checked />Online (BLIK, karta), miejsce potwierdzone od razu</label>
         <label class="radio" for="su-pay-transfer"><input type="radio" name="payment" id="su-pay-transfer" value="przelew" />Przelew tradycyjny w ciągu 3 dni</label>
+        <label class="radio" for="su-pay-voucher"><input type="radio" name="payment" id="su-pay-voucher" value="voucher" />Karta podarunkowa (voucher)</label>
+        <label class="field" for="su-voucher" id="su-voucher-wrap" hidden>Numer vouchera
+          <input class="input" type="text" id="su-voucher" name="voucherCode" autocomplete="off" />
+        </label>
       </fieldset>
       <label class="check" for="su-terms"><input type="checkbox" id="su-terms" name="acceptedTerms" required />
         <span>Akceptuję <a href="/regulamin" target="_blank">regulamin warsztatów</a> i <a href="/polityka-prywatnosci" target="_blank">politykę prywatności</a>.</span>
@@ -88,9 +92,9 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
     const $ = <E extends HTMLElement>(id: string) => document.getElementById(id) as E;
     const form = $<HTMLFormElement>("signup-form");
     const sel = $<HTMLSelectElement>("su-term");
-    const adults = $<HTMLInputElement>("su-adults");
-    const kids = $<HTMLInputElement>("su-kids");
-    const kidsWrap = $("su-kids-wrap");
+    const people = $<HTMLInputElement>("su-people");
+    const guardians = $<HTMLInputElement>("su-guardians");
+    const guardiansWrap = $("su-guardians-wrap");
     const err = $("su-error");
     const submit = $<HTMLButtonElement>("su-submit");
     const pay = () => (form.querySelector<HTMLInputElement>('input[name="payment"]:checked')?.value ?? "online") as PaymentMethod;
@@ -99,15 +103,16 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 
     function sync() {
       const t = current();
-      const family = t.type === "rodzinne";
-      kidsWrap.hidden = !family;
-      if (!family) kids.value = "0";
+      const forKids = t.type === "dzieci";
+      guardiansWrap.hidden = !forKids;
+      $("su-people-label").textContent = forKids ? "Liczba dzieci" : "Liczba osób";
+      $("su-voucher-wrap").hidden = pay() !== "voucher";
       const waitlist = t.seatsLeft === 0;
       $("su-pay").hidden = waitlist;
       $("su-eyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
       $("signup-title").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
       $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
-      $("su-sum").textContent = `${bookingTotal(t, n(adults), n(kids))} zł`;
+      $("su-sum").textContent = `${bookingTotal(t, n(people))} zł`;
       submit.textContent = waitlist ? "Dopisz mnie do listy" : pay() === "online" ? "Rezerwuję i płacę" : "Rezerwuję miejsce";
     }
 
@@ -123,7 +128,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 
     function validate(): string | null {
       const t = current();
-      const people = n(adults) + n(kids);
+      const count = n(people);
       const bad: string[] = [];
       for (const id of ["su-name", "su-email", "su-phone"]) {
         const el = $<HTMLInputElement>(id);
@@ -131,9 +136,10 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
         el.setAttribute("aria-invalid", String(!ok));
         if (!ok) bad.push(id);
       }
-      if (people < 1) return "Dodaj co najmniej jedną osobę.";
-      if (t.seatsLeft > 0 && people > t.seatsLeft) return `Na ten termin zostało ${t.seatsLeft} miejsc. Zmniejsz liczbę osób albo wybierz inny termin.`;
+      if (count < 1) return t.type === "dzieci" ? "Wpisz co najmniej jedno dziecko." : "Dodaj co najmniej jedną osobę.";
+      if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin zostało ${t.seatsLeft} miejsc. Zmniejsz liczbę osób albo wybierz inny termin.`;
       if (bad.length) return "Uzupełnij imię i nazwisko, poprawny e-mail i numer telefonu.";
+      if (pay() === "voucher" && !$<HTMLInputElement>("su-voucher").value.trim()) return "Wpisz numer vouchera albo wybierz inny sposób płatności.";
       if (!$<HTMLInputElement>("su-terms").checked) return "Zaznacz akceptację regulaminu, żeby zarezerwować miejsce.";
       return null;
     }
@@ -147,12 +153,15 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       if (problem) return;
       const t = current();
       const req: BookingRequest = {
-        termId: t.id, adults: n(adults), kids: n(kids),
+        termId: t.id, people: n(people),
+        guardians: t.type === "dzieci" ? n(guardians) : undefined,
         name: $<HTMLInputElement>("su-name").value.trim(),
         email: $<HTMLInputElement>("su-email").value.trim(),
         phone: $<HTMLInputElement>("su-phone").value.trim(),
         notes: $<HTMLTextAreaElement>("su-notes").value.trim() || undefined,
-        payment: pay(), acceptedTerms: true,
+        payment: pay(),
+        voucherCode: pay() === "voucher" ? $<HTMLInputElement>("su-voucher").value.trim() : undefined,
+        acceptedTerms: true,
       };
       submit.disabled = true;
       const label = submit.textContent;
@@ -165,6 +174,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
         $("su-done-text").textContent =
           res.status === "waitlist" ? `Gdy zwolni się miejsce na ${date}, napiszę do Ciebie jako pierwszej osoby z listy.`
           : res.status === "awaiting_payment" ? `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) wysłałam na ${req.email}. Masz na wpłatę 3 dni.`
+          : req.payment === "voucher" ? `Voucher przyjęty. Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}.`
           : `Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}. Dzień przed warsztatami przypomnę się SMS-em.`;
         $("signup-fields").hidden = true;
         $("signup-done").hidden = false;

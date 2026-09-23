@@ -9,39 +9,28 @@ const values = [
   {
     shape: "man" as const,
     title: "Małe grupy",
-    text: "Na warsztatach jest najwyżej kilkanaście osób. Dzięki temu mam czas podejść do każdego, poprawić chwyt rękawa i pokazać ruch jeszcze raz.",
+    text: "Przy stole siada od 4 do 10 osób. Dzięki temu mam czas podejść do każdego, poprawić chwyt rękawa i pokazać ruch jeszcze raz.",
   },
   {
     shape: "heart" as const,
-    title: "Cierpliwość",
+    title: "Bez pośpiechu",
     text: "Lukier nie lubi pośpiechu. Nikt u mnie nie musi skończyć pierwszy, a krzywa kreska to po prostu kolejna okazja, żeby spróbować jeszcze raz.",
   },
   {
     shape: "star" as const,
-    title: "Prawdziwy lukier królewski",
-    text: "Robię go sama z białek i cukru pudru, bez gotowych mieszanek. Dobrze się nim pracuje, pięknie zasycha i tak smakuje, jak powinien.",
+    title: "Czternaście lat praktyki",
+    text: "Wszystkiego nauczyłam się sama, piernik po pierniku. Dlatego wiem, gdzie początkujący się gubi, i umiem to pokazać prostymi słowami.",
   },
   {
     shape: "tree" as const,
-    title: "Dobre składniki",
-    text: "Miód, mąkę i jajka kupuję od lokalnych dostawców, a przyprawy korzenne mieszam sama. Piernik ma być przede wszystkim pyszny.",
+    title: "Wszystko robię sama",
+    text: "Od ciasta i wykrawania po ostatnią kropkę lukru. Przy zamówieniach robię nawet foremki, żeby piernik miał dokładnie taki kształt, jaki ma mieć.",
   },
-];
-
-/*
- * PLACEHOLDER numbers: Dominika must confirm or replace them before launch.
- * If they can't be confirmed, remove the whole "W liczbach" section.
- */
-const facts = [
-  { value: "8", label: "lat dekorowania pierników" },
-  { value: "150+", label: "warsztatów za mną" },
-  { value: "1500+", label: "uczestników przy stole" },
-  { value: "12", label: "osób, najwięcej w jednej grupie" },
 ];
 ---
 <Base
   title="O mnie"
-  description="Cześć, jestem Dominika. Piekę i dekoruję pierniki, a na warsztatach uczę, że lukier nie gryzie. Poznaj historię Miki Pierniki."
+  description="Cześć, jestem Dominika. Od czternastu lat piekę i dekoruję pierniki, a we wrocławskiej pracowni uczę, że lukier nie gryzie."
 >
   <section class="section intro">
     <div class="wrap about">
@@ -51,7 +40,7 @@ const facts = [
       <div class="about-copy">
         <span class="eyebrow">O mnie</span>
         <h1>Cześć, jestem Dominika</h1>
-        <p class="lead">Piekę i dekoruję pierniki od lat. Zaczęło się od świątecznych prezentów dla rodziny, a skończyło na pracowni, w której uczę innych, że lukier nie gryzie.</p>
+        <p class="lead">Piekę i dekoruję pierniki od czternastu lat. Zaczęło się od pieczenia z przyjaciółką, a skończyło na pracowni przy ul. Długiej 55 we Wrocławiu, w której uczę innych, że lukier nie gryzie.</p>
         <p>Na warsztatach najbardziej lubię moment, w którym ktoś patrzy na swój pierwszy gotowy piernik i mówi: „to naprawdę ja zrobiłam?”. Dla takich chwil to robię.</p>
         <span class="signature">{site.owner}</span>
       </div>
@@ -62,13 +51,12 @@ const facts = [
 
   <section class="section">
     <div class="wrap story">
-      <SectionHead eyebrow="Jak to się zaczęło" title="Od pudełka dla babci do własnej pracowni" />
+      <SectionHead eyebrow="Jak to się zaczęło" title="Od pieczenia z przyjaciółką do własnej pracowni" />
       <div class="prose">
-        <!-- DO POTWIERDZENIA: szczegóły biograficzne (babcia, rok, pierwsza praca, Instagram) są przykładowe -->
-        <p>Pierwsze pierniki dekorowałam z babcią, przy kuchennym stole zasypanym cukrem pudrem. Wychodziły krzywe, lukier spływał po brzegach, a i tak każdy znikał, zanim zdążył wyschnąć. Ten zapach miodu i cynamonu został ze mną na długo.</p>
-        <p>Po latach, już jako dorosła, zrobiłam na święta pudełko pierników dla rodziny. Potem dla znajomych. Potem znajomi znajomych zaczęli pytać, czy zrobię też dla nich. Po godzinach pracy uczyłam się nowych technik, psułam dziesiątki pierników i cierpliwie ćwiczyłam, aż kreska z lukru zaczęła mnie słuchać.</p>
-        <p>Kiedy zaczęłam wrzucać zdjęcia na Instagram, coraz częściej padało pytanie: „a pokażesz, jak to się robi?”. Tak powstały pierwsze warsztaty, najpierw dla kilku koleżanek w mojej kuchni, a dziś w pracowni, do której przychodzą całe rodziny, zespoły z firm i paczki przyjaciół.</p>
-        <p>Miki Pierniki to dziś dwie rzeczy: warsztaty, na których pokazuję, że dekorowanie jest dla każdego, i pierniki na zamówienie, które piekę i dekoruję sama, od ciasta po ostatnią kropkę lukru.</p>
+        <p>Zaczęło się zwyczajnie: czternaście lat temu piekłyśmy z przyjaciółką pierniczki. Same pierniki szybko przestały mi wystarczać, więc zaczęłam je zdobić. Nikt mnie tego nie uczył, więc uczyłam się sama, piernik po pierniku.</p>
+        <p>Najpierw robiłam je dla rodziny i przyjaciół. Później stanęłam z nimi na targach świątecznych i okazało się, że ludzie pytają nie tylko o pierniki, ale też o to, jak je zrobić.</p>
+        <p>Pierwsze warsztaty poprowadziłam w szkole, potem dla przyjaciół, a dziś zapraszam do pracowni przy ul. Długiej 55 we Wrocławiu. Przychodzą tu osoby, które chcą spędzić popołudnie inaczej, dzieci z rodzicami i całe zespoły z firm.</p>
+        <p>W warsztatach najbardziej lubię tę magiczną atmosferę i moment, w którym ktoś odkrywa swój talent i patrzy z dumą na to, co zrobił. Dla takich chwil to robię.</p>
       </div>
     </div>
   </section>
@@ -88,19 +76,14 @@ const facts = [
     </div>
   </section>
 
-  <!-- DO POTWIERDZENIA: liczby w tej sekcji są przykładowe -->
-  <section class="section" aria-labelledby="facts-title">
+  <section class="section">
     <div class="wrap">
-      <span class="eyebrow">W liczbach</span>
-      <h2 id="facts-title" class="facts-title">Trochę lukru, trochę statystyki</h2>
-      <dl class="facts">
-        {facts.map((f) => (
-          <div>
-            <dt>{f.label}</dt>
-            <dd>{f.value}</dd>
-          </div>
-        ))}
-      </dl>
+      <SectionHead eyebrow="Czym się wyróżniam" title="Co znajdziesz u mnie, a niekoniecznie gdzie indziej" />
+      <div class="prose">
+        <p>Prowadzę warsztaty sama i sama piekę wszystko, co na nich dekorujemy. Nie ma tu gotowych mieszanek ani ustawionej taśmy: każdy piernik, który dostajesz do ręki, przeszedł wcześniej przez moje.</p>
+        <p>Nie wypuszczam nikogo z jednym pierniczkiem na pamiątkę. Dekorujesz 6–8 pierników, zabierasz wszystkie do domu w pudełku, a lukier, który Ci zostanie, też możesz wziąć ze sobą i poćwiczyć u siebie.</p>
+        <p>A jeśli zamawiasz pierniki, kształt nie musi być ze sklepowej półki. Robię własne foremki, więc piernik może mieć kształt Twojego logo, budynku firmy albo ulubionej maskotki.</p>
+      </div>
     </div>
   </section>
 
@@ -143,13 +126,6 @@ const facts = [
   .values li { display: grid; gap: 10px; align-content: start; }
   .values :global(.value-cookie) { width: 56px; height: 56px; }
   .values p { color: var(--ink-soft); }
-
-  .facts-title { margin: 12px 0 32px; }
-  .facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 20px; }
-  @media (min-width: 860px) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .facts div { display: flex; flex-direction: column-reverse; gap: 4px; border-top: 1.5px dashed var(--ginger); padding-top: 16px; }
-  .facts dd { margin: 0; font-family: var(--display); font-size: clamp(2.2rem, 5vw, 3rem); line-height: 1; color: var(--ginger-text); }
-  .facts dt { color: var(--ink-soft); font-size: .95rem; }
 
   .cta { display: grid; gap: 24px; align-items: center; }
   .cta-copy { display: grid; gap: 12px; }

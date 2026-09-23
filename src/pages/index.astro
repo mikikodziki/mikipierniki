@@ -22,8 +22,9 @@ const jsonLd = {
   description: site.tagline,
   email: site.email,
   telephone: site.phone,
-  url: "https://mikipierniki.pl",
-  sameAs: [site.instagram, site.facebook, site.tiktok],
+  sameAs: [site.instagram],
+  address: { "@type": "PostalAddress", streetAddress: "ul. Długa 55", addressLocality: "Wrocław", addressCountry: "PL" },
+  priceRange: "200–500 zł",
 };
 ---
 <Base jsonLd={jsonLd}>
@@ -35,7 +36,7 @@ const jsonLd = {
       <SectionHead
         eyebrow="Najbliższe warsztaty"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead="Rezerwacja zajmuje minutę. Płacisz online albo przelewem, a potwierdzenie przychodzi mailem."
+        lead="Wszystkie warsztaty prowadzę w pracowni przy ul. Długiej 55 we Wrocławiu. Rezerwacja zajmuje minutę, płacisz online, przelewem albo voucherem."
       />
       <TermsList terms={upcoming} filters={false} />
       <div class="more">

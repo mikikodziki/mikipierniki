@@ -11,18 +11,21 @@ const home = venues[0];
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
+/** Pracownia 2 nie ma jeszcze adresu — pokazujemy ją bez adresu i bez mapy. */
+const addressPending = (v: (typeof venues)[number]) => v.addressPending === true || !v.address;
+
 const mapHref = (v: (typeof venues)[number]) =>
   v.mapUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.address}, ${v.city}`)}`;
 
+// Bez pola `url` — adres strony nie jest jeszcze ustalony.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: site.name,
   description: site.tagline,
-  url: new URL("/", Astro.site).href,
   email: site.email,
   telephone: site.phone,
-  sameAs: [site.instagram, site.facebook, site.tiktok],
+  sameAs: [site.instagram],
   ...(home && {
     address: {
       "@type": "PostalAddress",
@@ -41,7 +44,7 @@ const jsonLd = {
   <PageHead
     eyebrow="Kontakt"
     title="Napisz do mnie"
-    lead="Pytanie o termin, warsztaty dla Twojej firmy, zestaw pierników na prezent? Wybierz, co jest dla Ciebie wygodniejsze: formularz, e-mail albo telefon."
+    lead="Pytanie o termin, warsztaty dla Twojej firmy, zestaw pierników na prezent albo voucher? Wybierz, co jest dla Ciebie wygodniejsze: formularz, e-mail albo telefon."
   />
 
   <section class="section contact-section">
@@ -56,12 +59,16 @@ const jsonLd = {
             <dt>Telefon</dt>
             <dd><a href={site.phoneHref}>{site.phone}</a></dd>
           </div>
+          {home && !addressPending(home) && (
+            <div>
+              <dt>Pracownia</dt>
+              <dd>{home.address}, {home.city}</dd>
+            </div>
+          )}
           <div>
             <dt>Obserwuj</dt>
             <dd class="socials">
-              <a href={site.instagram} rel="noopener">Instagram</a>
-              <a href={site.facebook} rel="noopener">Facebook</a>
-              <a href={site.tiktok} rel="noopener">TikTok</a>
+              <a href={site.instagram} rel="noopener">Instagram {site.instagramHandle}</a>
             </dd>
           </div>
         </dl>
@@ -94,16 +101,22 @@ const jsonLd = {
       <div class="section-head">
         <span class="eyebrow">Gdzie się spotykamy</span>
         <h2 id="venues-title">Miejsca warsztatów</h2>
-        <p class="lead">Warsztaty prowadzę w swojej pracowni i w zaprzyjaźnionej kawiarni. Dokładne miejsce każdego terminu znajdziesz przy zapisie. Warsztaty dla firm mogę poprowadzić też u Was.</p>
+        <p class="lead">Wszystkie warsztaty otwarte prowadzę w swojej pracowni przy ul. Długiej 55 we Wrocławiu. Dokładne miejsce każdego terminu znajdziesz przy zapisie. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
       </div>
       <ul class="venues">
         {venues.map((v) => (
           <li class="venue">
-            <div class="map ph" data-label={`mapa: ${v.name}`} aria-hidden="true"></div>
+            {!addressPending(v) && <div class="map ph" data-label={`mapa: ${v.name}`} aria-hidden="true"></div>}
             <div class="venue-body">
               <h3>{v.name}</h3>
-              <address>{v.address}<br />{v.city}</address>
-              <a class="map-link" href={mapHref(v)} rel="noopener">Pokaż na mapie</a>
+              {addressPending(v) ? (
+                <p class="pending">Adres jeszcze ustalam. Podam go tutaj, zanim ogłoszę pierwsze terminy w tym miejscu.</p>
+              ) : (
+                <Fragment>
+                  <address>{v.address}<br />{v.city}</address>
+                  <a class="map-link" href={mapHref(v)} rel="noopener">Pokaż na mapie</a>
+                </Fragment>
+              )}
             </div>
           </li>
         ))}
@@ -137,5 +150,6 @@ const jsonLd = {
   .map.ph[data-label]::after { background: var(--sunk); }
   .venue-body { display: grid; gap: 4px; }
   address { font-style: normal; color: var(--ink-soft); }
+  .pending { color: var(--ink-soft); max-width: 40ch; }
   .map-link { justify-self: start; margin-top: 6px; font-weight: 600; color: var(--ginger-text); text-underline-offset: 4px; }
 </style>

@@ -3,43 +3,46 @@ import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Piping from "@/components/Piping.astro";
+import Cookie from "@/components/Cookie.astro";
 import FaqList from "@/components/FaqList.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import OrderCategory from "@/components/zamowienia/OrderCategory.astro";
-import type { ExampleSet } from "@/components/zamowienia/OrderCategory.astro";
-import { getFaq } from "@/lib/api";
+import { getFaq, venueById } from "@/lib/api";
+import { pln } from "@/lib/format";
 import { site } from "@/lib/site";
 
 const faq = await getFaq("zamowienia");
+const studio = venueById("pracownia");
 
 /*
- * PRZYKŁADOWE CENY: orientacyjne kwoty "od X zł" do czasu, aż Dominika poda
- * swój cennik. Zmieniaj je tylko tutaj.
+ * CENNIK Z docs/dane.md. Cena zależy od wielkości piernika i trudności zdobienia,
+ * więc jest wspólna dla wszystkich okazji. Zmieniaj tylko tutaj.
  */
-const setsSwieta: ExampleSet[] = [
-  { name: "Pudełko 6 pierników", note: "choinki, gwiazdki i ludziki", price: "od 69 zł" },
-  { name: "12 zawieszek na choinkę", note: "ze wstążkami, w białym lukrze", price: "od 120 zł" },
-  { name: "Domek z piernika", note: "składany i dekorowany w całości", price: "od 180 zł" },
-  { name: "Upominki dla pracowników i klientów", note: "przy zamówieniu od 20 sztuk", price: "od 15 zł / szt." },
-];
-const setsWielkanoc: ExampleSet[] = [
-  { name: "Pudełko 6 pisanek", note: "pastelowe wzory", price: "od 65 zł" },
-  { name: "Zajączki z imionami", note: "jako winietki na świąteczny stół", price: "od 12 zł / szt." },
-  { name: "Zestaw do koszyczka", note: "baranek, pisanka i kurczaczek", price: "od 39 zł" },
-];
-const setsOkazje: ExampleSet[] = [
-  { name: "Pierniki urodzinowe z imieniem i wiekiem", price: "od 16 zł / szt." },
-  { name: "Walentynkowe serce w pudełku", note: "z Twoim napisem", price: "od 35 zł" },
-  { name: "Halloweenowy zestaw 6 sztuk", note: "dynie, duszki i nietoperze", price: "od 69 zł" },
-  { name: "Podziękowania dla gości", note: "chrzciny, komunie, śluby", price: "od 12 zł / szt." },
-  { name: "Upominki firmowe z logo", note: "przy zamówieniu od 30 sztuk", price: "od 16 zł / szt." },
+const priceList = [
+  { name: "Mały piernik", note: "np. gwiazdka", price: 15 },
+  { name: "Średni piernik", price: 25 },
+  { name: "Duży piernik", price: 35 },
+  { name: "Zestaw w pudełku", note: "1 duży, 2 średnie i 3 małe", price: 120 },
 ];
 
+const minOrder = 100;
+const customFrom = 1500;
+const depositPct = 15;
+const parcelSmall = 12;
+const parcelLarge = 20;
+
 const steps = [
-  { title: "Zapytanie", text: "Wypełniasz formularz poniżej: okazja, liczba sztuk, termin i to, co Ci się podoba. Możesz dołączyć zdjęcia z inspiracjami." },
-  { title: "Projekt i wycena", text: "W ciągu 24 godzin odpisuję z propozycją wzorów i wyceną. Przy logo czy nietypowym kształcie wysyłam szkic do akceptacji." },
-  { title: "Zadatek", text: "Termin rezerwuję po wpłacie zadatku. Od tej chwili Twoje pierniki mają swoje miejsce w moim kalendarzu pieczenia." },
-  { title: "Odbiór lub wysyłka", text: "Odbierasz pierniki w pracowni albo wysyłam je kurierem, zapakowane tak, żeby dojechały w całości." },
+  { title: "Zapytanie", text: "Wypełniasz formularz poniżej: okazja, liczba sztuk, termin odbioru i to, co Ci się podoba. Możesz dołączyć zdjęcie inspiracji albo plik z logo." },
+  { title: "Projekt i wycena", text: "Odpisuję z propozycją wzorów i wyceną. Przy własnym kształcie przygotowuję foremkę pod Twój projekt i najpierw potwierdzam z Tobą, jak piernik ma wyglądać." },
+  // DO UZUPEŁNIENIA: zasady przedpłaty przy zamówieniach detalicznych (zadatek 15% dotyczy zamówień firmowych z personalizacją)
+  { title: "Potwierdzenie terminu", text: `Zamówienia firmowe z personalizacją rezerwuję po wpłacie zadatku w wysokości ${depositPct}% wyceny. Od tej chwili Twoje pierniki mają swoje miejsce w moim kalendarzu pieczenia.` },
+  { title: "Odbiór lub wysyłka", text: `Odbierasz pierniki w mojej pracowni (${studio.address}, ${studio.city}) albo wysyłam je Paczkomatem: mała paczka ${pln(parcelSmall)}, duża ${pln(parcelLarge)}.` },
+];
+
+const personalizacja = [
+  { title: "Wysyłasz pomysł", text: "Opis albo zdjęcie inspiracji: logo, opakowanie produktu, budynek, firmowa maskotka, rysunek dziecka." },
+  { title: "Robię foremkę", text: "Pod ten konkretny kształt przygotowuję własną foremkę, więc piernik nie musi być gwiazdką ani sercem." },
+  { title: "Pieczemy i dekorujemy", text: "Pierniki wychodzą dokładnie w Twoim kształcie, a lukrem odwzorowuję kolory i detale z projektu." },
 ];
 
 const occasions = [
@@ -50,26 +53,29 @@ const occasions = [
   "Halloween",
   "Chrzciny lub komunia",
   "Ślub i wesele",
-  "Upominki firmowe z logo",
+  "Zamówienie firmowe z personalizacją",
   "Inna okazja",
 ];
 ---
 <Base
   title="Pierniki na zamówienie"
-  description="Ręcznie dekorowane pierniki na zamówienie: na Boże Narodzenie, Wielkanoc, urodziny, śluby, chrzciny i jako firmowe upominki z logo. Odbiór osobisty lub wysyłka kurierem."
+  description={`Ręcznie dekorowane pierniki na zamówienie we Wrocławiu: na Boże Narodzenie, Wielkanoc, urodziny, śluby i dla firm, z własnym kształtem i logo. Mały ${pln(15)}, średni ${pln(25)}, duży ${pln(35)}. Odbiór osobisty albo Paczkomat.`}
 >
+  <!-- DO UZUPEŁNIENIA: ostateczny termin przyjmowania zamówień wielkanocnych -->
   <PageHead
     eyebrow="Na zamówienie"
     title="Pierniki na zamówienie"
-    lead="Każdy zestaw piekę i dekoruję ręcznie, od pierwszej kreski lukru do kokardy na pudełku. Na prezent, na świąteczny stół, dla gości weselnych albo klientów Twojej firmy."
+    lead="Każdy piernik piekę i dekoruję ręcznie, od pierwszej kreski lukru do wstążki na pudełku. Na prezent, na świąteczny stół, dla gości weselnych albo klientów Twojej firmy. Kształt może być dowolny — pod nietypowy projekt robię własne foremki."
   >
-    <p class="season-note" data-for-season="swieta">Sezon świąteczny: zamówienia przyjmuję do 1 grudnia, a wolne terminy w grudniu szybko się kończą.</p>
-    <p class="season-note" data-for-season="wielkanoc">Wielkanoc: zamówienia przyjmuję do 2 tygodni przed świętami.</p>
-    <p class="season-note" data-for-season="rok">Planujesz urodziny, wesele albo firmowe wydarzenie? Napisz najlepiej 3 tygodnie wcześniej.</p>
+    <p class="season-note" data-for-season="swieta">Sezon świąteczny: zamówienia detaliczne przyjmuję do 18 grudnia, a firmowe najpóźniej dwa tygodnie przed odbiorem.</p>
+    <p class="season-note" data-for-season="wielkanoc">Wielkanoc: napisz z wyprzedzeniem, a zamówienia firmowe przyjmuję najpóźniej dwa tygodnie przed odbiorem.</p>
+    <p class="season-note" data-for-season="rok">Zamówienia firmowe przyjmuję najpóźniej dwa tygodnie przed odbiorem. Przy pozostałych napisz, na kiedy potrzebujesz pierników, a powiem Ci, czy zdążę.</p>
     <nav class="jump" aria-label="Kategorie zamówień">
       <a class="chip" href="#swieta">Boże Narodzenie</a>
       <a class="chip" href="#wielkanoc">Wielkanoc</a>
       <a class="chip" href="#okazje">Okazje</a>
+      <a class="chip" href="#personalizacja">Własny kształt</a>
+      <a class="chip" href="#cennik">Cennik</a>
       <a class="chip" href="#jak-zamowic">Jak zamówić</a>
     </nav>
   </PageHead>
@@ -86,14 +92,14 @@ const occasions = [
         shapes={["tree", "star"]}
         tile={2}
         photoLabel="zdjęcie: otwarte pudełko z choinkami i gwiazdkami na lnianym obrusie"
-        deadlineLead="Zamówienia świąteczne przyjmuję do"
-        deadline="1 grudnia"
-        sets={setsSwieta}
+        deadlineLead="Zamówienia detaliczne na święta przyjmuję do"
+        deadline="18 grudnia"
       >
         <p>Choinki, gwiazdki, bałwanki, domki i zawieszki na choinkę. Klasycznie w bieli albo w kolorach, które pasują do Twojego stołu.</p>
-        <p>Świetnie sprawdzają się jako prezent dla nauczycielki, sąsiadów czy całego zespołu. Na pudełku mogę umieścić bilecik z Twoimi życzeniami.</p>
+        <p>Świetnie sprawdzają się jako prezent dla nauczycielki, sąsiadów czy całego zespołu. Zamówienia firmowe przyjmuję najpóźniej dwa tygodnie przed odbiorem.</p>
       </OrderCategory>
 
+      <!-- DO UZUPEŁNIENIA: ostateczny termin przyjmowania zamówień wielkanocnych (kategoria bez daty) -->
       <OrderCategory
         id="wielkanoc"
         occasion="Wielkanoc"
@@ -102,9 +108,6 @@ const occasions = [
         shapes={["egg", "heart"]}
         tile={4}
         photoLabel="zdjęcie: pastelowe piernikowe pisanki w wiklinowym koszyczku"
-        deadlineLead="Zamówienia wielkanocne przyjmuję do"
-        deadline="2 tygodni przed świętami"
-        sets={setsWielkanoc}
         flip
       >
         <p>Wiosenne pastele, kropki, kwiatki i koronkowe wzory. Do koszyczka, jako winietki z imionami gości albo drobny upominek na świąteczny stół.</p>
@@ -112,21 +115,86 @@ const occasions = [
 
       <OrderCategory
         id="okazje"
-        occasion="Urodziny"
+        occasion="Inna okazja"
         eyebrow="Okazje przez cały rok"
         title="Na urodziny, śluby i dla firm"
         shapes={["heart", "pumpkin"]}
         tile={3}
         photoLabel="zdjęcie: pierniki z imionami gości ułożone przy nakryciach na weselnym stole"
-        deadlineLead="Najlepiej napisz"
-        deadline="3 tygodnie wcześniej"
-        sets={setsOkazje}
+        deadlineLead="Zamówienia firmowe przyjmuję"
+        deadline="najpóźniej 2 tygodnie przed odbiorem"
       >
         <p>Urodziny, walentynki, Halloween, chrzciny, komunie i śluby. Pierniki z imionami, datą, motywem przyjęcia albo w kolorach dekoracji sali.</p>
-        <p>Dla firm robię upominki z logo: dla klientów, na konferencje i na firmowe święta. Przy większych nakładach wysyłam próbny piernik do akceptacji.</p>
+        <p>Dla firm robię pierniki z personalizacją: z logo, w kształcie produktu albo firmowej maskotki. Jak to działa, opisuję niżej.</p>
       </OrderCategory>
     </div>
   </div>
+
+  <section class="section section--sunk" id="personalizacja" aria-labelledby="personalizacja-title">
+    <div class="wrap split">
+      <div class="ph pic" data-label="zdjęcie: pierniki w kształcie firmowego logo obok foremki zrobionej na zamówienie" style="background: var(--tile-1)">
+        <Cookie shape="star" class="c1" />
+        <Cookie shape="man" class="c2" />
+      </div>
+      <div class="pitch">
+        <SectionHead
+          id="personalizacja-title"
+          eyebrow="Personalizacja"
+          title="Piernik w dowolnym kształcie, także Twojego logo"
+          lead="Wystarczy, że wyślesz mi opis albo zdjęcie inspiracji. Robię wtedy własne foremki i piekę pierniki dokładnie w tym kształcie, którego potrzebujesz."
+        />
+        <ol class="persona">
+          {personalizacja.map((p, i) => (
+            <li>
+              <span class="pnum" aria-hidden="true">{i + 1}</span>
+              <div>
+                <b>{p.title}</b>
+                <span>{p.text}</span>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <ul class="shapes" aria-label="Przykładowe kształty">
+          <li>logo firmy</li>
+          <li>produkt</li>
+          <li>budynek</li>
+          <li>maskotka firmowa</li>
+        </ul>
+        <p class="persona-price">
+          Zamówienia firmowe z personalizacją i własnym kształtem przyjmuję od <b>{pln(customFrom)}</b>,
+          z zadatkiem {depositPct}% przy potwierdzeniu terminu.
+        </p>
+        <div><a class="btn btn-primary btn-small" href="#order-form" data-occasion="Zamówienie firmowe z personalizacją">Opisz swój pomysł</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="cennik" aria-labelledby="cennik-title">
+    <div class="wrap price-grid">
+      <SectionHead
+        id="cennik-title"
+        eyebrow="Cennik"
+        title="Ile kosztują pierniki na zamówienie"
+        lead="Cena zależy od wielkości piernika i od tego, jak pracochłonne jest zdobienie. Dokładną wycenę przygotuję, gdy poznam projekt i liczbę sztuk."
+      />
+      <div class="price-box card">
+        <ul class="prices">
+          {priceList.map((p) => (
+            <li>
+              <span class="name">{p.name}{p.note && <small>{p.note}</small>}</span>
+              <span class="price">{pln(p.price)}</span>
+            </li>
+          ))}
+        </ul>
+        <ul class="price-notes">
+          <li>Minimalne zamówienie detaliczne: <b>{pln(minOrder)}</b>.</li>
+          <li>Zamówienia firmowe z personalizacją i własnym kształtem: <b>od {pln(customFrom)}</b>, zadatek {depositPct}%.</li>
+          <li>Odbiór osobisty w mojej pracowni przy {studio.addressLocative ?? studio.address} we Wrocławiu albo wysyłka Paczkomatem: mała paczka {pln(parcelSmall)}, duża {pln(parcelLarge)}.</li>
+          <li>Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
 
   <section class="section section--sunk" id="jak-zamowic" aria-labelledby="jak-zamowic-title">
     <div class="wrap">
@@ -157,9 +225,9 @@ const occasions = [
           lead="Im więcej szczegółów, tym szybciej przygotuję projekt i dokładną wycenę. Odpisuję w ciągu 24 godzin."
         />
         <ul class="tips">
-          <li><b>Okazja i data</b> pomagają mi zaplanować pieczenie i suszenie lukru, które trwa kilka dni.</li>
+          <li><b>Okazja i data odbioru</b> pomagają mi zaplanować pieczenie i suszenie lukru, które trwa kilka dni.</li>
           <li><b>Liczba sztuk</b> nie musi być ostateczna, wystarczy przybliżona.</li>
-          <li><b>Zdjęcia inspiracji</b>, zaproszenie ślubne czy logo firmy mówią więcej niż opis.</li>
+          <li><b>Zdjęcie inspiracji albo logo</b> mówi więcej niż opis — na tej podstawie robię foremkę pod Twój kształt.</li>
         </ul>
         <p class="contact">Wolisz napisać bezpośrednio? <a href={`mailto:${site.email}`}>{site.email}</a></p>
       </div>
@@ -191,7 +259,11 @@ const occasions = [
               <input class="input" type="text" id="order-form-theme" name="theme" data-detail="motyw" placeholder="Np. zimowy las, biel i złoto" />
             </label>
           </div>
-          <label class="field" for="order-form-files">Inspiracje <span class="hint">opcjonalnie, zdjęcia lub logo</span>
+          <label class="check" for="order-form-custom">
+            <input type="checkbox" id="order-form-custom" name="custom" data-detail="personalizacja" value="tak, własny kształt i foremka na zamówienie" />
+            <span>Chcę pierniki w niestandardowym kształcie: logo, produkt, budynek albo maskotka.</span>
+          </label>
+          <label class="field" for="order-form-files">Zdjęcie inspiracji albo logo <span class="hint">opcjonalnie, na tej podstawie robię foremkę</span>
             <input class="input file" type="file" id="order-form-files" name="inspiration" data-detail="inspiracja" accept="image/*" multiple />
           </label>
         </InquiryForm>
@@ -215,9 +287,14 @@ const occasions = [
 <script>
   // "Zapytaj o wycenę" in a category preselects that occasion in the order form.
   const select = document.getElementById("order-form-occasion") as HTMLSelectElement | null;
+  const custom = document.getElementById("order-form-custom") as HTMLInputElement | null;
   document.querySelectorAll<HTMLAnchorElement>("a[data-occasion]").forEach((a) =>
     a.addEventListener("click", () => {
-      if (select && a.dataset.occasion) select.value = a.dataset.occasion;
+      const value = a.dataset.occasion;
+      if (!select || !value) return;
+      select.value = value;
+      // Zapytanie z sekcji o personalizacji od razu zaznacza własny kształt.
+      if (custom && value === "Zamówienie firmowe z personalizacją") custom.checked = true;
     }),
   );
 </script>
@@ -232,6 +309,39 @@ const occasions = [
 
   .cats { display: grid; gap: clamp(56px, 8vw, 96px); }
 
+  /* Personalizacja: własne foremki i dowolny kształt */
+  .pic { aspect-ratio: 4 / 3; border-radius: var(--radius-lg); align-self: start; }
+  .pic :global(.c1) { position: absolute; width: 42%; left: 14%; top: 16%; transform: rotate(-12deg); }
+  .pic :global(.c2) { position: absolute; width: 30%; left: 56%; top: 38%; transform: rotate(10deg); }
+  .persona { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .persona li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; align-items: start; }
+  .persona div { display: grid; gap: 2px; }
+  .persona span:not(.pnum) { color: var(--ink-soft); font-size: .95rem; }
+  .pnum {
+    display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+    font-family: var(--display); font-size: 1.1rem; color: var(--ginger-text);
+    background: var(--surface); border: 1.5px solid var(--line);
+  }
+  .shapes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+  .shapes li { font-size: .85rem; padding: 5px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+  .persona-price { font-size: .95rem; max-width: 56ch; padding: 14px 16px; border-radius: 12px; border: 1.5px dashed var(--ginger); }
+  .persona-price b { font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+
+  /* Cennik */
+  .price-grid { display: grid; gap: 8px; }
+  .price-box { display: grid; gap: 18px; padding: clamp(20px, 4vw, 32px); align-self: start; min-width: 0; }
+  .prices { list-style: none; margin: 0; padding: 0; }
+  .prices li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 12px; border-bottom: 1px dashed var(--line); }
+  .prices .name { display: grid; min-width: 0; }
+  .prices .name small { color: var(--ink-soft); font-size: .85rem; }
+  .prices .price { font-family: var(--display); font-size: 1.25rem; white-space: nowrap; }
+  .price-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: .92rem; color: var(--ink-soft); }
+  .price-notes li { padding-left: 16px; border-left: 3px solid var(--accent); }
+  .price-notes b { color: var(--ink); }
+  @media (min-width: 760px) {
+    .price-grid { grid-template-columns: 0.8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: start; }
+  }
+
   /* Ordering process: a real sequence */
   .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
   .steps li { display: grid; gap: 8px; align-content: start; }
@@ -242,7 +352,7 @@ const occasions = [
   @media (min-width: 960px) { .steps { grid-template-columns: repeat(4, 1fr); } }
 
   .split { display: grid; gap: 32px; }
-  .pitch { display: grid; gap: 22px; align-content: start; }
+  .pitch { display: grid; gap: 22px; align-content: start; min-width: 0; }
   .pitch :global(.section-head) { margin-bottom: 0; }
   .tips { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   .tips li { padding-left: 16px; border-left: 3px solid var(--accent); color: var(--ink-soft); }

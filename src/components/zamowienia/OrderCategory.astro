@@ -1,17 +1,11 @@
 ---
 /**
  * One custom-order category on /zamowienia: illustration placeholder,
- * description, example sets with indicative prices and the order deadline.
+ * description and the order deadline. Ceny są wspólne dla wszystkich kategorii
+ * (zależą od wielkości piernika), więc cennik jest raz, w sekcji #cennik.
  */
 import type { CookieShape } from "@/lib/types";
 import Cookie from "../Cookie.astro";
-
-export interface ExampleSet {
-  name: string;
-  note?: string;
-  /** Indicative starting price, already formatted, e.g. "od 69 zł" */
-  price: string;
-}
 
 interface Props {
   id: string;
@@ -22,13 +16,13 @@ interface Props {
   shapes: [CookieShape, CookieShape];
   photoLabel: string;
   tile: 1 | 2 | 3 | 4;
-  deadlineLead: string;
-  deadline: string;
-  sets: ExampleSet[];
+  /** Order deadline, e.g. "Zamówienia świąteczne przyjmuję do" + "18 grudnia" */
+  deadlineLead?: string;
+  deadline?: string;
   /** Put the picture on the right on wide screens */
   flip?: boolean;
 }
-const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, deadline, sets, flip = false } = Astro.props;
+const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, deadline, flip = false } = Astro.props;
 ---
 <section class:list={["cat", { flip }]} id={id} aria-labelledby={`${id}-title`}>
   <div class="ph pic" data-label={photoLabel} style={`background: var(--tile-${tile})`}>
@@ -39,19 +33,8 @@ const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, de
     <span class="eyebrow">{eyebrow}</span>
     <h2 id={`${id}-title`}>{title}</h2>
     <div class="desc"><slot /></div>
-    <div class="sets">
-      <h3>Przykładowe zestawy</h3>
-      <ul>
-        {sets.map((s) => (
-          <li>
-            <span class="name">{s.name}{s.note && <small>{s.note}</small>}</span>
-            <span class="price">{s.price}</span>
-          </li>
-        ))}
-      </ul>
-      <p class="fine">Ceny orientacyjne. Dokładną wycenę przygotuję po poznaniu projektu i liczby sztuk.</p>
-    </div>
-    <p class="deadline">{deadlineLead} <b>{deadline}</b></p>
+    <p class="fine">Cena zależy od wielkości piernika i tego, jak pracochłonne jest zdobienie. <a href="#cennik">Zobacz cennik</a></p>
+    {deadlineLead && deadline && <p class="deadline">{deadlineLead} <b>{deadline}</b></p>}
     <div><a class="btn btn-primary btn-small" href="#order-form" data-occasion={occasion}>Zapytaj o wycenę</a></div>
   </div>
 </section>
@@ -63,14 +46,7 @@ const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, de
   .pic :global(.c2) { position: absolute; width: 30%; left: 56%; top: 36%; transform: rotate(12deg); }
   .body { display: grid; gap: 14px; align-content: start; min-width: 0; }
   .desc { display: grid; gap: 10px; color: var(--ink-soft); max-width: 60ch; }
-  .sets { display: grid; gap: 8px; margin-top: 4px; }
-  .sets h3 { font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
-  .sets ul { list-style: none; margin: 0; padding: 0; }
-  .sets li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 10px; border-bottom: 1px dashed var(--line); }
-  .name { display: grid; min-width: 0; }
-  .name small { color: var(--ink-soft); font-size: .85rem; }
-  .price { font-family: var(--display); font-size: 1.15rem; white-space: nowrap; }
-  .fine { font-size: .82rem; color: var(--ink-soft); }
+  .fine { font-size: .88rem; color: var(--ink-soft); max-width: 60ch; }
   .deadline { font-size: .92rem; font-weight: 600; }
   .deadline b { color: var(--berry); }
   @media (min-width: 860px) {

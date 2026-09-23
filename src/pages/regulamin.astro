@@ -23,26 +23,30 @@ import { site } from "@/lib/site";
         <h2 id="organizator">1. Organizator</h2>
         <p>Organizatorką warsztatów dekorowania pierników „{site.name}” jest [imię i nazwisko], prowadząca działalność gospodarczą pod firmą [nazwa działalności], [adres siedziby], NIP [NIP], REGON [REGON], zwana dalej „Organizatorką”.</p>
         <p>Kontakt z Organizatorką: e-mail <a href={`mailto:${site.email}`}>{site.email}</a>, telefon <a href={site.phoneHref}>{site.phone}</a>.</p>
-        <p>Regulamin określa zasady zapisów, płatności, udziału i rezygnacji z warsztatów otwartych ogłaszanych na stronie mikipierniki.pl. Warsztaty zamknięte (dla firm i prywatnych grup) mogą mieć warunki ustalane indywidualnie.</p>
+        <p>Warsztaty otwarte odbywają się w pracowni przy ul. Długiej 55 we Wrocławiu.</p>
+        <p>Regulamin określa zasady zapisów, płatności, udziału i rezygnacji z warsztatów otwartych ogłaszanych na stronie. Warsztaty zamknięte (dla firm i prywatnych grup) wyceniam indywidualnie i mogą mieć warunki ustalane osobno.</p>
 
         <h2 id="rezerwacja">2. Rezerwacja</h2>
         <ol>
           <li>Na warsztaty zapisujesz się przez formularz na stronie, wybierając termin i liczbę miejsc.</li>
           <li>Wysłanie formularza oznacza akceptację niniejszego regulaminu.</li>
           <li>Rezerwacja staje się wiążąca po zaksięgowaniu płatności. Potwierdzenie otrzymasz e-mailem.</li>
-          <li>Każdy uczestnik, również dziecko, zajmuje osobne miejsce.</li>
+          <li>Każdy uczestnik, również dziecko, zajmuje osobne miejsce. Grupa liczy od 4 do 10 osób.</li>
           <li>Gdy na wybrany termin nie ma już wolnych miejsc, możesz zapisać się na listę rezerwową. O zwolnionym miejscu poinformuję Cię e-mailem.</li>
         </ol>
 
         <h2 id="platnosc">3. Płatność</h2>
         <ol>
-          <li>Ceny podane na stronie są cenami brutto za jedno miejsce i obejmują wszystkie materiały: pierniki, lukier, narzędzia, fartuch oraz pudełko na gotowe pierniki.</li>
-          <li>Możesz zapłacić online (BLIK, karta płatnicza) za pośrednictwem operatora płatności [nazwa operatora] albo tradycyjnym przelewem na rachunek [numer rachunku].</li>
+          <li>Ceny podane na stronie są cenami brutto za jedno miejsce: warsztaty dla dorosłych 450 zł za osobę, warsztaty wieczorne z winem 500 zł za osobę, warsztaty dla dzieci 200 zł za dziecko.</li>
+          <li>Cena obejmuje upieczone pierniki, lukry, rękawy cukiernicze, fartuch, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo lampkę grzanego wina. Każdy uczestnik dekoruje 6–8 pierników i zabiera je wszystkie do domu.</li>
+          <li>Możesz zapłacić online (BLIK, karta płatnicza) za pośrednictwem operatora płatności [nazwa operatora], tradycyjnym przelewem na rachunek [numer rachunku] albo kartą podarunkową (voucherem).</li>
           <li>Przy wyborze przelewu wpłata powinna zostać zaksięgowana w ciągu 3 dni od dokonania rezerwacji. Po tym czasie nieopłacona rezerwacja może zostać anulowana, a miejsce zwolnione.</li>
+          <li>Voucher kosztuje 500 zł, jest ważny rok od daty zakupu i można go wykorzystać na dowolne warsztaty. Przy zapisie obdarowana osoba wybiera płatność kartą podarunkową i podaje kod vouchera. Voucher wysyłam w PDF albo, w wersji drukowanej, wydaję do odbioru osobistego w pracowni. Vouchera nie wymieniam na gotówkę.</li>
           <li>Na życzenie wystawiam fakturę. Dane do faktury podaj w formularzu zapisu lub e-mailem.</li>
         </ol>
 
         <h2 id="rezygnacja">4. Rezygnacja uczestnika</h2>
+        <!-- DO POTWIERDZENIA: zasady rezygnacji (zwrot do 7 dni przed terminem, później przekazanie miejsca) czekają na potwierdzenie przez Dominikę. -->
         <ol>
           <li>Jeśli zrezygnujesz najpóźniej 7 dni przed terminem warsztatów, zwrócę Ci całą wpłaconą kwotę albo przeniosę rezerwację na inny termin, jeśli są na nim wolne miejsca.</li>
           <li>Przy rezygnacji później niż 7 dni przed terminem wpłata nie podlega zwrotowi, ale możesz przekazać swoje miejsce innej osobie. Wystarczy, że podasz mi jej imię i nazwisko e-mailem przed warsztatami.</li>
@@ -53,7 +57,7 @@ import { site } from "@/lib/site";
 
         <h2 id="odwolanie">5. Odwołanie lub zmiana warsztatów przez Organizatorkę</h2>
         <ol>
-          <li>Zastrzegam sobie prawo do odwołania warsztatów z ważnych przyczyn, np. choroby lub zbyt małej liczby zapisanych osób (poniżej [liczba] uczestników).</li>
+          <li>Zastrzegam sobie prawo do odwołania warsztatów z ważnych przyczyn, np. choroby lub zbyt małej liczby zapisanych osób (poniżej 4 uczestników).</li>
           <li>O odwołaniu poinformuję Cię e-mailem lub telefonicznie najszybciej, jak to możliwe, a w przypadku zbyt małej liczby osób najpóźniej [liczba] dni przed terminem.</li>
           <li>W takiej sytuacji wybierasz: pełny zwrot wpłaty albo przeniesienie rezerwacji na inny termin.</li>
           <li>Zmiana miejsca lub godziny warsztatów jest możliwa wyłącznie z ważnych przyczyn i zostanie Ci zakomunikowana z wyprzedzeniem. Jeśli nowy termin lub miejsce Ci nie odpowiada, zwrócę całą wpłatę.</li>
@@ -61,23 +65,24 @@ import { site } from "@/lib/site";
 
         <h2 id="dzieci">6. Udział dzieci</h2>
         <ol>
-          <li>Na warsztaty rodzinne zapraszam dzieci od 6 lat.</li>
+          <li>Warsztaty dla dzieci są przeznaczone dla dzieci w wieku od 6 do 12 lat i trwają 2 godziny. Dziecko z tej grupy wiekowej przychodzi z rodzicem lub opiekunem.</li>
+          <li>Starsze dzieci radzą sobie samodzielnie i mogą wziąć udział bez opiekuna.</li>
           <li>Dzieci przez cały czas trwania warsztatów pozostają pod opieką rodzica lub opiekuna, który odpowiada za ich bezpieczeństwo.</li>
-          <li>Warsztaty dla dorosłych są przeznaczone dla osób pełnoletnich. [Do ustalenia: udział młodzieży od określonego wieku za zgodą opiekuna.]</li>
+          <li>Warsztaty wieczorne z winem są przeznaczone wyłącznie dla osób pełnoletnich. [Do ustalenia: udział młodzieży w warsztatach dla dorosłych od określonego wieku za zgodą opiekuna.]</li>
         </ol>
 
         <h2 id="alergeny">7. Alergeny i bezpieczeństwo</h2>
         <ol>
-          <li>Pierniki i lukier zawierają gluten, jaja i miód. Mogą zawierać śladowe ilości orzechów, mleka i sezamu. [Do uzupełnienia: pełna lista alergenów.]</li>
+          <li>Pierniki zawierają gluten, jajka, soję i laktozę. Mogą zawierać śladowe ilości orzechów.</li>
           <li>Alergie i nietolerancje pokarmowe zgłoś w formularzu zapisu. Postaram się przygotować, ale nie mogę zagwarantować całkowitego braku kontaktu z alergenami.</li>
           <li>Uczestnicy korzystają z materiałów i narzędzi zgodnie z instrukcjami prowadzącej.</li>
-          <li>Na warsztatach wieczornych, na których serwowane jest wino, alkohol podawany jest wyłącznie osobom pełnoletnim.</li>
+          <li>Na warsztatach wieczornych, na których serwowane jest grzane wino, alkohol podaję wyłącznie osobom pełnoletnim. Kto nie pije, dostaje wersję bezalkoholową.</li>
         </ol>
 
         <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>
         <ol>
           <li>W trakcie warsztatów mogę robić zdjęcia pierników i przebiegu zajęć.</li>
-          <li>Zdjęcia, na których widać Twój wizerunek (lub wizerunek Twojego dziecka), publikuję na stronie i w mediach społecznościowych wyłącznie za Twoją wyraźną zgodą, o którą zapytam na miejscu.</li>
+          <li>Zawsze pytam uczestników o zgodę przed publikacją. Zdjęcia, na których widać Twój wizerunek (lub wizerunek Twojego dziecka), publikuję na stronie i na Instagramie ({site.instagramHandle}) wyłącznie za Twoją wyraźną zgodą, o którą zapytam na miejscu.</li>
           <li>Zgodę możesz w każdej chwili wycofać, pisząc na {site.email}. Usunę wtedy zdjęcia z moich kanałów.</li>
         </ol>
 

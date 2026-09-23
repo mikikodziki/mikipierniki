@@ -24,7 +24,8 @@ const {
 } = Astro.props;
 
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+// Bez ustawionej domeny (astro.config.mjs) nie wypisujemy canonical ani og:url.
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
 const buildSeason = seasonFor(new Date());
 const ranges = JSON.stringify(seasonRanges.map((r) => [r.season, r.from[0] * 100 + r.from[1], r.to[0] * 100 + r.to[1]]));
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
@@ -36,14 +37,14 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
     <meta property="og:site_name" content={site.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {canonical && <meta property="og:url" content={canonical} />}
     <meta name="theme-color" content="#FBF8F4" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

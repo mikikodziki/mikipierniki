@@ -49,8 +49,8 @@ export async function getGallery(): Promise<GalleryItem[]> {
 
 /* ---------- pricing (shared by UI and backend) ---------- */
 
-export function bookingTotal(term: Pick<Term, "price" | "kidPrice">, adults: number, kids: number): number {
-  return adults * term.price + kids * (term.kidPrice ?? term.price);
+export function bookingTotal(term: Pick<Term, "price">, people: number): number {
+  return people * term.price;
 }
 
 /* ---------- client-side writes (mocked) ---------- */
@@ -59,10 +59,11 @@ const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export async function createBooking(req: BookingRequest, term: Term): Promise<BookingResult> {
   await wait(600);
-  const total = bookingTotal(term, req.adults, req.kids);
+  const total = bookingTotal(term, req.people);
   const bookingId = `mock-${Date.now().toString(36)}`;
-  if (term.seatsLeft < req.adults + req.kids) return { bookingId, status: "waitlist", total };
-  return { bookingId, status: req.payment === "online" ? "confirmed" : "awaiting_payment", total };
+  if (term.seatsLeft < req.people) return { bookingId, status: "waitlist", total };
+  const confirmed = req.payment === "online" || req.payment === "voucher";
+  return { bookingId, status: confirmed ? "confirmed" : "awaiting_payment", total };
 }
 
 export async function sendInquiry(_req: InquiryRequest): Promise<{ ok: true }> {
