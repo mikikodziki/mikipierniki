@@ -3,10 +3,10 @@ import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Piping from "@/components/Piping.astro";
-import Cookie from "@/components/Cookie.astro";
 import FaqList from "@/components/FaqList.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import OrderCategory from "@/components/zamowienia/OrderCategory.astro";
+import Photo from "@/components/Photo.astro";
 import { getFaq, venueById } from "@/lib/api";
 import { pln } from "@/lib/format";
 import { site } from "@/lib/site";
@@ -91,7 +91,8 @@ const occasions = [
         title="Świąteczne pierniki w pudełkach"
         shapes={["tree", "star"]}
         tile={2}
-        photoLabel="zdjęcie: otwarte pudełko z choinkami i gwiazdkami na lnianym obrusie"
+        photo="swieta-mikolaj-domek"
+        photoLabel="Piernikowy Mikołaj i domek z czerwonymi drzwiami na różowym talerzu"
         deadlineLead="Zamówienia detaliczne na święta przyjmuję do"
         deadline="18 grudnia"
       >
@@ -107,7 +108,8 @@ const occasions = [
         title="Pisanki, zajączki i baranki"
         shapes={["egg", "heart"]}
         tile={4}
-        photoLabel="zdjęcie: pastelowe piernikowe pisanki w wiklinowym koszyczku"
+        photo="wielkanoc"
+        photoLabel="Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach"
         flip
       >
         <p>Wiosenne pastele, kropki, kwiatki i koronkowe wzory. Do koszyczka, jako winietki z imionami gości albo drobny upominek na świąteczny stół.</p>
@@ -120,7 +122,8 @@ const occasions = [
         title="Na urodziny, śluby i dla firm"
         shapes={["heart", "pumpkin"]}
         tile={3}
-        photoLabel="zdjęcie: pierniki z imionami gości ułożone przy nakryciach na weselnym stole"
+        photo="mis-choinka"
+        photoLabel="Piernikowy miś w szaliku i choinka z wesołą buzią na różowym talerzu"
         deadlineLead="Zamówienia firmowe przyjmuję"
         deadline="najpóźniej 2 tygodnie przed odbiorem"
       >
@@ -132,9 +135,13 @@ const occasions = [
 
   <section class="section section--sunk" id="personalizacja" aria-labelledby="personalizacja-title">
     <div class="wrap split">
-      <div class="ph pic" data-label="zdjęcie: pierniki w kształcie firmowego logo obok foremki zrobionej na zamówienie" style="background: var(--tile-1)">
-        <Cookie shape="star" class="c1" />
-        <Cookie shape="man" class="c2" />
+      <div class="pic frame">
+        <Photo
+          name="kamieniczki"
+          alt="Trzy piernikowe kamieniczki zdobione lukrem, każda w innym kształcie"
+          ratio="4 / 3"
+          sizes="(max-width: 860px) 100vw, 45vw"
+        />
       </div>
       <div class="pitch">
         <SectionHead
@@ -300,6 +307,7 @@ const occasions = [
 </script>
 
 <style>
+  .frame { overflow: hidden; border-radius: var(--radius-lg); }
   section[id], .section :global(h2[id]), .section :global(form[id]) { scroll-margin-top: 88px; }
 
   .season-note { font-weight: 600; color: var(--accent); max-width: 60ch; }

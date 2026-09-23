@@ -3,11 +3,12 @@
  * Lower homepage sections: gallery teaser, testimonials, voucher, about teaser.
  */
 import Cookie from "../Cookie.astro";
+import Photo from "../Photo.astro";
 import SectionHead from "../SectionHead.astro";
 import { getGallery, getTestimonials } from "@/lib/api";
 import { site } from "@/lib/site";
 
-const gallery = (await getGallery()).slice(0, 8);
+const gallery = (await getGallery()).slice(0, 6);
 const testimonials = await getTestimonials();
 ---
 <section class="section">
@@ -16,7 +17,7 @@ const testimonials = await getTestimonials();
     <div class="gallery">
       {gallery.map((g) => (
         <figure style={`background: var(--tile-${g.tile})`}>
-          {g.src ? <img src={g.src} alt={g.alt} loading="lazy" /> : <Cookie shape={g.shape} class="g-cookie" label={g.alt} />}
+          {g.photo ? <Photo name={g.photo} alt={g.alt} sizes="(max-width: 700px) 50vw, 25vw" /> : <Cookie shape={g.shape} class="g-cookie" label={g.alt} />}
           <figcaption>{g.caption}</figcaption>
         </figure>
       ))}
@@ -75,7 +76,7 @@ const testimonials = await getTestimonials();
 </section>
 
 <style>
-  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   figure { margin: 0; aspect-ratio: 1; max-width: 100%; border-radius: 12px; display: grid; place-items: center; position: relative; overflow: hidden; }
   figure img { width: 100%; height: 100%; object-fit: cover; }
   figure :global(.g-cookie) { width: 52%; }

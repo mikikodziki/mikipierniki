@@ -97,7 +97,7 @@ export interface GalleryItem {
   caption: string;
   category: "warsztaty" | "swieta" | "wielkanoc" | "okazje";
   tile: 1 | 2 | 3 | 4;
-  /** Real photo path under /public once available */
-  src?: string;
+  /** File stem in /public/zdjecia (without size suffix), when a real photo exists */
+  photo?: string;
   alt: string;
 }

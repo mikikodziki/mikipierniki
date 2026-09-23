@@ -52,12 +52,10 @@ export const faq: FaqItem[] = [
 ];
 
 export const gallery: GalleryItem[] = [
-  { shape: "man", caption: "Z warsztatów", category: "warsztaty", tile: 1, alt: "Uczestniczka dekoruje piernikowego ludzika" },
-  { shape: "tree", caption: "Zestaw świąteczny", category: "swieta", tile: 2, alt: "Pierniki w kształcie choinek w pudełku" },
-  { shape: "heart", caption: "Walentynki", category: "okazje", tile: 3, alt: "Piernikowe serca z białym lukrem" },
-  { shape: "egg", caption: "Wielkanoc", category: "wielkanoc", tile: 4, alt: "Piernikowe pisanki we wzory" },
-  { shape: "star", caption: "Zawieszki na choinkę", category: "swieta", tile: 2, alt: "Piernikowe gwiazdki na wstążkach" },
-  { shape: "pumpkin", caption: "Halloween", category: "okazje", tile: 4, alt: "Piernikowe dynie z uśmiechem" },
-  { shape: "star", caption: "Warsztaty firmowe", category: "warsztaty", tile: 1, alt: "Stół pełen pierników podczas warsztatów firmowych" },
-  { shape: "man", caption: "Pierniki z własnym kształtem", category: "okazje", tile: 3, alt: "Piernikowe ludziki z imionami gości" },
+  { photo: "swieta-stol", shape: "tree", caption: "Świąteczny stół", category: "swieta", tile: 1, alt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole" },
+  { photo: "kamieniczki", shape: "star", caption: "Kamieniczki na zamówienie", category: "okazje", tile: 2, alt: "Trzy piernikowe kamieniczki z lukrowymi wieńcami i złotymi detalami" },
+  { photo: "swieta-mikolaj-domek", shape: "man", caption: "Mikołaj i domek", category: "swieta", tile: 3, alt: "Piernikowy Mikołaj i domek z czerwonymi drzwiami na różowym talerzu" },
+  { photo: "wielkanoc", shape: "egg", caption: "Wielkanocne zajączki i kurczaki", category: "wielkanoc", tile: 4, alt: "Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach" },
+  { photo: "mis-choinka", shape: "heart", caption: "Miś i roześmiana choinka", category: "swieta", tile: 2, alt: "Piernikowy biały miś w szaliku i choinka z wesołą buzią" },
+  { photo: "mis-mikolaj", shape: "star", caption: "Zestaw w czerwieni", category: "swieta", tile: 1, alt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja" },
 ];

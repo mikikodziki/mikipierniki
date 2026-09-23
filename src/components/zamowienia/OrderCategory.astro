@@ -6,6 +6,7 @@
  */
 import type { CookieShape } from "@/lib/types";
 import Cookie from "../Cookie.astro";
+import Photo from "../Photo.astro";
 
 interface Props {
   id: string;
@@ -14,6 +15,8 @@ interface Props {
   eyebrow: string;
   title: string;
   shapes: [CookieShape, CookieShape];
+  /** File stem in /public/zdjecia; falls back to the illustration when absent */
+  photo?: string;
   photoLabel: string;
   tile: 1 | 2 | 3 | 4;
   /** Order deadline, e.g. "Zamówienia świąteczne przyjmuję do" + "18 grudnia" */
@@ -22,13 +25,17 @@ interface Props {
   /** Put the picture on the right on wide screens */
   flip?: boolean;
 }
-const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, deadline, flip = false } = Astro.props;
+const { id, occasion, eyebrow, title, shapes, photo, photoLabel, tile, deadlineLead, deadline, flip = false } = Astro.props;
 ---
 <section class:list={["cat", { flip }]} id={id} aria-labelledby={`${id}-title`}>
-  <div class="ph pic" data-label={photoLabel} style={`background: var(--tile-${tile})`}>
-    <Cookie shape={shapes[0]} class="c1" />
-    <Cookie shape={shapes[1]} class="c2" />
-  </div>
+  {photo ? (
+    <div class="pic frame"><Photo name={photo} alt={photoLabel} ratio="4 / 3" sizes="(max-width: 860px) 100vw, 45vw" /></div>
+  ) : (
+    <div class="ph pic" data-label={photoLabel} style={`background: var(--tile-${tile})`}>
+      <Cookie shape={shapes[0]} class="c1" />
+      <Cookie shape={shapes[1]} class="c2" />
+    </div>
+  )}
   <div class="body">
     <span class="eyebrow">{eyebrow}</span>
     <h2 id={`${id}-title`}>{title}</h2>
@@ -42,6 +49,7 @@ const { id, occasion, eyebrow, title, shapes, photoLabel, tile, deadlineLead, de
 <style>
   .cat { display: grid; gap: 24px; scroll-margin-top: 88px; }
   .pic { aspect-ratio: 4 / 3; border-radius: var(--radius-lg); }
+  .frame { overflow: hidden; }
   .pic :global(.c1) { position: absolute; width: 44%; left: 12%; top: 14%; transform: rotate(-10deg); }
   .pic :global(.c2) { position: absolute; width: 30%; left: 56%; top: 36%; transform: rotate(12deg); }
   .body { display: grid; gap: 14px; align-content: start; min-width: 0; }

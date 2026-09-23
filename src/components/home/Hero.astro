@@ -1,13 +1,14 @@
 ---
-import Cookie from "../Cookie.astro";
+import Photo from "../Photo.astro";
 import type { CookieShape, Season } from "@/lib/types";
 
-const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shapes: [CookieShape, CookieShape, CookieShape, CookieShape] }[] = [
+const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; photo: string; photoAlt: string; shapes: [CookieShape, CookieShape, CookieShape, CookieShape] }[] = [
   {
     season: "swieta",
     badge: "Zapisy na sezon świąteczny 2026 otwarte",
     title: "Udekoruj swoje ", em: "pierwsze", after: " świąteczne pierniki",
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
+    photo: "swieta-stol", photoAlt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole",
     shapes: ["man", "star", "tree", "heart"],
   },
   {
@@ -15,6 +16,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     badge: "Warsztaty wielkanocne: marzec i kwiecień",
     title: "Pisanki, które ", em: "pachną", after: " piernikiem",
     lead: "Wiosenne kolory lukru, zajączki i pisanki do koszyczka. Warsztaty dla dorosłych i osobne dla dzieci, w grupach od 4 do 10 osób.",
+    photo: "wielkanoc", photoAlt: "Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach",
     shapes: ["egg", "heart", "egg", "star"],
   },
   {
@@ -22,6 +24,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     badge: "Pierniki na urodziny, walentynki i Halloween",
     title: "Pierniki na ", em: "każdą", after: " okazję",
     lead: "Ręcznie dekorowane zestawy na prezent, podziękowania dla gości i firmowe upominki w dowolnym kształcie. A dla grup prywatne warsztaty przez cały rok.",
+    photo: "kamieniczki", photoAlt: "Trzy piernikowe kamieniczki zdobione lukrem i złotymi detalami",
     shapes: ["heart", "pumpkin", "man", "star"],
   },
 ];
@@ -41,11 +44,8 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
       </div>
     ))}
     {variants.map((v) => (
-      <div class="tray ph" data-label="zdjęcie: ręce przy dekorowaniu" data-for-season={v.season} aria-hidden="true">
-        <Cookie shape={v.shapes[0]} class="c c1" />
-        <Cookie shape={v.shapes[1]} class="c c2" />
-        <Cookie shape={v.shapes[2]} class="c c3" />
-        <Cookie shape={v.shapes[3]} class="c c4" />
+      <div class="tray" data-for-season={v.season}>
+        <Photo name={v.photo} alt={v.photoAlt} ratio="5 / 4" sizes="(max-width: 860px) 100vw, 45vw" eager />
       </div>
     ))}
   </div>
@@ -60,11 +60,6 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   h1 em { font-style: normal; color: var(--ginger); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .note { font-size: 0.9rem; color: var(--ink-soft); }
-  .tray { aspect-ratio: 5 / 4; max-width: 100%; border-radius: var(--radius-lg); }
-  .tray :global(.c) { position: absolute; }
-  .tray :global(.c1) { width: 38%; left: 8%; top: 10%; transform: rotate(-12deg); }
-  .tray :global(.c2) { width: 30%; left: 52%; top: 6%; transform: rotate(10deg); }
-  .tray :global(.c3) { width: 32%; left: 58%; top: 48%; transform: rotate(-6deg); }
-  .tray :global(.c4) { width: 26%; left: 22%; top: 58%; transform: rotate(16deg); }
+  .tray { max-width: 100%; border-radius: var(--radius-lg); overflow: hidden; }
   @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
 </style>

@@ -2,6 +2,7 @@
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import Cookie from "@/components/Cookie.astro";
+import Photo from "@/components/Photo.astro";
 import Piping from "@/components/Piping.astro";
 import { getGallery } from "@/lib/api";
 import { site } from "@/lib/site";
@@ -41,8 +42,8 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
         {items.map((item) => (
           <li data-category={item.category}>
             <figure class="tile" style={`--tile: var(--tile-${item.tile})`}>
-              {item.src ? (
-                <img src={item.src} alt={item.alt} loading="lazy" decoding="async" />
+              {item.photo ? (
+                <Photo name={item.photo} alt={item.alt} sizes="(max-width: 700px) 50vw, 25vw" />
               ) : (
                 <div class="tile-ph" role="img" aria-label={item.alt}>
                   <Cookie shape={item.shape} />
