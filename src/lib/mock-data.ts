@@ -54,7 +54,8 @@ export const faq: FaqItem[] = [
 export const gallery: GalleryItem[] = [
   { photo: "swieta-stol", shape: "tree", caption: "Świąteczny stół", category: "swieta", tile: 1, alt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole" },
   { photo: "wielkanoc-auto", shape: "egg", caption: "Zajączek w aucie z tulipanami", category: "wielkanoc", tile: 2, alt: "Piernikowy zielony kabriolet z białym zajączkiem i bukietem tulipanów" },
-  { photo: "kamieniczki", shape: "star", caption: "Kamieniczki na zamówienie", category: "okazje", tile: 3, alt: "Trzy piernikowe kamieniczki z lukrowymi wieńcami i złotymi detalami" },
+  { photo: "gwiazdka-zlota", shape: "star", caption: "Zawieszka na choinkę", category: "swieta", tile: 3, alt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem i otworem na wstążkę" },
+  { photo: "kamieniczki", shape: "star", caption: "Kamieniczki na zamówienie", category: "okazje", tile: 1, alt: "Trzy piernikowe kamieniczki z lukrowymi wieńcami i złotymi detalami" },
   { photo: "wielkanoc-zajaczki", shape: "egg", caption: "Zajączki wielkanocne", category: "wielkanoc", tile: 4, alt: "Dwa piernikowe zajączki, ciemny i jasny, z niebieskimi muszkami" },
   { photo: "swieta-mikolaj-domek", shape: "man", caption: "Mikołaj i domek", category: "swieta", tile: 2, alt: "Piernikowy Mikołaj i domek z czerwonymi drzwiami na różowym talerzu" },
   { photo: "wielkanoc-kurczaczki", shape: "egg", caption: "Kurczaczki na zamówienie", category: "wielkanoc", tile: 1, alt: "Dwanaście piernikowych kurczaczków w żółtych i zielonych odcieniach lukru" },
@@ -62,4 +63,5 @@ export const gallery: GalleryItem[] = [
   { photo: "wielkanoc", shape: "egg", caption: "Wielkanocny zestaw", category: "wielkanoc", tile: 4, alt: "Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach" },
   { photo: "mis-mikolaj", shape: "star", caption: "Zestaw w czerwieni", category: "swieta", tile: 1, alt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja" },
   { photo: "wielkanoc-zajaczek", shape: "egg", caption: "Zajączek z bliska", category: "wielkanoc", tile: 2, alt: "Piernikowy zajączek w beżowym lukrze z różowymi uszami i niebieską muszką" },
+  { photo: "sniezynka-zlota", shape: "star", caption: "Śnieżynka ze złotym lukrem", category: "swieta", tile: 4, alt: "Piernikowa śnieżynka w białym lukrze z misternym złotym wzorem" },
 ];
