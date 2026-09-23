@@ -1,6 +1,7 @@
 ---
 import Base from "@/layouts/Base.astro";
 import Cookie from "@/components/Cookie.astro";
+import Photo from "@/components/Photo.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Piping from "@/components/Piping.astro";
 import { site } from "@/lib/site";
@@ -34,8 +35,14 @@ const values = [
 >
   <section class="section intro">
     <div class="wrap about">
-      <div class="portrait ph" data-label="zdjęcie: Dominika w pracowni" aria-hidden="true">
-        <Cookie shape="man" class="portrait-cookie" />
+      <div class="portrait">
+        <Photo
+          name="wielkanoc-zajaczek"
+          alt="Piernikowy zajączek w beżowym lukrze z różowymi uszami i niebieską muszką"
+          ratio="4 / 5"
+          sizes="(max-width: 760px) 100vw, 35vw"
+          eager
+        />
       </div>
       <div class="about-copy">
         <span class="eyebrow">O mnie</span>
@@ -107,10 +114,8 @@ const values = [
   .about { display: grid; gap: clamp(28px, 5vw, 64px); align-items: center; }
   @media (min-width: 760px) { .about { grid-template-columns: 0.8fr 1.2fr; } }
 
-  .portrait { aspect-ratio: 4 / 5; width: 100%; max-width: 340px; border-radius: 200px 200px 24px 24px; display: grid; place-items: end center; }
+  .portrait { aspect-ratio: 4 / 5; width: 100%; max-width: 340px; border-radius: 200px 200px 24px 24px; overflow: hidden; background: var(--sunk); }
   @media (min-width: 760px) { .portrait { max-width: none; } }
-  .portrait :global(.portrait-cookie) { width: 46%; margin-bottom: 18%; opacity: .9; }
-  .portrait.ph[data-label]::after { left: 50%; bottom: auto; top: 50%; transform: translate(-50%, -50%); white-space: nowrap; font-size: .78rem; }
 
   .about-copy { display: grid; gap: 18px; }
   .about-copy h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }

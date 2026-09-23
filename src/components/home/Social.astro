@@ -64,7 +64,14 @@ const testimonials = await getTestimonials();
 
 <section class="section">
   <div class="wrap about">
-    <div class="portrait ph" data-label="zdjęcie: Dominika w pracowni" aria-hidden="true"></div>
+    <div class="portrait">
+      <Photo
+        name="mis-choinka"
+        alt="Piernikowy miś w zielonym szaliku i choinka z wesołą buzią na różowym talerzu"
+        ratio="4 / 5"
+        sizes="(max-width: 760px) 100vw, 35vw"
+      />
+    </div>
     <div class="a-copy">
       <span class="eyebrow">O mnie</span>
       <h2>Cześć, jestem Dominika</h2>
@@ -102,7 +109,7 @@ const testimonials = await getTestimonials();
   .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: #6E5A4E; }
 
   .about { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
-  .portrait { aspect-ratio: 4 / 5; max-width: 100%; border-radius: 200px 200px 24px 24px; }
+  .portrait { aspect-ratio: 4 / 5; max-width: 100%; border-radius: 200px 200px 24px 24px; overflow: hidden; background: var(--sunk); }
   .a-copy { display: grid; gap: 18px; }
 
   @media (max-width: 860px) { .quotes { grid-template-columns: 1fr; } }

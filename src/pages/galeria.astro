@@ -12,7 +12,6 @@ const items = await getGallery();
 
 const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
   { value: "all", label: "Wszystkie" },
-  { value: "warsztaty", label: "Z warsztatów" },
   { value: "swieta", label: "Święta" },
   { value: "wielkanoc", label: "Wielkanoc" },
   { value: "okazje", label: "Okazje" },
@@ -25,7 +24,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
   <PageHead
     eyebrow="Galeria"
     title="Z pracowni i z warsztatów"
-    lead="Trochę tego, co powstaje u mnie na stole, i sporo tego, co wyczarowali uczestnicy warsztatów. Każdy piernik jest inny i o to właśnie chodzi."
+    lead="Pierniki, które wychodzą z mojej pracowni: świąteczne, wielkanocne i te robione pod konkretny pomysł. Każdy jest dekorowany ręcznie, więc każdy jest trochę inny."
   />
 
   <section class="section gal-section" aria-labelledby="gal-title">
@@ -55,7 +54,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
         ))}
       </ul>
       <p class="empty" id="gal-empty" hidden>W tej kategorii nie ma jeszcze zdjęć. Zajrzyj na Instagram, tam wrzucam wszystko na bieżąco.</p>
-      <p class="consent">Zdjęcia z warsztatów publikuję tylko za zgodą uczestników — zawsze pytam o nią na miejscu.</p>
+      <p class="consent">Zdjęcia z warsztatów publikuję na Instagramie i tylko za zgodą uczestników — zawsze pytam o nią na miejscu.</p>
     </div>
   </section>
 
