@@ -1,13 +1,13 @@
 ---
 import { site } from "@/lib/site";
-import Cookie from "./Cookie.astro";
+import Logo from "./Logo.astro";
 const year = new Date().getFullYear();
 ---
 <footer class="foot-wrap">
   <div class="wrap">
     <div class="foot">
       <div class="brand">
-        <a class="logo" href="/"><Cookie shape="man" class="logo-mark" />{site.name}</a>
+        <a class="logo" href="/"><Logo label={site.name} /></a>
         <p>{site.tagline}.</p>
       </div>
       <div>
@@ -46,8 +46,8 @@ const year = new Date().getFullYear();
   .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
   .brand { display: grid; gap: 12px; align-content: start; }
   .brand p { color: var(--ink-soft); max-width: 34ch; }
-  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-size: 1.35rem; }
-  .logo :global(.logo-mark) { width: 34px; height: 34px; filter: none; }
+  .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
+  .logo :global(.logo-mark) { height: 62px; width: auto; }
   .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }

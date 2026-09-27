@@ -1,12 +1,12 @@
 ---
 import { nav, site } from "@/lib/site";
-import Cookie from "./Cookie.astro";
+import Logo from "./Logo.astro";
 
 const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
 ---
 <header class="top">
   <div class="wrap bar">
-    <a class="logo" href="/"><Cookie shape="man" class="logo-mark" />{site.name}</a>
+    <a class="logo" href="/"><Logo label={site.name} /></a>
     <nav class="main" aria-label="Główne">
       {nav.map((l) => (
         <a href={l.href} aria-current={path === l.href ? "page" : undefined}>{l.label}</a>
@@ -45,9 +45,10 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     background: color-mix(in srgb, var(--ground) 88%, transparent);
     backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
   }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 68px; }
-  .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-size: 1.35rem; }
-  .logo :global(.logo-mark) { width: 34px; height: 34px; filter: none; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 76px; }
+  .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
+  .logo :global(.logo-mark) { height: 50px; width: auto; }
+  @media (max-width: 420px) { .logo :global(.logo-mark) { height: 42px; } }
   .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
   .main a, .mobile-menu a { text-decoration: none; color: var(--ink-soft); }
   .main a:hover, .main a[aria-current="page"] { color: var(--ink); }
