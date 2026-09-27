@@ -16,7 +16,7 @@ Wymaga Node ≥ 22.12. Podgląd sezonu: `?sezon=swieta`, `?sezon=wielkanoc`, `?s
 
 ```
 src/
-  styles/tokens.css     kolory (jasny/ciemny), akcent sezonowy, fonty
+  styles/tokens.css     kolory marki (tylko wersja jasna), akcent sezonowy, fonty
   styles/global.css     baza, .wrap, .section, .btn, .chip, .card, formularze, .ph (placeholder zdjęcia)
   lib/types.ts          kontrakt danych (Term, BookingRequest, InquiryRequest, ...)
   lib/mock-data.ts      PRZYKŁADOWE dane: terminy, opinie, FAQ, galeria
@@ -34,6 +34,7 @@ docs/szkic.html         zatwierdzony szkic wizualny
 ## Zasady
 
 - Kolory tylko przez tokeny z `tokens.css`, żadnych literałów w komponentach (wyjątek: ilustracje pierników).
+- Strona ma jedną wersję kolorystyczną (jasną). Nie dodawaj reguł `prefers-color-scheme`.
 - Dane tylko przez `src/lib/api.ts`. Strony nie importują `mock-data.ts`.
 - Treść sezonowa: renderuj wszystkie warianty z `data-for-season="swieta"` itd., CSS pokazuje właściwy.
 - Zdjęcia: do czasu prawdziwych zdjęć `<div class="ph" data-label="zdjęcie: …">` z ilustracją `<Cookie>`.

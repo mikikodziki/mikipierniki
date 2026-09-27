@@ -1,29 +1,33 @@
 /*
  * Design tokens. Every colour in components comes from here.
  * Brand: logo outline #461F28 on cream #F6EBC8.
+ * The site is deliberately single-theme (light): it keeps the brand colours
+ * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
  */
 :root {
-  --ground: #F6EBC8;
-  --surface: #FFFAEA;
-  --sunk: #EDDFB6;
-  --ink: #461F28;
-  --ink-soft: #7A5058;
-  --line: #DFCB9C;
+  color-scheme: light;
+
+  --ground: #FAF3DE;
+  --surface: #FFFDF6;
+  --sunk: #F2E6C4;
+  --ink: #3B1720;
+  --ink-soft: #6E464F;
+  --line: #E3D2A9;
   --ginger: #B86B35;
   --ginger-deep: #8E4E22;
   --ginger-text: #8E4E22;
   --icing: #FFFDF8;
-  --berry: #A32038;
-  --accent: #1F4D3A;
-  --accent-ink: #FFFAEA;
+  --berry: #9E1B33;
+  --accent: #1B4634;
+  --accent-ink: #FFFDF6;
   --accent-tint: #DFE9DC;
-  --shadow-cookie: rgba(70, 31, 40, .18);
+  --shadow-cookie: rgba(59, 23, 32, .18);
 
-  --tile-1: #EADCB2;
-  --tile-2: #D9E4D5;
-  --tile-3: #F0DAD6;
-  --tile-4: #E6E0BC;
+  --tile-1: #EEE2BC;
+  --tile-2: #DCE7D8;
+  --tile-3: #F2DDD9;
+  --tile-4: #E9E3C2;
 
   --radius: 14px;
   --radius-lg: 28px;
@@ -31,28 +35,5 @@
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 1160px;
 }
-:root[data-season="wielkanoc"] { --accent: #4F6027; --accent-tint: #E5E9CD; }
-:root[data-season="rok"] { --accent: #8E2E45; --accent-tint: #F1DBDE; }
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --ground: #26131A; --surface: #321A22; --sunk: #3D222B;
-    --ink: #F6EBC8; --ink-soft: #C9AFA4; --line: #4E2D37;
-    --ginger-text: #E5A06C; --berry: #F0819A;
-    --accent: #7DBE9C; --accent-ink: #12251C; --accent-tint: #24382D;
-    --shadow-cookie: rgba(0, 0, 0, .35);
-    --tile-1: #40291F; --tile-2: #26362C; --tile-3: #3E242A; --tile-4: #383321;
-  }
-  :root:not([data-theme="light"])[data-season="wielkanoc"] { --accent: #BDCB84; --accent-ink: #20260C; --accent-tint: #2F3319; }
-  :root:not([data-theme="light"])[data-season="rok"] { --accent: #F09BAC; --accent-ink: #33111B; --accent-tint: #3E1F27; }
-}
-:root[data-theme="dark"] {
-  --ground: #26131A; --surface: #321A22; --sunk: #3D222B;
-  --ink: #F6EBC8; --ink-soft: #C9AFA4; --line: #4E2D37;
-  --ginger-text: #E5A06C; --berry: #F0819A;
-  --accent: #7DBE9C; --accent-ink: #12251C; --accent-tint: #24382D;
-  --shadow-cookie: rgba(0, 0, 0, .35);
-  --tile-1: #40291F; --tile-2: #26362C; --tile-3: #3E242A; --tile-4: #383321;
-}
-:root[data-theme="dark"][data-season="wielkanoc"] { --accent: #BDCB84; --accent-ink: #20260C; --accent-tint: #2F3319; }
-:root[data-theme="dark"][data-season="rok"] { --accent: #F09BAC; --accent-ink: #33111B; --accent-tint: #3E1F27; }
+:root[data-season="wielkanoc"] { --accent: #47581F; --accent-tint: #E5E9CD; }
+:root[data-season="rok"] { --accent: #86253D; --accent-tint: #F1DBDE; }
