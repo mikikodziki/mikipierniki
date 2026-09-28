@@ -35,7 +35,7 @@
   --radius-lg: 28px;
   --display: "Fraunces", "Cooper Black", "Georgia", serif;
   /* Fraunces axes: soft terminals, quirky letterforms — closest to the logo lettering */
-  --display-weight: 900;
+  --display-weight: 800;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 1160px;
 }
