@@ -7,6 +7,8 @@
  */
 :root {
   color-scheme: light;
+  /* inherited by everything; ignored by fonts without these axes */
+  font-variation-settings: "SOFT" 100, "WONK" 1;
 
   --ground: #FAF3DE;
   --surface: #FFFDF6;
@@ -31,7 +33,9 @@
 
   --radius: 14px;
   --radius-lg: 28px;
-  --display: "Titan One", "Cooper Black", "Georgia", serif;
+  --display: "Fraunces", "Cooper Black", "Georgia", serif;
+  /* Fraunces axes: soft terminals, quirky letterforms — closest to the logo lettering */
+  --display-weight: 900;
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 1160px;
 }

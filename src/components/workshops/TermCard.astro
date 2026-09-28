@@ -57,7 +57,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 <style>
   .term { display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; padding: 22px; }
   .date { display: flex; align-items: baseline; gap: 12px; }
-  .d { font-family: var(--display); font-size: 2.6rem; line-height: 1; }
+  .d { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.6rem; line-height: 1; }
   .m { font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; }
   .meta { color: var(--ink-soft); font-size: .88rem; }
   .title { display: grid; gap: 8px; }
@@ -70,6 +70,6 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   .seats.low b, .seats.soldOut b { color: var(--berry); }
   .seats.low .bar i, .seats.soldOut .bar i { background: var(--berry); }
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
-  .price { font-family: var(--display); font-size: 1.5rem; }
+  .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; }
   .price small { font-family: var(--body); font-size: .8rem; color: var(--ink-soft); }
 </style>

@@ -327,13 +327,13 @@ const occasions = [
   .persona span:not(.pnum) { color: var(--ink-soft); font-size: .95rem; }
   .pnum {
     display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
-    font-family: var(--display); font-size: 1.1rem; color: var(--ginger-text);
+    font-family: var(--display); font-weight: var(--display-weight); font-size: 1.1rem; color: var(--ginger-text);
     background: var(--surface); border: 1.5px solid var(--line);
   }
   .shapes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
   .shapes li { font-size: .85rem; padding: 5px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
   .persona-price { font-size: .95rem; max-width: 56ch; padding: 14px 16px; border-radius: 12px; border: 1.5px dashed var(--ginger); }
-  .persona-price b { font-family: var(--display); font-weight: 400; font-size: 1.15rem; }
+  .persona-price b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.15rem; }
 
   /* Cennik */
   .price-grid { display: grid; gap: 8px; }
@@ -342,7 +342,7 @@ const occasions = [
   .prices li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 12px; border-bottom: 1px dashed var(--line); }
   .prices .name { display: grid; min-width: 0; }
   .prices .name small { color: var(--ink-soft); font-size: .85rem; }
-  .prices .price { font-family: var(--display); font-size: 1.25rem; white-space: nowrap; }
+  .prices .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.25rem; white-space: nowrap; }
   .price-notes { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: .92rem; color: var(--ink-soft); }
   .price-notes li { padding-left: 16px; border-left: 3px solid var(--accent); }
   .price-notes b { color: var(--ink); }
@@ -353,7 +353,7 @@ const occasions = [
   /* Ordering process: a real sequence */
   .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
   .steps li { display: grid; gap: 8px; align-content: start; }
-  .num { font-family: var(--display); font-size: 2.4rem; line-height: 1; color: var(--ginger-text); }
+  .num { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.4rem; line-height: 1; color: var(--ginger-text); }
   .steps h3 { font-family: var(--body); font-weight: 700; font-size: 1.15rem; }
   .steps p { color: var(--ink-soft); font-size: .95rem; }
   @media (min-width: 560px) { .steps { grid-template-columns: repeat(2, 1fr); } }

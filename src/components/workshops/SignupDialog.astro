@@ -209,7 +209,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
   .head h2, .done h2 { font-size: 1.7rem; }
   .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
   .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
-  .summary b { font-family: var(--display); font-weight: 400; font-size: 1.4rem; }
+  .summary b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; }
   .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
   .done :global(.done-cookie) { width: 90px; }
   .done p { color: var(--ink-soft); max-width: 40ch; }

@@ -105,7 +105,7 @@ const testimonials = await getTestimonials();
   .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--accent); }
   .ticket::before { left: -11px; }
   .ticket::after { right: -11px; }
-  .ticket b { font-family: var(--display); font-weight: 400; font-size: 1.5rem; }
+  .ticket b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; }
   .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: #6E5A4E; }
 
   .about { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
