@@ -42,13 +42,14 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
 <style>
   .top {
     position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
-    background: color-mix(in srgb, var(--ground) 88%, transparent);
-    backdrop-filter: blur(10px); border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(10px);
   }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 76px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 104px; }
   .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
-  .logo :global(.logo-mark) { height: 50px; width: auto; }
-  @media (max-width: 420px) { .logo :global(.logo-mark) { height: 42px; } }
+  .logo :global(.logo-mark) { height: 80px; width: auto; }
+  @media (max-width: 900px) { .bar { height: 88px; } .logo :global(.logo-mark) { height: 66px; } }
+  @media (max-width: 420px) { .logo :global(.logo-mark) { height: 56px; } }
   .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
   .main a, .mobile-menu a { text-decoration: none; color: var(--ink-soft); }
   .main a:hover, .main a[aria-current="page"] { color: var(--ink); }
@@ -61,7 +62,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .menu-btn[aria-expanded="true"] .burger { background: transparent; }
   .menu-btn[aria-expanded="true"] .burger::before { top: 0; transform: rotate(45deg); }
   .menu-btn[aria-expanded="true"] .burger::after { top: 0; transform: rotate(-45deg); }
-  .mobile-menu { border-top: 1px solid var(--line); background: var(--ground); }
+  .mobile-menu { background: var(--ground); }
   .mobile-menu .wrap { display: grid; padding-block: 8px 16px; }
   .mobile-menu a { padding-block: 12px; font-size: 1.1rem; font-weight: 500; border-bottom: 1px solid var(--line); }
   .mobile-menu a[aria-current="page"] { color: var(--ink); }
