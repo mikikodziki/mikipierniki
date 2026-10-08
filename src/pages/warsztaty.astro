@@ -172,7 +172,7 @@ const closedFacts = [
         </ul>
         <p class="pitch-note">Napisz, ile Was będzie, ile mamy czasu i gdzie chcecie się spotkać, a odeślę propozycję razem z wyceną.</p>
       </div>
-      <div class="form-box card">
+      <div class="form-box">
         <h3>Zapytaj o termin</h3>
         <InquiryForm
           kind="warsztaty-zamkniete"
@@ -232,7 +232,7 @@ const closedFacts = [
           <small>{pln(voucherPrice)} · ważny rok</small>
         </div>
       </div>
-      <div class="form-box card">
+      <div class="form-box">
         <h3>Zamów voucher</h3>
         <InquiryForm
           kind="voucher"
@@ -321,7 +321,7 @@ const closedFacts = [
   .occasions li { display: grid; gap: 2px; padding-left: 16px; border-left: 3px solid var(--accent); }
   .occasions span { color: var(--ink-soft); font-size: .95rem; }
   .pitch-note { font-size: .95rem; max-width: 56ch; }
-  .form-box { display: grid; gap: 18px; padding: clamp(20px, 4vw, 32px); align-self: start; min-width: 0; }
+  .form-box { display: grid; gap: 18px; align-self: start; min-width: 0; }
   .form-box h3 { font-size: 1.6rem; }
 
   .voucher-facts { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }

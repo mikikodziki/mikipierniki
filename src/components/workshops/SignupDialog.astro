@@ -24,7 +24,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       <button class="x" type="button" data-close aria-label="Zamknij">✕</button>
     </div>
 
-    <div class="form-grid" id="signup-fields">
+    <div class="form-grid form-grid--boxed" id="signup-fields">
       <label class="field" for="su-term">Termin
         <select class="input" id="su-term" name="termId" required>
           {payload.map((t) => (
