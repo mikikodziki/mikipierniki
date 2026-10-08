@@ -73,15 +73,16 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .btn:hover { transform: translateY(-1px); }
 .btn-primary { background: var(--mango); color: #3B1720; }
 .btn-primary:hover { background: var(--mango-deep); color: var(--on-page); }
-.btn-ghost { background: transparent; color: var(--ink); border-color: var(--line); }
-.btn-ghost:hover { border-color: var(--ink-soft); }
+.btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .btn-small { padding: 10px 16px; font-size: 0.9rem; }
 .btn[disabled] { opacity: .6; cursor: progress; transform: none; }
 
 /* Chips (filters) */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: 500 0.9rem var(--body); padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
-.chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
+.chip { font: 500 0.9rem var(--body); padding: 9px 17px; border-radius: 999px; border: 0; background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); cursor: pointer; }
+.chip:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
 
 /* Cards */
 .card { background: var(--card); border: 0; border-radius: var(--radius); }
