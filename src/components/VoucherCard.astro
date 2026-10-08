@@ -1,46 +1,108 @@
 ---
 /**
- * Gift card tile: the hug illustration plus the voucher's terms.
- * Sits on the plum voucher blocks, so it carries the light surface.
+ * Gift card drawn as a ticket: plum body, scalloped light panel with the hug
+ * illustration, a perforation and a stub with the amount.
  */
 import Hug from "./Hug.astro";
 import { pln } from "@/lib/format";
 import { site } from "@/lib/site";
 ---
-<figure class="voucher-card">
-  <div class="art"><Hug label="Dominika przytula piernikowego ludzika" /></div>
-  <figcaption>
-    <span class="kicker">Voucher na warsztaty</span>
-    <span class="amount">{pln(site.voucherPrice)}</span>
-    <span class="terms">ważny rok · dowolny termin · {site.name}</span>
-  </figcaption>
+<figure class="ticket" aria-label={`Voucher na warsztaty za ${pln(site.voucherPrice)}, ważny rok`}>
+  <div class="cloud">
+    <Hug class="hug-art" />
+    <div class="copy">
+      <p class="vtitle">Voucher</p>
+      <ul class="terms">
+        <li>Ważny rok</li>
+        <li>Dowolny termin</li>
+      </ul>
+    </div>
+  </div>
+  <div class="stub"><span class="amount">{pln(site.voucherPrice)}</span></div>
 </figure>
 
 <style>
-  .voucher-card {
+  .ticket {
+    --stub: 88px;
+    --notch: 30px;
+    position: relative;
     margin: 0;
-    justify-self: center;
     width: 100%;
-    max-width: 330px;
+    max-width: 520px;
+    justify-self: center;
+    align-self: center;
+    container-type: inline-size;
     display: grid;
-    gap: 18px;
-    padding: 26px 26px 24px;
-    background: var(--surface);
-    color: var(--ink);
+    grid-template-columns: 1fr var(--stub);
+    align-items: stretch;
+    gap: 10px;
+    padding: 16px;
+    background: var(--dark);
+    color: var(--on-dark);
     border-radius: 26px;
-    box-shadow: 0 20px 36px rgba(0, 0, 0, .25);
-    transform: rotate(-2deg);
+    box-shadow: 0 20px 36px rgba(0, 0, 0, .28);
   }
-  .art {
-    background: color-mix(in srgb, var(--mango) 20%, var(--surface));
-    border-radius: 20px;
-    padding: 14px;
-    display: grid;
-    place-items: center;
+  /* bites taken out of the top and bottom edge, where the perforation runs */
+  .ticket::before,
+  .ticket::after {
+    content: "";
+    position: absolute;
+    width: var(--notch); height: var(--notch);
+    border-radius: 50%;
+    background: var(--sheet);
+    left: calc(100% - var(--stub) - 13px);
+    margin-left: calc(var(--notch) / -2);
   }
-  .art :global(.hug) { width: 76%; height: auto; color: var(--ink); }
-  figcaption { display: grid; gap: 4px; justify-items: center; text-align: center; }
-  .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
-  .amount { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.1rem; line-height: 1.1; }
-  .terms { font-size: .82rem; color: var(--ink-soft); }
+  .ticket::before { top: calc(var(--notch) / -2); }
+  .ticket::after { bottom: calc(var(--notch) / -2); }
+
+  /* light panel with a scalloped edge */
+  .cloud {
+    position: relative;
+    margin: 12px;
+    padding: 16px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--on-dark);
+    color: var(--dark);
+    border-radius: 22px;
+  }
+  .cloud::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+    border-radius: 30px;
+    background:
+      radial-gradient(circle 11px at 11px 11px, var(--on-dark) 10.5px, #0000 11px) 0 0 / 22px 22px repeat-x,
+      radial-gradient(circle 11px at 11px 11px, var(--on-dark) 10.5px, #0000 11px) 0 100% / 22px 22px repeat-x,
+      radial-gradient(circle 11px at 11px 11px, var(--on-dark) 10.5px, #0000 11px) 0 0 / 22px 22px repeat-y,
+      radial-gradient(circle 11px at 11px 11px, var(--on-dark) 10.5px, #0000 11px) 100% 0 / 22px 22px repeat-y,
+      linear-gradient(var(--on-dark), var(--on-dark)) 10px 10px / calc(100% - 20px) calc(100% - 20px) no-repeat;
+  }
+  .cloud > * { position: relative; z-index: 1; }
+  .cloud :global(.hug-art) { position: relative; z-index: 1; width: 112px; flex: none; color: var(--dark); }
+
+  .copy { display: grid; gap: 8px; justify-items: center; text-align: center; min-width: 0; }
+  .vtitle {
+    font-family: var(--display); font-weight: var(--display-weight);
+    font-size: clamp(1.6rem, 5vw, 2.1rem); line-height: 1;
+  }
+  .terms { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .95rem; }
+  .terms li::before, .terms li::after { content: "•"; color: var(--mango); padding-inline: 8px; }
+
+  .stub { display: grid; place-items: center; border-left: 3px dashed color-mix(in srgb, var(--on-dark) 75%, transparent); }
+  .amount {
+    font-family: var(--display); font-weight: var(--display-weight);
+    font-size: clamp(1.4rem, 4.4vw, 1.9rem); line-height: 1;
+    writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+  }
+
+  /* the ticket reacts to its own width, not the viewport's */
+  @container (max-width: 400px) {
+    .ticket { --stub: 64px; padding: 12px; }
+    .cloud { flex-direction: column; margin: 10px; gap: 10px; padding: 12px; }
+    .cloud :global(.hug-art) { width: 92px; }
+    .terms { font-size: .88rem; }
+  }
 </style>
