@@ -23,6 +23,9 @@ export interface Term {
   seatsLeft: number;
   /** How many cookies a participant decorates and takes home, e.g. "6–8" */
   cookies: string;
+  /** File stem in /public/zdjecia shown on the term card */
+  photo: string;
+  photoAlt: string;
   season: Season;
 }
 

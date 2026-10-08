@@ -2,6 +2,7 @@
 import type { Term } from "@/lib/types";
 import { venueById } from "@/lib/api";
 import { day, LOW_SEATS, month, pln, seatsWord, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import Photo from "../Photo.astro";
 
 interface Props {
   term: Term;
@@ -12,64 +13,104 @@ const soldOut = term.seatsLeft === 0;
 const low = !soldOut && term.seatsLeft <= LOW_SEATS;
 const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100);
 ---
-<article class="term card" data-type={term.type} data-term-id={term.id}>
-  <div class="date">
-    <span class="d">{day(term.startsAt)}</span>
-    <div>
-      <div class="m">{month(term.startsAt)}</div>
-      <div class="meta">{weekday(term.startsAt)} · {timeRange(term)}</div>
-    </div>
+<article class="term" data-type={term.type} data-term-id={term.id}>
+  <div class="media">
+    <Photo name={term.photo} alt={term.photoAlt} sizes="(max-width: 700px) 100vw, 33vw" />
   </div>
-  <div class="title">
-    <span class="tag">{workshopTypeLabel[term.type]}</span>
-    <h3>{term.title}</h3>
-  </div>
-  <ul class="facts">
-    <li>{venue.name}, {venue.address}</li>
-    <li>{term.cookies} pierników do zabrania do domu</li>
-    {term.type === "dzieci" && <li>Dzieci 6–12 lat z rodzicem</li>}
-    {term.type === "wieczor" && <li>Lampka grzanego wina w cenie</li>}
-  </ul>
-  <div class="bottom">
-    <div class:list={["seats", { low, soldOut }]}>
-      <span>
-        {soldOut ? (
-          <><b>Brak miejsc</b> · zapisz się na listę rezerwową</>
-        ) : low ? (
-          <><b>Zostały {term.seatsLeft} {seatsWord(term.seatsLeft)}</b> z {term.capacity}</>
-        ) : (
-          <>{term.seatsLeft} wolnych {seatsWord(term.seatsLeft)} z {term.capacity}</>
-        )}
-      </span>
-      <div class="bar" role="presentation"><i style={`width:${pct}%`}></i></div>
+
+  <div class="panel">
+    <div class="top">
+      <span class="tag">{workshopTypeLabel[term.type]}</span>
+      <p class="when">{day(term.startsAt)} {month(term.startsAt)} · {weekday(term.startsAt)} · {timeRange(term)}</p>
+      <h3>{term.title}</h3>
     </div>
-    <div class="foot">
-      <span class="price">{pln(term.price)} <small>/ {term.priceUnit === "dziecko" ? "dziecko" : "os."}</small></span>
-      {soldOut ? (
-        <button class="btn btn-ghost btn-small" type="button" data-book={term.id}>Lista rezerwowa</button>
-      ) : (
-        <button class="btn btn-primary btn-small" type="button" data-book={term.id}>Zapisz się</button>
-      )}
+
+    <div class="more">
+      <div class="more-in">
+        <ul class="facts">
+          <li>{venue.name}, {venue.address}</li>
+          <li>{term.cookies} pierników do zabrania do domu</li>
+          {term.type === "dzieci" && <li>Dzieci 6–12 lat z rodzicem</li>}
+          {term.type === "wieczor" && <li>Lampka grzanego wina w cenie</li>}
+        </ul>
+
+        <div class:list={["seats", { low, soldOut }]}>
+          <span>
+            {soldOut ? (
+              <><b>Brak miejsc</b> · lista rezerwowa</>
+            ) : low ? (
+              <><b>Zostały {term.seatsLeft} {seatsWord(term.seatsLeft)}</b> z {term.capacity}</>
+            ) : (
+              <>{term.seatsLeft} wolnych {seatsWord(term.seatsLeft)} z {term.capacity}</>
+            )}
+          </span>
+          <div class="bar" role="presentation"><i style={`width:${pct}%`}></i></div>
+        </div>
+
+        <div class="foot">
+          <span class="price">{pln(term.price)} <small>/ {term.priceUnit === "dziecko" ? "dziecko" : "os."}</small></span>
+          <button class="btn btn-primary btn-small" type="button" data-book={term.id}>
+            {soldOut ? "Lista rezerwowa" : "Zapisz się"}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </article>
 
 <style>
-  .term { display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; padding: 22px; }
-  .date { display: flex; align-items: baseline; gap: 12px; }
-  .d { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.6rem; line-height: 1; }
-  .m { font-weight: 600; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; }
-  .meta { color: var(--ink-soft); font-size: .88rem; }
-  .title { display: grid; gap: 8px; }
-  .tag { justify-self: start; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--ginger-text); background: color-mix(in srgb, var(--ginger) 16%, transparent); padding: 4px 10px; border-radius: 6px; }
-  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .92rem; }
-  .bottom { display: grid; gap: 14px; align-content: end; }
-  .seats { display: grid; gap: 6px; font-size: .85rem; }
-  .bar { height: 6px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
-  .seats.low b, .seats.soldOut b { color: var(--berry); }
-  .seats.low .bar i, .seats.soldOut .bar i { background: var(--berry); }
-  .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--line); }
-  .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; }
-  .price small { font-family: var(--body); font-size: .8rem; color: var(--ink-soft); }
+  .term {
+    position: relative;
+    display: block;
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--sunk);
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .term:hover, .term:focus-within { transform: translateY(-4px); box-shadow: 0 18px 32px rgba(59, 23, 32, .25); }
+
+  .media { position: absolute; inset: 0; }
+  .media :global(.photo) { width: 100%; height: 100%; }
+
+  .panel {
+    position: absolute; left: 12px; right: 12px; bottom: 12px;
+    background: var(--page); color: var(--on-page);
+    border-radius: 20px; padding: 18px;
+    display: grid;
+  }
+  .top { display: grid; gap: 8px; justify-items: start; }
+  .tag {
+    font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--mango); background: color-mix(in srgb, var(--mango) 18%, transparent);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .when { font-size: .85rem; color: var(--on-page-soft); }
+  h3 { font-size: 1.25rem; color: var(--on-page); }
+
+  /* collapsed by default, rolls open on hover or keyboard focus */
+  .more { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .3s ease, opacity .25s ease; }
+  .more-in { min-height: 0; overflow: hidden; display: grid; gap: 14px; padding-top: 14px; }
+  .term:hover .more, .term:focus-within .more { grid-template-rows: 1fr; opacity: 1; }
+
+  .facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .9rem; color: var(--on-page-soft); }
+  .seats { display: grid; gap: 6px; font-size: .82rem; color: var(--on-page-soft); }
+  .seats b { color: var(--on-page); }
+  .bar { height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--on-page) 22%, transparent); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--mango); border-radius: inherit; }
+  .seats.low b, .seats.soldOut b { color: #FFB3A7; }
+  .seats.low .bar i, .seats.soldOut .bar i { background: #E2657A; }
+
+  .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--on-page); }
+  .price small { font-family: var(--body); font-weight: 400; font-size: .78rem; color: var(--on-page-soft); }
+
+  /* touch screens have no hover: keep everything open */
+  @media (hover: none) {
+    .term { aspect-ratio: auto; }
+    .media { position: relative; aspect-ratio: 4 / 3; }
+    .panel { position: static; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .more { grid-template-rows: 1fr; opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .more { transition: none; } }
 </style>

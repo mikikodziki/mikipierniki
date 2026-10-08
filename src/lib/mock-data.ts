@@ -14,15 +14,15 @@ const evening = { type: "wieczor", price: 500, priceUnit: "osoba", capacity: 10,
 const kids = { type: "dzieci", price: 200, priceUnit: "dziecko", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
 
 export const terms: Term[] = [
-  { ...adult, id: "t-2026-11-14", title: "Świąteczne klasyki", startsAt: "2026-11-14T11:00:00+01:00", endsAt: "2026-11-14T15:00:00+01:00", seatsLeft: 4 },
-  { ...kids, id: "t-2026-11-15", title: "Pierniczki dla dzieci", startsAt: "2026-11-15T10:00:00+01:00", endsAt: "2026-11-15T12:00:00+01:00", seatsLeft: 7 },
-  { ...evening, id: "t-2026-11-20", title: "Lukier i grzane wino", startsAt: "2026-11-20T18:00:00+01:00", endsAt: "2026-11-20T21:30:00+01:00", seatsLeft: 2 },
-  { ...adult, id: "t-2026-11-28", title: "Zawieszki na choinkę", startsAt: "2026-11-28T11:00:00+01:00", endsAt: "2026-11-28T15:00:00+01:00", seatsLeft: 0 },
-  { ...adult, id: "t-2026-11-29", title: "Renifery i bałwanki", startsAt: "2026-11-29T11:00:00+01:00", endsAt: "2026-11-29T14:30:00+01:00", seatsLeft: 8 },
-  { ...evening, id: "t-2026-12-04", title: "Pierniki i swing", startsAt: "2026-12-04T18:00:00+01:00", endsAt: "2026-12-04T21:30:00+01:00", seatsLeft: 6 },
-  { ...kids, id: "t-2026-12-06", title: "Mikołajkowe pierniki dla dzieci", startsAt: "2026-12-06T10:00:00+01:00", endsAt: "2026-12-06T12:00:00+01:00", seatsLeft: 9 },
-  { ...evening, id: "t-2026-12-11", title: "Wieczór z lukrem i winem", startsAt: "2026-12-11T18:00:00+01:00", endsAt: "2026-12-11T21:30:00+01:00", seatsLeft: 5 },
-  { ...adult, id: "t-2026-12-12", title: "Wianki i gwiazdy", startsAt: "2026-12-12T11:00:00+01:00", endsAt: "2026-12-12T15:00:00+01:00", seatsLeft: 3 },
+  { ...adult, id: "t-2026-11-14", photo: "swieta-stol", photoAlt: "Piernikowe domki, misie i bałwanki na drewnianym stole", title: "Świąteczne klasyki", startsAt: "2026-11-14T11:00:00+01:00", endsAt: "2026-11-14T15:00:00+01:00", seatsLeft: 4 },
+  { ...kids, id: "t-2026-11-15", photo: "mis-choinka", photoAlt: "Piernikowy miś w szaliku i choinka z wesołą buzią", title: "Pierniczki dla dzieci", startsAt: "2026-11-15T10:00:00+01:00", endsAt: "2026-11-15T12:00:00+01:00", seatsLeft: 7 },
+  { ...evening, id: "t-2026-11-20", photo: "gwiazdka-zlota", photoAlt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem", title: "Lukier i grzane wino", startsAt: "2026-11-20T18:00:00+01:00", endsAt: "2026-11-20T21:30:00+01:00", seatsLeft: 2 },
+  { ...adult, id: "t-2026-11-28", photo: "sniezynka-zlota", photoAlt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem", title: "Zawieszki na choinkę", startsAt: "2026-11-28T11:00:00+01:00", endsAt: "2026-11-28T15:00:00+01:00", seatsLeft: 0 },
+  { ...adult, id: "t-2026-11-29", photo: "mis-mikolaj", photoAlt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja", title: "Renifery i bałwanki", startsAt: "2026-11-29T11:00:00+01:00", endsAt: "2026-11-29T14:30:00+01:00", seatsLeft: 8 },
+  { ...evening, id: "t-2026-12-04", photo: "kamieniczki", photoAlt: "Trzy piernikowe kamieniczki z lukrowymi wieńcami", title: "Pierniki i swing", startsAt: "2026-12-04T18:00:00+01:00", endsAt: "2026-12-04T21:30:00+01:00", seatsLeft: 6 },
+  { ...kids, id: "t-2026-12-06", photo: "swieta-mikolaj-domek", photoAlt: "Piernikowy Mikołaj i domek z czerwonymi drzwiami", title: "Mikołajkowe pierniki dla dzieci", startsAt: "2026-12-06T10:00:00+01:00", endsAt: "2026-12-06T12:00:00+01:00", seatsLeft: 9 },
+  { ...evening, id: "t-2026-12-11", photo: "gwiazdka-zlota", photoAlt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem", title: "Wieczór z lukrem i winem", startsAt: "2026-12-11T18:00:00+01:00", endsAt: "2026-12-11T21:30:00+01:00", seatsLeft: 5 },
+  { ...adult, id: "t-2026-12-12", photo: "sniezynka-zlota", photoAlt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem", title: "Wianki i gwiazdy", startsAt: "2026-12-12T11:00:00+01:00", endsAt: "2026-12-12T15:00:00+01:00", seatsLeft: 3 },
 ];
 
 // PRZYKŁADOWE opinie — Dominika prześle prawdziwe.

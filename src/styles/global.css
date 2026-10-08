@@ -42,6 +42,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 }
 .section { padding-block: clamp(44px, 6vw, 80px); }
 .section--sunk { background: var(--sunk); }
+.section--warm { background: var(--panel-deep); }
 @media (max-width: 600px) {
   :root { --radius-panel: 24px; }
   .wrap { padding-inline: 18px; }
