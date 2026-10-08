@@ -17,7 +17,7 @@
   --ground: #FDFBD8;
   --surface: #FFFEF0;
   /* cards: plain white, slightly see-through over the cream panel */
-  --card: rgba(255, 255, 255, .8);
+  --card: rgba(255, 255, 255, .45);
   --sunk: #F5EFC4;
   --ink: #3B1720;
   --ink-soft: #6E464F;
