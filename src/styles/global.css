@@ -84,7 +84,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); border-color: var(--ink); }
 
 /* Cards */
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.card { background: var(--card); border: 0; border-radius: var(--radius); }
 
 /* Forms */
 .field { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-weight: 600; font-size: .9rem; }
