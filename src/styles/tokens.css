@@ -18,6 +18,9 @@
   --surface: #FFFDF8;
   /* cards: plain white, slightly see-through over the cream panel */
   --card: rgba(255, 255, 255, .45);
+  /* form fields: filled, never outlined */
+  --field: #EBE2D2;
+  --field-strong: #E2D7C3;
   --sunk: #F3EEE0;
   --panel-deep: #ECE2D0;
   --ink: #3B1720;
