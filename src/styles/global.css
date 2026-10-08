@@ -135,3 +135,35 @@ legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; padding: 0; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* Custom select: native <select> stays in the DOM and keeps the value,
+   the button and list below are what people see. Enhanced in Base.astro. */
+.select-shell { position: relative; width: 100%; }
+.select-shell select.input { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; pointer-events: none; }
+.sel {
+  font: 400 1rem var(--body); color: var(--ink); background: var(--field);
+  border: 0; border-radius: 12px; padding: 14px 44px 14px 16px; width: 100%; min-height: 52px;
+  text-align: left; cursor: pointer; position: relative;
+}
+.sel::after {
+  content: ""; position: absolute; right: 16px; top: 50%; width: 12px; height: 8px; margin-top: -4px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform .2s ease;
+}
+.sel[aria-expanded="true"]::after { transform: rotate(180deg); }
+.sel:hover { background: var(--field-strong); }
+.sel:focus-visible { outline: 2px solid var(--mango); outline-offset: 0; }
+.sel-list {
+  position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + 6px);
+  margin: 0; padding: 6px; list-style: none;
+  background: var(--surface); border-radius: 14px;
+  box-shadow: 0 16px 32px rgba(59, 23, 32, .22);
+  max-height: 260px; overflow-y: auto;
+}
+.sel-list[hidden] { display: none !important; }
+.sel-opt { padding: 11px 14px; border-radius: 10px; cursor: pointer; font-size: .98rem; }
+.sel-opt[aria-selected="true"] { background: color-mix(in srgb, var(--mango) 22%, transparent); font-weight: 600; }
+.sel-opt.is-active { background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.sel-opt[aria-selected="true"].is-active { background: color-mix(in srgb, var(--mango) 34%, transparent); }

@@ -71,6 +71,120 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <Footer />
     {mobileCta && <MobileCta />}
     <slot name="end" />
+
+<script>
+  /**
+   * Replaces the OS dropdown list with one we can style. The native <select>
+   * stays in the DOM and keeps the value, so forms and scripts are unaffected.
+   */
+  function enhance(select: HTMLSelectElement) {
+    if (select.dataset.enhanced) return;
+    select.dataset.enhanced = "1";
+
+    const shell = document.createElement("div");
+    shell.className = "select-shell";
+    select.parentNode!.insertBefore(shell, select);
+    shell.appendChild(select);
+    select.tabIndex = -1;
+    select.setAttribute("aria-hidden", "true");
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "sel";
+    btn.setAttribute("aria-haspopup", "listbox");
+    btn.setAttribute("aria-expanded", "false");
+    const label = select.closest("label");
+    if (label) btn.setAttribute("aria-label", (label.textContent || "").trim());
+
+    const list = document.createElement("ul");
+    list.className = "sel-list";
+    list.setAttribute("role", "listbox");
+    list.hidden = true;
+    list.id = `${select.id || "sel"}-list`;
+    btn.setAttribute("aria-controls", list.id);
+
+    const options = [...select.options];
+    const items = options.map((opt, i) => {
+      const li = document.createElement("li");
+      li.className = "sel-opt";
+      li.setAttribute("role", "option");
+      li.id = `${list.id}-${i}`;
+      li.textContent = opt.textContent;
+      li.setAttribute("aria-selected", String(opt.selected));
+      list.appendChild(li);
+      return li;
+    });
+
+    shell.append(btn, list);
+    let active = Math.max(0, select.selectedIndex);
+
+    const paint = () => {
+      btn.textContent = options[select.selectedIndex]?.textContent ?? "";
+      items.forEach((li, i) => {
+        li.setAttribute("aria-selected", String(i === select.selectedIndex));
+        li.classList.toggle("is-active", i === active && !list.hidden);
+      });
+      if (!list.hidden) {
+        btn.setAttribute("aria-activedescendant", items[active].id);
+        items[active].scrollIntoView({ block: "nearest" });
+      } else {
+        btn.removeAttribute("aria-activedescendant");
+      }
+    };
+
+    const open = () => { list.hidden = false; btn.setAttribute("aria-expanded", "true"); active = Math.max(0, select.selectedIndex); paint(); };
+    const close = () => { list.hidden = true; btn.setAttribute("aria-expanded", "false"); paint(); };
+    const pick = (i: number) => {
+      select.selectedIndex = i;
+      select.dispatchEvent(new Event("input", { bubbles: true }));
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      close();
+      btn.focus();
+    };
+
+    btn.addEventListener("click", () => (list.hidden ? open() : close()));
+    items.forEach((li, i) => {
+      li.addEventListener("click", () => pick(i));
+      li.addEventListener("mousemove", () => { active = i; paint(); });
+    });
+
+    btn.addEventListener("keydown", (e) => {
+      const last = items.length - 1;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (list.hidden) { open(); return; }
+        if (e.key === "Enter" || e.key === " ") { pick(active); return; }
+        active = e.key === "ArrowDown" ? Math.min(last, active + 1) : Math.max(0, active - 1);
+        paint();
+      } else if (e.key === "Home" || e.key === "End") {
+        if (list.hidden) return;
+        e.preventDefault();
+        active = e.key === "Home" ? 0 : last;
+        paint();
+      } else if (e.key === "Escape" && !list.hidden) {
+        e.preventDefault();
+        close();
+      } else if (e.key === "Tab" && !list.hidden) {
+        close();
+      } else if (e.key.length === 1) {
+        const from = list.hidden ? select.selectedIndex : active;
+        const needle = e.key.toLowerCase();
+        const found = options.findIndex((o, i) => i > from && (o.textContent || "").trim().toLowerCase().startsWith(needle));
+        const hit = found >= 0 ? found : options.findIndex((o) => (o.textContent || "").trim().toLowerCase().startsWith(needle));
+        if (hit >= 0) { active = hit; if (list.hidden) pick(hit); else paint(); }
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!list.hidden && !shell.contains(e.target as Node)) close();
+    });
+    // other scripts may set select.value directly
+    select.addEventListener("change", () => paint());
+    paint();
+  }
+
+  document.querySelectorAll<HTMLSelectElement>("select.input").forEach(enhance);
+</script>
   </body>
 </html>
 
