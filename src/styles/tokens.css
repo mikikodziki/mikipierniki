@@ -14,14 +14,14 @@
   --page: #461F28;
   --on-page: #FDFBD8;
   --on-page-soft: #CBAE9E;
-  --ground: #FDFBD8;
-  --surface: #FFFEF0;
+  --ground: #FBF8EE;
+  --surface: #FFFDF8;
   /* cards: plain white, slightly see-through over the cream panel */
   --card: rgba(255, 255, 255, .45);
-  --sunk: #F5EFC4;
+  --sunk: #F3EEE0;
   --ink: #3B1720;
   --ink-soft: #6E464F;
-  --line: #E6DAA6;
+  --line: #E6DECB;
   --mango: #F79926;
   --mango-deep: #C06F0E;
   --ginger: #B86B35;
@@ -34,10 +34,10 @@
   --accent-tint: #DFE9DC;
   --shadow-cookie: rgba(59, 23, 32, .18);
 
-  --tile-1: #EEE2BC;
-  --tile-2: #DCE7D8;
-  --tile-3: #F2DDD9;
-  --tile-4: #E9E3C2;
+  --tile-1: #EDE4D2;
+  --tile-2: #DEE6DC;
+  --tile-3: #F0DED9;
+  --tile-4: #E8E4D4;
 
   --radius: 14px;
   --radius-lg: 28px;
