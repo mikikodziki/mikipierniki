@@ -1,0 +1,46 @@
+---
+/**
+ * Gift card tile: the hug illustration plus the voucher's terms.
+ * Sits on the plum voucher blocks, so it carries the light surface.
+ */
+import Hug from "./Hug.astro";
+import { pln } from "@/lib/format";
+import { site } from "@/lib/site";
+---
+<figure class="voucher-card">
+  <div class="art"><Hug label="Dominika przytula piernikowego ludzika" /></div>
+  <figcaption>
+    <span class="kicker">Voucher na warsztaty</span>
+    <span class="amount">{pln(site.voucherPrice)}</span>
+    <span class="terms">ważny rok · dowolny termin · {site.name}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .voucher-card {
+    margin: 0;
+    justify-self: center;
+    width: 100%;
+    max-width: 330px;
+    display: grid;
+    gap: 18px;
+    padding: 26px 26px 24px;
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: 26px;
+    box-shadow: 0 20px 36px rgba(0, 0, 0, .25);
+    transform: rotate(-2deg);
+  }
+  .art {
+    background: color-mix(in srgb, var(--mango) 20%, var(--surface));
+    border-radius: 20px;
+    padding: 14px;
+    display: grid;
+    place-items: center;
+  }
+  .art :global(.hug) { width: 76%; color: var(--ink); }
+  figcaption { display: grid; gap: 4px; justify-items: center; text-align: center; }
+  .kicker { font-size: .72rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+  .amount { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.1rem; line-height: 1.1; }
+  .terms { font-size: .82rem; color: var(--ink-soft); }
+</style>

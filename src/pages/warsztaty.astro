@@ -7,6 +7,7 @@ import FaqList from "@/components/FaqList.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import TermsList from "@/components/workshops/TermsList.astro";
 import SignupDialog from "@/components/workshops/SignupDialog.astro";
+import VoucherCard from "@/components/VoucherCard.astro";
 import { getFaq, getTerms, venueById } from "@/lib/api";
 import { pln } from "@/lib/format";
 import { site } from "@/lib/site";
@@ -226,11 +227,7 @@ const closedFacts = [
           <li>Wersję drukowaną przygotowuję wyłącznie do odbioru osobistego w pracowni.</li>
           <li>Realizacja jest prosta: obdarowana osoba zapisuje się na wybrany termin i przy płatności zaznacza kartę podarunkową.</li>
         </ul>
-        <div class="ticket" aria-hidden="true">
-          <small>Voucher · warsztaty</small>
-          <b>{site.name}</b>
-          <small>{pln(voucherPrice)} · ważny rok</small>
-        </div>
+        <VoucherCard />
       </div>
       <div class="form-box">
         <h3>Zamów voucher</h3>
@@ -325,17 +322,6 @@ const closedFacts = [
   .form-box h3 { font-size: 1.6rem; }
 
   .voucher-facts { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
-  .ticket {
-    justify-self: start; width: calc(100% - 28px); max-width: 320px; aspect-ratio: 16 / 10; margin: 8px 14px 0;
-    display: grid; align-content: space-between; padding: 22px;
-    background: var(--surface); color: var(--ink); border: 1.5px dashed var(--ginger); border-radius: 16px;
-    transform: rotate(-3deg); box-shadow: 0 18px 30px var(--shadow-cookie); position: relative;
-  }
-  .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--sunk); }
-  .ticket::before { left: -12px; }
-  .ticket::after { right: -12px; }
-  .ticket b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; }
-  .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
 
   @media (min-width: 900px) {
     .split { grid-template-columns: 1fr 1fr; gap: 56px; }

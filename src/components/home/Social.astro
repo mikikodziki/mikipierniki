@@ -4,6 +4,7 @@
  */
 import Cookie from "../Cookie.astro";
 import Photo from "../Photo.astro";
+import VoucherCard from "../VoucherCard.astro";
 import SectionHead from "../SectionHead.astro";
 import { getGallery, getTestimonials } from "@/lib/api";
 import { site } from "@/lib/site";
@@ -53,11 +54,7 @@ const testimonials = await getTestimonials();
         <p class="lead v-lead">Voucher za 500 zł na dowolne warsztaty, ważny rok. Wysyłam PDF od ręki, a wersję drukowaną odbierzesz w pracowni.</p>
         <div><a class="btn v-btn" href="/warsztaty#voucher">Kup voucher</a></div>
       </div>
-      <div class="ticket" aria-hidden="true">
-        <small>Voucher · warsztaty</small>
-        <b>{site.name}</b>
-        <small>500 zł · ważny rok · 1 osoba</small>
-      </div>
+      <VoucherCard />
     </div>
   </div>
 </section>
@@ -102,12 +99,6 @@ const testimonials = await getTestimonials();
   .v-copy { display: grid; gap: 16px; }
   .v-eyebrow, .v-lead { color: inherit; opacity: .85; }
   .v-btn { background: var(--mango); color: #3B1720; }
-  .ticket { justify-self: center; width: 100%; max-width: 340px; aspect-ratio: 16 / 10; background: var(--icing); color: #2B1A12; border-radius: 16px; padding: 22px; display: grid; align-content: space-between; transform: rotate(-3deg); box-shadow: 0 18px 30px rgba(0, 0, 0, .22); position: relative; }
-  .ticket::before, .ticket::after { content: ""; position: absolute; top: 50%; width: 22px; height: 22px; margin-top: -11px; border-radius: 50%; background: var(--page); }
-  .ticket::before { left: -11px; }
-  .ticket::after { right: -11px; }
-  .ticket b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; }
-  .ticket small { font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: #6E5A4E; }
 
   .about { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(28px, 5vw, 64px); align-items: center; }
   .portrait { aspect-ratio: 4 / 5; max-width: 100%; border-radius: 200px 200px 24px 24px; overflow: hidden; background: var(--sunk); }
