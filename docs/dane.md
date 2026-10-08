@@ -59,13 +59,13 @@ Dominika zawsze pyta uczestników o zgodę przed publikacją.
 
 ## Zdjęcia
 Dominika przekazała 10 zdjęć pierników (świąteczne i wielkanocne), są w `public/zdjecia`.
-Nie ma zdjęć z warsztatów ani portretu Dominiki — portret dośle później.
-Do tego czasu w miejscach „portretowych” stoją zdjęcia pierników, a galeria nie ma
-kategorii „Z warsztatów”.
+Portret Dominiki jest (`portret-*.webp`) i stoi na „O mnie” oraz w sekcji o niej
+na stronie głównej. Nadal brak zdjęć z warsztatów, więc galeria nie ma kategorii
+„Z warsztatów”.
 
 ## Czeka na dane
 - Prawdziwe terminy, liczba wolnych miejsc.
 - Prawdziwe opinie uczestników (obecne są przykładowe).
-- Portret Dominiki i zdjęcia z warsztatów.
+- Zdjęcia z warsztatów.
 - Dane działalności do regulaminu i polityki prywatności (nazwa, NIP, adres, numer konta).
 - Zasady rezygnacji: na stronie jest zwrot do 7 dni przed terminem — DO POTWIERDZENIA.

@@ -13,8 +13,10 @@ interface Props {
   class?: string;
   /** First screenful images skip lazy loading */
   eager?: boolean;
+  /** Crop focus, e.g. "50% 20%" to keep a face in frame */
+  position?: string;
 }
-const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", class: className, eager = false } = Astro.props;
+const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", class: className, eager = false, position } = Astro.props;
 const base = `/zdjecia/${name}`;
 ---
 <img
@@ -25,7 +27,7 @@ const base = `/zdjecia/${name}`;
   alt={alt}
   loading={eager ? "eager" : "lazy"}
   decoding="async"
-  style={ratio ? `aspect-ratio: ${ratio}` : undefined}
+  style={[ratio && `aspect-ratio: ${ratio}`, position && `object-position: ${position}`].filter(Boolean).join("; ") || undefined}
 />
 
 <style>
