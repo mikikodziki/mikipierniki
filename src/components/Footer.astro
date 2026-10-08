@@ -1,13 +1,13 @@
 ---
 import { site } from "@/lib/site";
-import Logo from "./Logo.astro";
+import Hug from "./Hug.astro";
 const year = new Date().getFullYear();
 ---
 <footer class="foot-wrap">
   <div class="wrap">
     <div class="foot">
       <div class="brand">
-        <a class="logo" href="/"><Logo label={site.name} /></a>
+        <a class="logo" href="/"><Hug label={site.name} class="logo-mark" /></a>
         <p>{site.tagline}.</p>
       </div>
       <div>
@@ -47,7 +47,7 @@ const year = new Date().getFullYear();
   .brand { display: grid; gap: 12px; align-content: start; }
   .brand p { color: var(--ink-soft); max-width: 34ch; }
   .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
-  .logo :global(.logo-mark) { height: 62px; width: auto; }
+  .logo :global(.logo-mark) { height: 84px; width: auto; }
   .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ginger-text); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }
