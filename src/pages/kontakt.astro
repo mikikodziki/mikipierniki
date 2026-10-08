@@ -2,7 +2,6 @@
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
-import Cookie from "@/components/Cookie.astro";
 import { getVenues } from "@/lib/api";
 import { site } from "@/lib/site";
 
@@ -73,7 +72,6 @@ const jsonLd = {
           </div>
         </dl>
         <p class="note">
-          <Cookie shape="heart" class="note-cookie" />
           <span>Odpisuję najpóźniej w ciągu 24 godzin, zwykle tego samego dnia. W trakcie warsztatów nie odbieram telefonu, więc jeśli się nie dodzwonisz, napisz SMS albo e-mail, na pewno oddzwonię.</span>
         </p>
       </div>
@@ -126,7 +124,6 @@ const jsonLd = {
 </Base>
 
 <style>
-  .contact-section { padding-top: 0; }
   .contact { display: grid; gap: 40px; }
   @media (min-width: 900px) { .contact { grid-template-columns: 0.9fr 1.1fr; gap: 64px; align-items: start; } }
 
@@ -137,8 +134,7 @@ const jsonLd = {
   .channels dd a { text-decoration-color: var(--ginger); text-underline-offset: 4px; }
   .socials { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 
-  .note { display: flex; gap: 14px; align-items: start; color: var(--ink-soft); max-width: 48ch; padding-top: 24px; border-top: 1.5px dashed var(--ginger); }
-  .note :global(.note-cookie) { width: 36px; height: 36px; flex: none; }
+  .note { display: flex; gap: 14px; align-items: start; color: var(--ink-soft); max-width: 48ch; padding-top: 24px; border-top: 1px solid var(--line); }
 
   .form-box { display: grid; gap: 20px; min-width: 0; align-content: start; }
   .form-title { font-size: clamp(1.5rem, 3vw, 1.9rem); }
