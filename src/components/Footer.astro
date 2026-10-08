@@ -42,17 +42,17 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .foot-wrap { background: var(--sunk); padding-block: 56px 32px; margin-top: 24px; }
+  .foot-wrap { background: transparent; color: var(--on-page); padding-block: 48px 28px; }
   .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
   .brand { display: grid; gap: 12px; align-content: start; }
-  .brand p { color: var(--ink-soft); max-width: 34ch; }
-  .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
+  .brand p { color: var(--on-page-soft); max-width: 34ch; }
+  .logo { display: flex; align-items: center; text-decoration: none; color: var(--on-page); }
   .logo :global(.logo-mark) { height: 62px; width: auto; }
-  .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+  .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--mango); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid color-mix(in srgb, var(--on-page) 20%, transparent); font-size: .82rem; color: var(--on-page-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
   @media (max-width: 760px) { .foot { grid-template-columns: 1fr 1fr; } .brand { grid-column: 1 / -1; } }
   @media (max-width: 900px) { .foot-wrap { padding-bottom: 100px; } }
 </style>

@@ -1,15 +1,16 @@
 ---
 // Row of piped royal-icing dots: the site's signature divider.
 ---
-<div class="wrap" aria-hidden="true"><div class="piping"></div></div>
+<div class="piping-row" aria-hidden="true"><div class="piping"></div></div>
 
 <style>
+  .piping-row { max-width: var(--panel-max); width: 100%; margin-inline: auto; padding: 10px clamp(20px, 3vw, 40px); }
   .piping {
     height: 10px;
-    background-image: radial-gradient(circle, var(--ginger) 2.6px, transparent 3px);
+    background-image: radial-gradient(circle, var(--mango) 2.6px, transparent 3px);
     background-size: 16px 10px;
     background-repeat: repeat-x;
     background-position: center;
-    opacity: .55;
+    opacity: .75;
   }
 </style>

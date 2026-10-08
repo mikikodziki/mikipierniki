@@ -3,6 +3,12 @@
 Jedyne źródło prawdy dla treści na stronie. Wszystko poniżej jest potwierdzone przez Dominikę,
 chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
+## Kolory i logo
+- Logo: wordmark „Miki Pierniki” z dziewczyną i piernikowym ludzikiem, jednokolorowy.
+- Tło strony: ciemna śliwka #461F28. Treść leży na nim w kremowych panelach #FDFBD8.
+- Akcent: pomarańcz #F79926 (przyciski, podkreślenia, kropki lukru).
+- Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
+
 ## Kontakt i miejsce
 - Pracownia: ul. Długa 55, Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
 - Druga lokalizacja: „Pracownia 2” — adres DO UZUPEŁNIENIA.

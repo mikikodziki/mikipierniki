@@ -10,12 +10,18 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  --ground: #FAF3DE;
-  --surface: #FFFDF6;
-  --sunk: #F2E6C4;
+  /* page: one dark sheet, content sits on it in cream panels */
+  --page: #461F28;
+  --on-page: #FDFBD8;
+  --on-page-soft: #CBAE9E;
+  --ground: #FDFBD8;
+  --surface: #FFFEF0;
+  --sunk: #F5EFC4;
   --ink: #3B1720;
   --ink-soft: #6E464F;
-  --line: #E3D2A9;
+  --line: #E6DAA6;
+  --mango: #F79926;
+  --mango-deep: #C06F0E;
   --ginger: #B86B35;
   --ginger-deep: #8E4E22;
   --ginger-text: #8E4E22;
@@ -33,6 +39,9 @@
 
   --radius: 14px;
   --radius-lg: 28px;
+  --radius-panel: 34px;
+  --panel-max: 1280px;
+  --panel-gap: clamp(10px, 1.4vw, 18px);
   --display: "Fraunces", "Cooper Black", "Georgia", serif;
   /* Fraunces axes: soft terminals, quirky letterforms — closest to the logo lettering */
   --display-weight: 800;
