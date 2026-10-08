@@ -10,10 +10,12 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: one dark sheet, content sits on it in cream panels */
-  --page: #461F28;
-  --on-page: #FDFBD8;
-  --on-page-soft: #CBAE9E;
+  /* page: one light sheet, content sits on it in lighter panels */
+  --sheet: #EBDFC8;
+  /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
+  --dark: #461F28;
+  --on-dark: #FDFBD8;
+  --on-dark-soft: #CBAE9E;
   --ground: #FBF8EE;
   --surface: #FFFDF8;
   /* cards: plain white, slightly see-through over the cream panel */

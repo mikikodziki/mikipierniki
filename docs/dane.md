@@ -5,7 +5,9 @@ chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
 - Logo: wordmark „Miki Pierniki” z dziewczyną i piernikowym ludzikiem, jednokolorowy.
-- Tło strony: ciemna śliwka #461F28. Treść leży na nim w jasnych panelach #FBF8EE (co druga sekcja #F3EEE0).
+- Tło strony: jasny piasek #EBDFC8. Treść leży na nim w jaśniejszych panelach #FBF8EE
+  (co druga sekcja #F3EEE0). Śliwka #461F28 została kolorem bloków akcentowych
+  (voucher, zapisy na powiadomienia, etykiety na kartach terminów) i logo.
 - Akcent: pomarańcz #F79926 (przyciski, podkreślenia, kropki lukru).
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
 

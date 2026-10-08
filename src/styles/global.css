@@ -5,7 +5,7 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 [id] { scroll-margin-top: 116px; }
 body {
   margin: 0;
-  background: var(--page);
+  background: var(--sheet);
   color: var(--ink);
   font-family: var(--body);
   font-size: 16px;
@@ -73,7 +73,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 }
 .btn:hover { transform: translateY(-1px); }
 .btn-primary { background: var(--mango); color: #3B1720; }
-.btn-primary:hover { background: var(--mango-deep); color: var(--on-page); }
+.btn-primary:hover { background: var(--mango-deep); color: var(--on-dark); }
 .btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .btn-small { padding: 10px 16px; font-size: 0.9rem; }
