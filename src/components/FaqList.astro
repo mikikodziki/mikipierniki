@@ -12,16 +12,57 @@ const { items, openFirst = true } = Astro.props;
   {items.map((f, i) => (
     <details open={openFirst && i === 0}>
       <summary>{f.q}</summary>
-      <p>{f.a}</p>
+      <div class="answer"><p>{f.a}</p></div>
     </details>
   ))}
 </div>
+
+<script>
+  /** Native <details> jumps open; this slides the answer instead. */
+  const EASING = "cubic-bezier(.2,.7,.3,1)";
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  document.querySelectorAll<HTMLDetailsElement>(".faq details").forEach((d) => {
+    const summary = d.querySelector("summary")!;
+    const answer = d.querySelector<HTMLElement>(".answer")!;
+    let running: Animation | null = null;
+
+    const slide = (opening: boolean) => {
+      running?.cancel();
+      const from = answer.offsetHeight;
+      if (opening) d.open = true;
+      const to = opening ? answer.scrollHeight : 0;
+      running = answer.animate(
+        { height: [`${from}px`, `${to}px`], opacity: opening ? [0, 1] : [1, 0] },
+        { duration: Math.min(420, 180 + Math.abs(to - from) * 0.6), easing: EASING },
+      );
+      running.onfinish = () => {
+        running = null;
+        if (!opening) d.open = false;
+        answer.style.height = "";
+      };
+    };
+
+    summary.addEventListener("click", (e) => {
+      if (reduce) return;
+      e.preventDefault();
+      slide(!d.open);
+    });
+  });
+</script>
 
 <style>
   details { border-bottom: 1px solid var(--line); }
   summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 18px; font-weight: 600; font-size: 1.02rem; }
   summary::-webkit-details-marker { display: none; }
-  summary::after { content: "+"; font-family: var(--display); font-weight: var(--display-weight); font-size: 1.5rem; line-height: 1; color: var(--ginger); transition: transform .2s ease; }
+  summary::after {
+    content: "+"; font-family: var(--display); font-weight: var(--display-weight);
+    font-size: 1.4rem; line-height: 1; color: var(--mango);
+    transition: transform .3s cubic-bezier(.2,.7,.3,1);
+  }
   details[open] summary::after { transform: rotate(45deg); }
-  details p { padding-bottom: 18px; color: var(--ink-soft); max-width: 62ch; }
+  summary:hover { color: var(--ginger-text); }
+
+  .answer { overflow: hidden; }
+  .answer p { padding-bottom: 18px; color: var(--ink-soft); max-width: 62ch; }
 </style>
