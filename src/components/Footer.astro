@@ -1,13 +1,13 @@
 ---
 import { site } from "@/lib/site";
-import Logo from "./Logo.astro";
+import Hug from "./Hug.astro";
 const year = new Date().getFullYear();
 ---
 <footer class="foot-wrap">
   <div class="wrap">
     <div class="foot">
       <div class="brand">
-        <a class="logo" href="/"><Logo label={site.name} /></a>
+        <a class="logo" href="/"><Hug class="logo-mark" /><span class="logo-name">{site.name}</span></a>
         <p>{site.tagline}.</p>
       </div>
       <div>
@@ -46,8 +46,9 @@ const year = new Date().getFullYear();
   .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
   .brand { display: grid; gap: 12px; align-content: start; }
   .brand p { color: var(--ink-soft); max-width: 34ch; }
-  .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
-  .logo :global(.logo-mark) { height: 66px; width: auto; }
+  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink); }
+  .logo-name { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.6rem; line-height: 1.05; max-width: 6ch; }
+  .logo :global(.logo-mark) { height: 84px; width: auto; }
   .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ginger-text); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }

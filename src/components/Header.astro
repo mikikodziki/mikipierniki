@@ -46,11 +46,11 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     backdrop-filter: blur(10px);
     color: var(--ink);
   }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 104px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 124px; }
   .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
-  .logo :global(.logo-mark) { height: 72px; width: auto; }
-  @media (max-width: 900px) { .bar { height: 88px; } .logo :global(.logo-mark) { height: 62px; } }
-  @media (max-width: 420px) { .logo :global(.logo-mark) { height: 58px; } }
+  .logo :global(.logo-mark) { height: 100px; width: auto; }
+  @media (max-width: 900px) { .bar { height: 100px; } .logo :global(.logo-mark) { height: 80px; } }
+  @media (max-width: 420px) { .bar { height: 88px; } .logo :global(.logo-mark) { height: 68px; } }
   .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
   .main a { text-decoration: none; color: var(--ink-soft); }
   .mobile-menu a { text-decoration: none; color: var(--ink); }
