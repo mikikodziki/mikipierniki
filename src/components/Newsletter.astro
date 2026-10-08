@@ -44,11 +44,26 @@ const {
 </script>
 
 <style>
-  .news { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: center; padding: clamp(28px, 5vw, 48px); border-radius: var(--radius-lg); border: 2px dashed var(--mango); }
+  .news {
+    display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 48px); align-items: center;
+    padding: clamp(28px, 5vw, 52px); border-radius: var(--radius-lg);
+    background: var(--page); color: var(--on-page);
+  }
   .copy { display: grid; gap: 10px; }
   .copy h2 { font-size: clamp(1.6rem, 3vw, 2.1rem); }
-  .form { display: flex; flex-wrap: wrap; gap: 10px; }
-  .form .input { flex: 1 1 220px; min-width: 0; width: auto; }
-  .form-error { margin-top: 8px; }
+  .copy .lead { color: var(--on-page-soft); }
+
+  /* field and button form one pill */
+  .form { display: flex; flex-wrap: wrap; gap: 6px; background: var(--surface); border-radius: 999px; padding: 6px; }
+  .form .input { flex: 1 1 200px; min-width: 0; width: auto; border: 0; background: transparent; border-radius: 999px; padding: 12px 18px; }
+  .form .input:focus { box-shadow: none; outline: 2px solid var(--mango); outline-offset: -2px; }
+  .form .btn { flex: 0 0 auto; }
+  .form-error { margin-top: 10px; color: #FFB3A7; }
+  .form-ok { margin-top: 10px; color: var(--mango); }
+
   @media (max-width: 760px) { .news { grid-template-columns: 1fr; } }
+  @media (max-width: 420px) {
+    .form { border-radius: var(--radius); }
+    .form .input, .form .btn { flex: 1 1 100%; }
+  }
 </style>
