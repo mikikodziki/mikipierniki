@@ -190,6 +190,16 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 </html>
 
 <style>
-  .skip { position: absolute; left: 16px; top: -60px; z-index: 50; background: var(--ink); color: var(--ground); padding: 10px 16px; border-radius: 10px; text-decoration: none; }
-  .skip:focus { top: 12px; }
+  /* hidden until tabbed to; clipped rather than pushed off-screen, so a
+     collapsing margin above can never reveal it */
+  .skip {
+    position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .skip:focus {
+    position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 16px;
+    width: auto; height: auto; clip-path: none; z-index: 60;
+    background: var(--ink); color: var(--ground);
+    padding: 12px 18px; border-radius: 12px; text-decoration: none; font-weight: 600;
+  }
 </style>
