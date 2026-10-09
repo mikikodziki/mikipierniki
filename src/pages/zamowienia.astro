@@ -300,10 +300,16 @@ const occasions = [
       const value = a.dataset.occasion;
       if (!select || !value) return;
       select.value = value;
+      // repaint the styled select in Base.astro
+      select.dispatchEvent(new Event("change"));
       // Zapytanie z sekcji o personalizacji od razu zaznacza własny kształt.
       if (custom && value === "Zamówienie firmowe z personalizacją") custom.checked = true;
     }),
   );
+
+  // No pickup dates in the past; "sv" formats as YYYY-MM-DD in local time.
+  const pickup = document.getElementById("order-form-date") as HTMLInputElement | null;
+  if (pickup) pickup.min = new Date().toLocaleDateString("sv");
 </script>
 
 <style>

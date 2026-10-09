@@ -38,7 +38,7 @@ const testimonials = await getTestimonials();
         <figure class="quote card">
           {t.photo && <div class="quote-photo"><Photo name={t.photo} alt={t.photoAlt ?? "Pierniki udekorowane po warsztatach"} ratio="1" sizes="(max-width: 600px) 100vw, (max-width: 1100px) 50vw, 25vw" /></div>}
           <div class="quote-body">
-            <div class="stars" aria-label="Ocena 5 na 5">★★★★★</div>
+            <div class="stars" role="img" aria-label="Ocena 5 na 5">★★★★★</div>
             <blockquote>„{t.text}”</blockquote>
           </div>
           <figcaption><b>{t.author}</b> · {t.context}</figcaption>

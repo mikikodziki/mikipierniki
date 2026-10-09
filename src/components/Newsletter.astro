@@ -22,7 +22,8 @@ const {
           <button class="btn btn-primary" type="submit">Powiadom mnie</button>
         </form>
         <p class="form-error" id="news-err" role="alert" hidden>Wpisz poprawny adres e-mail, np. imie@gmail.com.</p>
-        <p class="form-ok" id="news-ok" role="status" hidden>Gotowe. Napiszę, gdy tylko ruszą zapisy.</p>
+        <p class="form-error" id="news-fail" role="alert" hidden>Nie udało się zapisać. Spróbuj ponownie za chwilę.</p>
+        <p class="form-ok" id="news-ok" role="status" tabindex="-1" hidden>Gotowe. Napiszę, gdy tylko ruszą zapisy.</p>
       </div>
     </div>
   </div>
@@ -35,11 +36,23 @@ const {
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const bad = !input || !input.checkValidity() || !input.value.trim();
+    const fail = document.getElementById("news-fail")!;
     document.getElementById("news-err")!.hidden = !bad;
-    if (bad) return;
-    await subscribeNewsletter(input.value.trim());
-    form.hidden = true;
-    document.getElementById("news-ok")!.hidden = false;
+    fail.hidden = true;
+    if (bad) { input?.focus(); return; }
+    const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    btn.disabled = true;
+    try {
+      await subscribeNewsletter(input.value.trim());
+      form.hidden = true;
+      const ok = document.getElementById("news-ok")!;
+      ok.hidden = false;
+      ok.focus();
+    } catch {
+      fail.hidden = false;
+    } finally {
+      btn.disabled = false;
+    }
   });
 </script>
 

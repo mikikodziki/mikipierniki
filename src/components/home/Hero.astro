@@ -1,5 +1,6 @@
 ---
 import Photo from "../Photo.astro";
+import { seasonFor } from "@/lib/site";
 import type { Season } from "@/lib/types";
 
 /**
@@ -45,13 +46,15 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     ],
   },
 ];
+// Only the current season's photo loads eagerly; the hidden variants stay lazy and are never fetched.
+const buildSeason = seasonFor(new Date());
 ---
 <section class="hero panel--deep">
   {variants.map((v) => (
     <div class="stage" data-for-season={v.season}>
       {v.shots.map((s, i) => (
         <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} position={s.position ?? "28% 50%"} />
+          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0 && v.season === buildSeason} position={s.position ?? "28% 50%"} />
         </div>
       ))}
     </div>

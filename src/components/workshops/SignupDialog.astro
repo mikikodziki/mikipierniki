@@ -14,11 +14,11 @@ const { terms } = Astro.props;
 const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
 ---
 <dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
-  <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload)} />
+  <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload).replace(/</g, "\\u003c")} />
   <form class="body" id="signup-form" novalidate>
     <div class="head">
       <div class="head-text">
-        <span class="eyebrow" id="signup-eyebrow">Rezerwacja</span>
+        <span class="eyebrow" id="su-eyebrow">Rezerwacja</span>
         <h2 id="signup-title">Zapis na warsztaty</h2>
       </div>
       <button class="x" type="button" data-close aria-label="Zamknij">✕</button>
@@ -48,7 +48,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
           <input class="input" type="email" id="su-email" name="email" autocomplete="email" required />
         </label>
         <label class="field" for="su-phone">Telefon
-          <input class="input" type="tel" id="su-phone" name="phone" autocomplete="tel" required pattern="[0-9 +()\-]{9,}" />
+          <input class="input" type="tel" id="su-phone" name="phone" autocomplete="tel" required pattern="[0-9 +\(\)\-]{9,}" />
         </label>
       </div>
       <label class="field" for="su-notes">Alergie i uwagi <span class="hint">opcjonalnie</span>
@@ -73,7 +73,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 
     <div class="done" id="signup-done" hidden>
       <Cookie shape="heart" class="done-cookie" />
-      <h2 id="su-done-title">Do zobaczenia przy lukrze!</h2>
+      <h2 id="su-done-title" tabindex="-1">Do zobaczenia przy lukrze!</h2>
       <p id="su-done-text"></p>
       <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
     </div>
@@ -106,8 +106,10 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       const forKids = t.type === "dzieci";
       guardiansWrap.hidden = !forKids;
       $("su-people-label").textContent = forKids ? "Liczba dzieci" : "Liczba osób";
-      $("su-voucher-wrap").hidden = pay() !== "voucher";
       const waitlist = t.seatsLeft === 0;
+      // the payment choice is hidden on the waitlist, so a voucher picked earlier must not linger
+      if (waitlist && pay() === "voucher") $<HTMLInputElement>("su-pay-online").checked = true;
+      $("su-voucher-wrap").hidden = pay() !== "voucher";
       $("su-pay").hidden = waitlist;
       $("su-eyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
       $("signup-title").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
@@ -118,6 +120,8 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 
     function open(id: string) {
       sel.value = id;
+      // repaint the styled select in Base.astro
+      sel.dispatchEvent(new Event("change"));
       $("signup-fields").hidden = false;
       $("signup-done").hidden = true;
       err.hidden = true;
@@ -150,7 +154,10 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       const problem = validate();
       err.hidden = !problem;
       err.textContent = problem ?? "";
-      if (problem) return;
+      if (problem) {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        return;
+      }
       const t = current();
       const req: BookingRequest = {
         termId: t.id, people: n(people),
@@ -178,6 +185,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
           : `Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}. Dzień przed warsztatami przypomnę się SMS-em.`;
         $("signup-fields").hidden = true;
         $("signup-done").hidden = false;
+        $("su-done-title").focus();
       } catch {
         err.hidden = false;
         err.textContent = "Nie udało się wysłać zapisu. Sprawdź połączenie z internetem i spróbuj ponownie.";
@@ -201,8 +209,8 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 </script>
 
 <style>
-  .dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: 0 30px 60px rgba(0, 0, 0, .3); }
-  .dlg::backdrop { background: rgba(26, 18, 13, .55); backdrop-filter: blur(3px); }
+  .dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-dialog); }
+  .dlg::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
   .body { display: grid; gap: 18px; padding: 28px; }
   .head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
   .head-text { display: grid; gap: 6px; }
@@ -210,6 +218,8 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
   .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
   .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
   .summary b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; }
+  /* focused from script only, so screen readers land on the result; no ring */
+  #su-done-title:focus { outline: none; }
   .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
   .done :global(.done-cookie) { width: 90px; }
   .done p { color: var(--ink-soft); max-width: 40ch; }
