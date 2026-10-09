@@ -45,10 +45,8 @@ const year = new Date().getFullYear();
     max-width: var(--panel-max);
     width: 100%;
     margin: 0 auto var(--panel-gap);
-    background: var(--ground);
+    /* no panel here: the footer sits straight on the page */
     color: var(--ink);
-    border-radius: var(--radius-panel);
-    box-shadow: var(--panel-shadow);
     padding-block: clamp(36px, 5vw, 56px) 28px;
   }
   .foot { display: grid; grid-template-columns: 1fr repeat(3, max-content); column-gap: clamp(32px, 5vw, 72px); row-gap: 28px; align-items: start; }
