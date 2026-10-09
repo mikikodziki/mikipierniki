@@ -10,12 +10,6 @@ const home = venues[0];
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
-/** Pracownia 2 nie ma jeszcze adresu — pokazujemy ją bez adresu i bez mapy. */
-const addressPending = (v: (typeof venues)[number]) => v.addressPending === true || !v.address;
-
-const mapHref = (v: (typeof venues)[number]) =>
-  v.mapUrl ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${v.address}, ${v.city}`)}`;
-
 // Bez pola `url` — adres strony nie jest jeszcze ustalony.
 const jsonLd = {
   "@context": "https://schema.org",
@@ -28,7 +22,6 @@ const jsonLd = {
   ...(home && {
     address: {
       "@type": "PostalAddress",
-      streetAddress: home.address,
       addressLocality: home.city,
       addressCountry: "PL",
     },
@@ -58,10 +51,10 @@ const jsonLd = {
             <dt>Telefon</dt>
             <dd><a href={site.phoneHref}>{site.phone}</a></dd>
           </div>
-          {home && !addressPending(home) && (
+          {home && (
             <div>
-              <dt>Pracownia</dt>
-              <dd>{home.address}, {home.city}</dd>
+              <dt>Miejsce warsztatów</dt>
+              <dd>{home.city}</dd>
             </div>
           )}
           <div>
@@ -98,27 +91,9 @@ const jsonLd = {
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">Gdzie się spotykamy</span>
-        <h2 id="venues-title">Miejsca warsztatów</h2>
-        <p class="lead">Wszystkie warsztaty otwarte prowadzę w swojej pracowni przy ul. Długiej 55 we Wrocławiu. Dokładne miejsce każdego terminu znajdziesz przy zapisie. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
+        <h2 id="venues-title">Warsztaty we Wrocławiu</h2>
+        <p class="lead">Wszystkie warsztaty otwarte prowadzę we Wrocławiu. Dokładny adres podaję w potwierdzeniu zapisu, razem z godziną i wskazówkami dojazdu. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
       </div>
-      <ul class="venues">
-        {venues.map((v) => (
-          <li class="venue">
-            {!addressPending(v) && <div class="map ph" data-label={`mapa: ${v.name}`} aria-hidden="true"></div>}
-            <div class="venue-body">
-              <h3>{v.name}</h3>
-              {addressPending(v) ? (
-                <p class="pending">Adres jeszcze ustalam. Podam go tutaj, zanim ogłoszę pierwsze terminy w tym miejscu.</p>
-              ) : (
-                <Fragment>
-                  <address>{v.address}<br />{v.city}</address>
-                  <a class="map-link" href={mapHref(v)} rel="noopener">Pokaż na mapie</a>
-                </Fragment>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
     </div>
   </section>
 </Base>
@@ -139,13 +114,4 @@ const jsonLd = {
   .form-box { display: grid; gap: 20px; min-width: 0; align-content: start; }
   .form-title { font-size: clamp(1.5rem, 3vw, 1.9rem); }
 
-  .venues { list-style: none; margin: 0; padding: 0; display: grid; gap: 24px; }
-  @media (min-width: 700px) { .venues { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .venue { display: grid; gap: 16px; }
-  .map { aspect-ratio: 16 / 9; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line); }
-  .map.ph[data-label]::after { background: var(--sunk); }
-  .venue-body { display: grid; gap: 4px; }
-  address { font-style: normal; color: var(--ink-soft); }
-  .pending { color: var(--ink-soft); max-width: 40ch; }
-  .map-link { justify-self: start; margin-top: 6px; font-weight: 600; color: var(--ginger-text); text-underline-offset: 4px; }
 </style>

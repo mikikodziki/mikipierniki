@@ -29,8 +29,11 @@ Paleta od Dominiki, siedem kolorów:
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
 
 ## Kontakt i miejsce
-- Pracownia: ul. Długa 55, Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
-- Druga lokalizacja: „Pracownia 2” — adres DO UZUPEŁNIENIA.
+- Pracownia: Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
+- Adresu pracowni NIE publikujemy nigdzie na stronie — ani w treści, ani w danych
+  strukturalnych. Podajemy wyłącznie miasto; dokładny adres dostaje uczestnik
+  w potwierdzeniu zapisu. Z tego samego powodu zniknęła druga lokalizacja
+  („Pracownia 2”) i sekcja z mapami na stronie Kontakt.
 - Telefon: 880 122 269. E-mail: dominika.saczynska@gmail.com.
 - Social media: tylko Instagram @mikipierniki. Brak Facebooka i TikToka.
 - Domeny NIE publikujemy nigdzie w treści (adres strony jeszcze nie jest ustalony).

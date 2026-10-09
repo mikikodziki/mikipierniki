@@ -9,9 +9,7 @@ export const site = {
   phoneHref: "tel:+48880122269",
   instagram: "https://instagram.com/mikipierniki",
   instagramHandle: "@mikipierniki",
-  /** Studio where all open workshops take place */
-  address: "ul. Długa 55",
-  addressLocative: "ul. Długiej 55",
+  /** The street address is deliberately not published; only the city is */
   city: "Wrocław",
   /** Gift card price in PLN */
   voucherPrice: 500,

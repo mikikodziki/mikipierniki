@@ -5,8 +5,7 @@
 import type { FaqItem, GalleryItem, Term, Testimonial, Venue } from "./types";
 
 export const venues: Venue[] = [
-  { id: "pracownia", name: "Pracownia Miki", address: "ul. Długa 55", addressLocative: "ul. Długiej 55", city: "Wrocław" },
-  { id: "pracownia-2", name: "Pracownia 2", address: "", city: "Wrocław", addressPending: true },
+  { id: "pracownia", name: "Pracownia Miki", city: "Wrocław" },
 ];
 
 const adult = { type: "dorosli", price: 450, priceUnit: "osoba", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
@@ -47,7 +46,7 @@ export const faq: FaqItem[] = [
   { topic: "zamowienia", q: "Ile kosztują pierniki na zamówienie?", a: "Cena zależy od wielkości piernika i tego, jak pracochłonne jest zdobienie: mały 15 zł, średni 25 zł, duży 35 zł. Zestaw w pudełku (1 duży, 2 średnie, 3 małe) kosztuje 120 zł. Minimalne zamówienie to 100 zł." },
   { topic: "zamowienia", q: "Czy zrobisz pierniki w niestandardowym kształcie?", a: "Tak. Przy zamówieniach firmowych tworzę foremki pod konkretny projekt, więc piernik może mieć kształt Twojego logo, produktu czy budynku. Wystarczy opis albo zdjęcie inspiracji." },
   { topic: "zamowienia", q: "Do kiedy przyjmujesz zamówienia świąteczne?", a: "Zamówienia detaliczne na święta przyjmuję do 18 grudnia, a firmowe najpóźniej dwa tygodnie przed odbiorem. W szczycie sezonu terminy kończą się wcześniej, więc lepiej napisać zawczasu." },
-  { topic: "zamowienia", q: "Jak dostanę pierniki?", a: "Możesz odebrać je osobiście w pracowni przy ul. Długiej 55 albo wysyłam je Paczkomatem: mała paczka 12 zł, duża 20 zł." },
+  { topic: "zamowienia", q: "Jak dostanę pierniki?", a: "Możesz odebrać je osobiście w mojej pracowni we Wrocławiu albo wysyłam je Paczkomatem: mała paczka 12 zł, duża 20 zł." },
   { topic: "zamowienia", q: "Jak długo pierniki są świeże?", a: "Udekorowane pierniki zachowują świeżość nawet 4–6 tygodni w szczelnym pudełku. Z czasem stają się coraz bardziej miękkie." },
 ];
 

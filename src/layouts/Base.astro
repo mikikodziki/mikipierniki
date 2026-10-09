@@ -18,12 +18,12 @@ interface Props {
 
 const {
   title,
-  description = `${site.tagline}. Małe grupy, wszystkie materiały w cenie, pierniki do zabrania do domu.`,
+  description = `${site.tagline} we Wrocławiu. Małe grupy, wszystkie materiały w cenie, pierniki do zabrania do domu.`,
   mobileCta = true,
   jsonLd,
 } = Astro.props;
 
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników`;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników we Wrocławiu`;
 // Bez ustawionej domeny (astro.config.mjs) nie wypisujemy canonical ani og:url.
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
 const buildSeason = seasonFor(new Date());

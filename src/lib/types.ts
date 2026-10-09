@@ -29,16 +29,11 @@ export interface Term {
   season: Season;
 }
 
+/** Only the city is published; the street address is given at booking. */
 export interface Venue {
   id: string;
   name: string;
-  address: string;
   city: string;
-  mapUrl?: string;
-  /** Locative form for Polish prose: "przy ul. Długiej 55" */
-  addressLocative?: string;
-  /** True while the address is not settled yet: pages hide the address and the map */
-  addressPending?: boolean;
 }
 
 export type PaymentMethod = "online" | "przelew" | "voucher";

@@ -45,7 +45,6 @@ const jsonLd = terms.map((t) => {
       name: venue.name,
       address: {
         "@type": "PostalAddress",
-        streetAddress: venue.address,
         addressLocality: venue.city,
         addressCountry: "PL",
       },
@@ -83,21 +82,21 @@ const included = [
 
 const closedFacts = [
   { title: "Wycena indywidualna", text: "Cena zależy od liczby osób i od tego, ile czasu chcecie spędzić przy stole. Napisz, ile Was będzie, a odeślę propozycję." },
-  { title: "U mnie albo u Was", text: `Spotykamy się w mojej pracowni (${studio.address}, ${studio.city}) albo przyjeżdżam pod wskazany adres z kompletem materiałów.` },
+  { title: "U mnie albo u Was", text: `Spotykamy się w mojej pracowni we ${studio.city === 'Wrocław' ? 'Wrocławiu' : studio.city} albo przyjeżdżam pod wskazany adres z kompletem materiałów.` },
   { title: "Większa grupa, krótszy cykl", text: "Przy dużych grupach robimy krótsze cykle: 1–2 pierniki na osobę i rotacja grup, żeby każdy zdążył usiąść przy stole." },
   { title: "Stanowisko do lukrowania", text: "Zamiast pełnego warsztatu mogę ustawić stanowisko do lukrowania dla chętnych. Kto ma ochotę, przysiada się i dekoruje." },
 ];
 ---
 <Base
-  title="Warsztaty dekorowania pierników"
-  description={`Warsztaty dekorowania pierników w pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
+  title="Warsztaty dekorowania pierników we Wrocławiu"
+  description={`Warsztaty dekorowania pierników we Wrocławiu, w mojej pracowni. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
   mobileCta={false}
   jsonLd={jsonLd}
 >
   <PageHead
     eyebrow="Warsztaty"
     title="Kilka godzin z lukrem i pudełko pierników na wynos"
-    lead={`Pracujemy w grupie od ${site.groupMin} do ${site.groupMax} osób w mojej pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu, więc mam czas dla każdej osoby przy stole. Wszystkie materiały są w cenie, a udekorowane pierniki zabierasz do domu. Nie potrzebujesz doświadczenia, wszystkiego Cię nauczę.`}
+    lead={`Pracujemy w grupie od ${site.groupMin} do ${site.groupMax} osób w mojej pracowni we Wrocławiu, więc mam czas dla każdej osoby przy stole. Wszystkie materiały są w cenie, a udekorowane pierniki zabierasz do domu. Nie potrzebujesz doświadczenia, wszystkiego Cię nauczę.`}
   >
     <nav class="jump" aria-label="Na tej stronie">
       <a class="btn btn-primary" href="#terminy">Zobacz terminy</a>
@@ -114,7 +113,7 @@ const closedFacts = [
         id="terminy"
         eyebrow="Kalendarz"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne z lampką grzanego wina (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}, od 18 lat) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Wszystkie prowadzę w jednym miejscu — w mojej pracowni przy ${studio.addressLocative ?? studio.address} we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
+        lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne z lampką grzanego wina (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}, od 18 lat) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Wszystkie prowadzę w jednym miejscu — w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
       />
       <!-- DO UZUPEŁNIENIA: prawdziwy grafik terminów i liczba wolnych miejsc (terminy w mock-data są przykładowe) -->
       <TermsList terms={terms} />

@@ -36,7 +36,7 @@ const steps = [
   { title: "Projekt i wycena", text: "Odpisuję z propozycją wzorów i wyceną. Przy własnym kształcie przygotowuję foremkę pod Twój projekt i najpierw potwierdzam z Tobą, jak piernik ma wyglądać." },
   // DO UZUPEŁNIENIA: zasady przedpłaty przy zamówieniach detalicznych (zadatek 15% dotyczy zamówień firmowych z personalizacją)
   { title: "Potwierdzenie terminu", text: `Zamówienia firmowe z personalizacją rezerwuję po wpłacie zadatku w wysokości ${depositPct}% wyceny. Od tej chwili Twoje pierniki mają swoje miejsce w moim kalendarzu pieczenia.` },
-  { title: "Odbiór lub wysyłka", text: `Odbierasz pierniki w mojej pracowni (${studio.address}, ${studio.city}) albo wysyłam je Paczkomatem: mała paczka ${pln(parcelSmall)}, duża ${pln(parcelLarge)}.` },
+  { title: "Odbiór lub wysyłka", text: `Odbierasz pierniki w mojej pracowni we ${studio.city === 'Wrocław' ? 'Wrocławiu' : studio.city} albo wysyłam je Paczkomatem: mała paczka ${pln(parcelSmall)}, duża ${pln(parcelLarge)}.` },
 ];
 
 const personalizacja = [
@@ -58,7 +58,7 @@ const occasions = [
 ];
 ---
 <Base
-  title="Pierniki na zamówienie"
+  title="Pierniki na zamówienie we Wrocławiu"
   description={`Ręcznie dekorowane pierniki na zamówienie we Wrocławiu: na Boże Narodzenie, Wielkanoc, urodziny, śluby i dla firm, z własnym kształtem i logo. Mały ${pln(15)}, średni ${pln(25)}, duży ${pln(35)}. Odbiór osobisty albo Paczkomat.`}
 >
   <!-- DO UZUPEŁNIENIA: ostateczny termin przyjmowania zamówień wielkanocnych -->
@@ -196,7 +196,7 @@ const occasions = [
         <ul class="price-notes">
           <li>Minimalne zamówienie detaliczne: <b>{pln(minOrder)}</b>.</li>
           <li>Zamówienia firmowe z personalizacją i własnym kształtem: <b>od {pln(customFrom)}</b>, zadatek {depositPct}%.</li>
-          <li>Odbiór osobisty w mojej pracowni przy {studio.addressLocative ?? studio.address} we Wrocławiu albo wysyłka Paczkomatem: mała paczka {pln(parcelSmall)}, duża {pln(parcelLarge)}.</li>
+          <li>Odbiór osobisty w mojej pracowni we Wrocławiu albo wysyłka Paczkomatem: mała paczka {pln(parcelSmall)}, duża {pln(parcelLarge)}.</li>
           <li>Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów.</li>
         </ul>
       </div>

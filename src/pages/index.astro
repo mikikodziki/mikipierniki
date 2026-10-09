@@ -23,7 +23,7 @@ const jsonLd = {
   email: site.email,
   telephone: site.phone,
   sameAs: [site.instagram],
-  address: { "@type": "PostalAddress", streetAddress: "ul. Długa 55", addressLocality: "Wrocław", addressCountry: "PL" },
+  address: { "@type": "PostalAddress", addressLocality: "Wrocław", addressCountry: "PL" },
   priceRange: "200–500 zł",
 };
 ---
@@ -36,7 +36,7 @@ const jsonLd = {
       <SectionHead
         eyebrow="Najbliższe warsztaty"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead="Wszystkie warsztaty prowadzę w pracowni przy ul. Długiej 55 we Wrocławiu. Rezerwacja zajmuje minutę, płacisz online, przelewem albo voucherem."
+        lead="Wszystkie warsztaty dekorowania pierników prowadzę w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, płacisz online, przelewem albo voucherem."
       />
       <TermsList terms={upcoming} filters={false} />
       <div class="more">
