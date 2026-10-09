@@ -13,17 +13,12 @@ body {
   font-size: 16px;
   line-height: 1.6;
 }
-/* two warm washes drifting slowly behind the panels; they scroll with the page */
-body::before, body::after {
-  content: "";
-  position: absolute;
-  inset: -10vh 0;
-  z-index: -1;
-  pointer-events: none;
-  will-change: transform;
-}
-body::before { background: var(--sheet-wash-a); animation: drift-a 34s ease-in-out infinite alternate; }
-body::after { background: var(--sheet-wash-b); animation: drift-b 46s ease-in-out infinite alternate; }
+/* two warm washes drifting slowly behind the panels; they scroll with the page.
+   The wrapper clips them, so their motion never adds to the scrollable area. */
+.sheet-glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.sheet-glow span { position: absolute; inset: -12% -6%; display: block; will-change: transform; }
+.sheet-glow span:first-child { background: var(--sheet-wash-a); animation: drift-a 34s ease-in-out infinite alternate; }
+.sheet-glow span:last-child { background: var(--sheet-wash-b); animation: drift-b 46s ease-in-out infinite alternate; }
 @keyframes drift-a {
   from { transform: translate3d(-1.5%, 0, 0) scale(1); }
   to { transform: translate3d(2%, 1.5%, 0) scale(1.08); }

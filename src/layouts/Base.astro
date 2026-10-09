@@ -62,6 +62,7 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
   </head>
   <body>
+    <div class="sheet-glow" aria-hidden="true"><span></span><span></span></div>
     <CookieSprite />
     <a class="skip" href="#main">Przejdź do treści</a>
     <Header />
