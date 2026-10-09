@@ -48,7 +48,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     max-width: var(--panel-max);
     margin-inline: auto;
     height: 64px;
-    padding: 0 10px 0 24px;
+    padding: 0 14px 0 26px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -75,6 +75,8 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .main a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--mango); text-decoration-thickness: 2px; text-underline-offset: 6px; }
 
   .actions { display: flex; align-items: center; gap: 10px; }
+  /* the pill curves away at its ends, so the CTA keeps an even inset */
+  .cta { padding: 11px 20px; }
   .menu-btn {
     display: none; width: 44px; height: 44px; border-radius: 999px;
     border: 0; background: color-mix(in srgb, var(--on-dark) 14%, transparent);
@@ -102,7 +104,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   @media (max-width: 900px) {
     .main, .cta { display: none; }
     .menu-btn { display: grid; }
-    .bar { height: 60px; padding-left: 20px; }
+    .bar { height: 60px; padding: 0 10px 0 20px; }
     .brand { font-size: 1.15rem; }
   }
   @media (min-width: 901px) { .mobile-menu { display: none !important; } }
