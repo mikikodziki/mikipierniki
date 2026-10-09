@@ -36,7 +36,7 @@ Paleta od Dominiki, siedem kolorów:
   („Pracownia 2”) i sekcja z mapami na stronie Kontakt.
 - Telefon: 880 122 269. E-mail: dominika.saczynska@gmail.com.
 - Social media: tylko Instagram @mikipierniki. Brak Facebooka i TikToka.
-- Domeny NIE publikujemy nigdzie w treści (adres strony jeszcze nie jest ustalony).
+- Domena: mikipierniki.pl (ustawiona w `astro.config.mjs`, stąd canonical i og:url).
 
 ## Warsztaty otwarte
 - Dla dorosłych: 3–4 godziny, 450 zł/os.
