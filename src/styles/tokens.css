@@ -11,7 +11,7 @@
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
   /* page: one light sheet, content sits on it in lighter panels */
-  --sheet: #EBDFC8;
+  --sheet: #DFCCA7;
   /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #461F28;
   --on-dark: #FDFBD8;
