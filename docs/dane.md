@@ -10,12 +10,13 @@ Paleta „kakao i guma balonowa”:
   #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
 - Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
   terminów): #20170E z kremowym tekstem #FFF3DC. Ten sam kolor ma logo.
-- Wyróżnienie: pistacja #4E7A2A na jasnym tle i #A9CF6B na ciemnym
-  (wyróżnione słowo w nagłówku, duże liczby, podpisy w stopce).
-- Akcja: pomarańcz #F79926 (przyciski, nazwa w nagłówku).
-- Ostrzeżenia: ceglasty #C0392B.
+- Wyróżnienie: butelkowa zieleń #2F592D (wyróżnione słowo w nagłówku, duże liczby,
+  podpisy w stopce, nadtytuły sekcji).
+- Akcja: ceglasta pomarańcz #E74B2B (przyciski, aktywna zakładka, plusy w FAQ),
+  po najechaniu ciemniejsza #C03A1D.
+- Ostrzeżenia: karminowa czerwień #A4162A (wyraźnie inna niż kolor akcji).
 - Napisy: #20170E na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
-- Kolor sezonowy: pistacja #4E7A2A (święta), kobalt #2B2BD6 (Wielkanoc),
+- Kolor sezonowy: butelkowa zieleń #2F592D (święta), kobalt #2B2BD6 (Wielkanoc),
   palona pomarańcz #B4581C (reszta roku).
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
   i jako ikona strony.

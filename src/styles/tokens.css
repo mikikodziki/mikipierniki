@@ -32,15 +32,14 @@
   --ink: #20170E;
   --ink-soft: #70454C;
   --line: #EBD9BC;
-  --mango: #F79926;
-  --mango-deep: #C06F0E;
-  --pistachio: #A9CF6B;
+  --mango: #E74B2B;
+  --mango-deep: #C03A1D;
   --cobalt: #2B2BD6;
-  --ginger: #4E7A2A;
-  --ginger-text: #4E7A2A;
-  --berry: #C0392B;
-  --accent: #4E7A2A;
-  --accent-tint: #E4EFD4;
+  --ginger: #2F592D;
+  --ginger-text: #2F592D;
+  --berry: #A4162A;
+  --accent: #2F592D;
+  --accent-tint: #DCE8DA;
   --shadow-cookie: rgba(43, 16, 22, .25);
 
   --tile-1: #F3E2C6;
