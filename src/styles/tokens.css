@@ -14,6 +14,12 @@
 
   /* page: one light sheet, content sits on it in lighter panels */
   --sheet: #2B1016;
+  /* the sheet is a warm glow over the cocoa base, not a flat fill */
+  --sheet-glow:
+    radial-gradient(1100px 700px at 12% -5%, #7A3218 0%, rgba(122, 50, 24, 0) 62%),
+    radial-gradient(900px 620px at 92% 8%, #94451A 0%, rgba(148, 69, 26, 0) 58%),
+    radial-gradient(1200px 900px at 65% 108%, #4A1A2E 0%, rgba(74, 26, 46, 0) 60%),
+    linear-gradient(180deg, #38141C 0%, #2B1016 48%, #220E18 100%);
   /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #3C1A22;
   --on-dark: #FFF3DC;
