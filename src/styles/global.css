@@ -17,7 +17,7 @@ body {
    The wrapper clips them, so their motion never adds to the scrollable area. */
 .sheet-glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 /* one blur pass over all the blobs keeps this cheap */
-.sheet-glow .waves { position: absolute; inset: -8%; filter: blur(80px); opacity: .85; }
+.sheet-glow .waves { position: absolute; inset: -8%; filter: blur(120px); opacity: .7; }
 .sheet-glow .waves span {
   position: absolute; display: block; border-radius: 48% 52% 60% 40% / 55% 45% 55% 45%;
   will-change: transform;
@@ -25,7 +25,7 @@ body {
 .sheet-glow .waves span:nth-child(1) { left: -12%; top: 2%;  width: 74%; height: 26%; background: var(--wave-1); animation: wave-a 46s ease-in-out infinite alternate; }
 .sheet-glow .waves span:nth-child(2) { right: -14%; top: 16%; width: 66%; height: 22%; background: var(--wave-2); animation: wave-b 58s ease-in-out infinite alternate; }
 .sheet-glow .waves span:nth-child(3) { left: 8%;  top: 40%;  width: 80%; height: 24%; background: var(--wave-3); animation: wave-c 52s ease-in-out infinite alternate; }
-.sheet-glow .waves span:nth-child(4) { right: -8%; top: 62%; width: 70%; height: 22%; background: var(--wave-4); opacity: .7; animation: wave-b 64s ease-in-out infinite alternate-reverse; }
+.sheet-glow .waves span:nth-child(4) { right: -8%; top: 62%; width: 70%; height: 22%; background: var(--wave-4); opacity: .6; animation: wave-b 64s ease-in-out infinite alternate-reverse; }
 .sheet-glow .waves span:nth-child(5) { left: -10%; top: 82%; width: 78%; height: 24%; background: var(--wave-5); animation: wave-a 70s ease-in-out infinite alternate-reverse; }
 @keyframes wave-a {
   from { transform: translate3d(-4%, -2%, 0) rotate(-6deg) scale(1); }

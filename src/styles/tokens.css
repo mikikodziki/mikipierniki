@@ -17,11 +17,11 @@
   /* the sheet: a vertical cocoa gradient with two drifting warm washes on top */
   --sheet-base: linear-gradient(180deg, #3A151D 0%, #2B1016 45%, #210E18 100%);
   /* blurred waves drifting over the sheet */
-  --wave-1: #7A3218;
-  --wave-2: #9B4A1C;
-  --wave-3: #4A1A2E;
-  --wave-4: #B4702E;
-  --wave-5: #3A2418;
+  --wave-1: #3B2128;
+  --wave-2: #452A2C;
+  --wave-3: #301B22;
+  --wave-4: #4A3330;
+  --wave-5: #28161C;
   /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #3C1A22;
   --on-dark: #FFF3DC;
