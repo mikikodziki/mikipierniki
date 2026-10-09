@@ -27,7 +27,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
     lead="Pierniki, które wychodzą z mojej pracowni: świąteczne, wielkanocne i te robione pod konkretny pomysł. Każdy jest dekorowany ręcznie, więc każdy jest trochę inny."
   />
 
-  <section class="section gal-section" aria-labelledby="gal-title">
+  <section class="section section--dark gal-section" aria-labelledby="gal-title">
     <div class="wrap">
       <h2 id="gal-title" class="visually-hidden">Zdjęcia pierników</h2>
       <div class="chips" role="group" aria-label="Filtruj galerię">
@@ -109,8 +109,8 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
   .tile-ph :global(.cookie) { width: 52%; }
   .tile figcaption { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font-size: .75rem; background: var(--surface); color: var(--ink-soft); padding: 3px 10px; border-radius: 999px; }
 
-  .empty { color: var(--ink-soft); margin-top: 8px; }
-  .consent { color: var(--ink-soft); font-size: .92rem; margin-top: 16px; max-width: 62ch; }
+  .empty { color: var(--on-dark-soft); margin-top: 8px; }
+  .consent { color: var(--on-dark-soft); font-size: .92rem; margin-top: 16px; max-width: 62ch; }
 
   .cta { display: grid; gap: 24px; align-items: center; }
   .cta-copy { display: grid; gap: 12px; }
