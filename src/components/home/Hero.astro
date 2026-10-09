@@ -29,7 +29,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   },
 ];
 ---
-<section class="hero">
+<section class="hero panel--cherry">
   <div class="wrap grid">
     {variants.map((v) => (
       <div class="copy" data-for-season={v.season}>
@@ -59,7 +59,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
   h1 em { font-style: normal; color: inherit; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-  .note { font-size: 0.9rem; color: var(--ink-soft); }
+  .note { font-size: 0.9rem; color: var(--on-dark-soft); }
   .tray { max-width: 100%; border-radius: var(--radius-lg); overflow: hidden; }
   @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
 </style>

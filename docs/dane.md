@@ -13,8 +13,8 @@ Paleta od Dominiki, siedem kolorów:
 - #4A2C24 ciemny brąz — pasek nagłówka, przyciski w stanie spoczynku, ciemne bloki
   (zapisy na powiadomienia, galeria).
 - #36150D prawie czarny brąz — wszystkie napisy na jasnym tle, logo i ikona strony.
-- #500208 wiśnia — voucher i karty terminów, nadtytuły sekcji w sezonie świątecznym,
-  komunikaty błędów.
+- #500208 wiśnia — pierwsza sekcja na stronie głównej, voucher i karty terminów,
+  nadtytuły sekcji w sezonie świątecznym, komunikaty błędów.
 - #98BEDF błękit — przyciski po najechaniu, plusy w FAQ, paski wolnych miejsc,
   obramowanie zaznaczenia. Napisy na błękicie są w #36150D.
 - Przyciski na ciemnych blokach (nagłówek, zapisy, karty terminów) są kremowe,

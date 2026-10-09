@@ -45,12 +45,14 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .section { padding-block: clamp(44px, 6vw, 80px); }
 .section--sunk { background: var(--sunk); }
 .section--warm { background: var(--panel-deep); }
-/* photo sections: light cookies on a plum panel instead of cream on cream */
-.section--dark { background: var(--dark); color: var(--on-dark); }
-.section--dark .eyebrow { color: var(--blue); }
-.section--dark .lead { color: var(--on-dark-soft); }
-.section--dark .btn-ghost { background: color-mix(in srgb, var(--on-dark) 16%, transparent); color: var(--on-dark); }
-.section--dark .btn-ghost:hover { background: color-mix(in srgb, var(--on-dark) 28%, transparent); }
+/* panels that carry light type: dark brown for photo sections, cherry for the hero */
+.section--dark { background: var(--dark); }
+.panel--cherry { background: var(--cherry); }
+.section--dark, .panel--cherry { color: var(--on-dark); }
+.section--dark .eyebrow, .panel--cherry .eyebrow { color: var(--blue); }
+.section--dark .lead, .panel--cherry .lead { color: var(--on-dark-soft); }
+.section--dark .btn-ghost, .panel--cherry .btn-ghost { background: color-mix(in srgb, var(--on-dark) 16%, transparent); color: var(--on-dark); }
+.section--dark .btn-ghost:hover, .panel--cherry .btn-ghost:hover { background: color-mix(in srgb, var(--on-dark) 28%, transparent); }
 .section--dark .chip { background: color-mix(in srgb, var(--on-dark) 14%, transparent); color: var(--on-dark); }
 .section--dark .chip:hover { background: color-mix(in srgb, var(--on-dark) 26%, transparent); }
 .section--dark .chip[aria-pressed="true"] { background: var(--on-dark); color: var(--dark); }
@@ -91,8 +93,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .btn-cherry:hover { background: var(--blue); color: var(--on-blue); }
 /* on a dark block the chocolate would vanish, so there the button inverts;
    hover still turns blue */
-.section--dark .btn-primary, .top .btn-primary, .term .btn-primary { background: var(--on-dark); color: var(--ink); }
-.section--dark .btn-primary:hover, .top .btn-primary:hover, .term .btn-primary:hover { background: var(--blue); color: var(--on-blue); }
+.section--dark .btn-primary, .panel--cherry .btn-primary, .top .btn-primary, .term .btn-primary { background: var(--on-dark); color: var(--ink); }
+.section--dark .btn-primary:hover, .panel--cherry .btn-primary:hover, .top .btn-primary:hover, .term .btn-primary:hover { background: var(--blue); color: var(--on-blue); }
 .btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .btn-small { padding: 10px 16px; font-size: 0.9rem; }
