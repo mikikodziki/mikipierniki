@@ -42,18 +42,18 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .foot-wrap { background: transparent; color: var(--ink); padding-block: 48px 28px; }
+  .foot-wrap { background: transparent; color: var(--on-dark); padding-block: 48px 28px; }
   .foot { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
   .brand { display: grid; gap: 12px; align-content: start; }
-  .brand p { color: var(--ink-soft); max-width: 34ch; }
-  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--ink); }
+  .brand p { color: var(--on-dark-soft); max-width: 34ch; }
+  .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--on-dark); }
   .logo-name { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.6rem; line-height: 1.05; max-width: 6ch; }
   .logo :global(.logo-mark) { height: 84px; width: auto; }
-  .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--ginger-text); }
+  .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--pink); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+  .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid color-mix(in srgb, var(--on-dark) 20%, transparent); font-size: .82rem; color: var(--on-dark-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
   @media (max-width: 760px) { .foot { grid-template-columns: 1fr 1fr; } .brand { grid-column: 1 / -1; } }
   @media (max-width: 900px) { .foot-wrap { padding-bottom: 100px; } }
 </style>
