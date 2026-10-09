@@ -71,8 +71,9 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
 
   .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
   .main a { text-decoration: none; color: color-mix(in srgb, var(--on-dark) 78%, transparent); }
-  .main a:hover, .main a[aria-current="page"] { color: var(--on-dark); }
-  .main a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--blue); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .main a:hover { color: var(--on-dark); }
+  /* the page you are on is marked by colour, not by a rule under the word */
+  .main a[aria-current="page"] { color: var(--blue); }
 
   .actions { display: flex; align-items: center; gap: 10px; }
   /* the pill curves away at its ends, so the CTA keeps an even inset */
@@ -100,6 +101,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   }
   .mobile-menu a { text-decoration: none; color: var(--on-dark); padding-block: 12px; font-size: 1.05rem; font-weight: 500; border-bottom: 1px solid color-mix(in srgb, var(--on-dark) 18%, transparent); }
   .mobile-menu a:last-child { border-bottom: 0; }
+  .mobile-menu a[aria-current="page"] { color: var(--blue); }
 
   @media (max-width: 900px) {
     .main, .cta { display: none; }
