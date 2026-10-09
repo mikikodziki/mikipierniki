@@ -61,6 +61,11 @@ export const gallery: GalleryItem[] = [
   { photo: "gwiazdka-zlota", shape: "star", caption: "Zawieszka na choinkę", category: "swieta", tile: 3, alt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem i otworem na wstążkę" },
   { photo: "zajaczki-para", shape: "egg", caption: "Para zajączków", category: "wielkanoc", tile: 2, alt: "Dwa piernikowe zajączki: w zielonej sukience i w ogrodniczkach z pomarańczową muszką" },
   { photo: "mis-choinka", shape: "heart", caption: "Miś i roześmiana choinka", category: "swieta", tile: 4, alt: "Piernikowy biały miś w szaliku i choinka z wesołą buzią" },
+  { photo: "wielkanoc-auto", shape: "egg", caption: "Zajączek w zielonym aucie", category: "wielkanoc", tile: 3, alt: "Piernikowy zielony kabriolet z zajączkiem i bukietem tulipanów" },
   { photo: "sniezynka-zlota", shape: "star", caption: "Śnieżynka ze złotym lukrem", category: "swieta", tile: 1, alt: "Piernikowa śnieżynka w białym lukrze z misternym złotym wzorem" },
+  { photo: "wielkanoc-zajaczki", shape: "egg", caption: "Zajączki z muszkami", category: "wielkanoc", tile: 2, alt: "Dwa piernikowe zajączki, ciemny i jasny, z niebieskimi muszkami" },
   { photo: "mis-mikolaj", shape: "star", caption: "Zestaw w czerwieni", category: "swieta", tile: 3, alt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja" },
+  { photo: "wielkanoc-kurczaczki", shape: "egg", caption: "Kurczaczki na zamówienie", category: "wielkanoc", tile: 4, alt: "Dwanaście piernikowych kurczaczków w żółtych i zielonych odcieniach lukru" },
+  { photo: "wielkanoc", shape: "egg", caption: "Wielkanocny zestaw", category: "wielkanoc", tile: 1, alt: "Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach" },
+  { photo: "wielkanoc-zajaczek", shape: "egg", caption: "Zajączek z bliska", category: "wielkanoc", tile: 2, alt: "Piernikowy zajączek w beżowym lukrze z różowymi uszami i niebieską muszką" },
 ];
