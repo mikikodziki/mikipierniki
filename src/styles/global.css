@@ -86,6 +86,9 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 /* chocolate at rest, blue on hover */
 .btn-primary { background: var(--dark); color: var(--on-dark); }
 .btn-primary:hover { background: var(--blue); color: var(--on-blue); }
+/* cherry: the voucher and the two "all the dates" buttons */
+.btn-cherry { background: var(--cherry); color: var(--on-dark); }
+.btn-cherry:hover { background: var(--blue); color: var(--on-blue); }
 /* on a dark block the chocolate would vanish, so there the button inverts;
    hover still turns blue */
 .section--dark .btn-primary, .top .btn-primary, .term .btn-primary { background: var(--on-dark); color: var(--ink); }
