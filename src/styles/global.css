@@ -2,7 +2,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
-[id] { scroll-margin-top: 136px; }
+[id] { scroll-margin-top: 100px; }
 body {
   margin: 0;
   background: var(--sheet);

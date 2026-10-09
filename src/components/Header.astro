@@ -1,12 +1,11 @@
 ---
 import { nav, site } from "@/lib/site";
-import Hug from "./Hug.astro";
 
 const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/";
 ---
 <header class="top">
-  <div class="wrap bar">
-    <a class="logo" href="/"><Hug label={site.name} class="logo-mark" /></a>
+  <div class="bar">
+    <a class="brand" href="/">{site.name}</a>
     <nav class="main" aria-label="Główne">
       {nav.map((l) => (
         <a href={l.href} aria-current={path === l.href ? "page" : undefined}>{l.label}</a>
@@ -21,11 +20,9 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     </div>
   </div>
   <nav class="mobile-menu" id="mobile-menu" aria-label="Menu mobilne" hidden>
-    <div class="wrap">
-      {nav.map((l) => (
-        <a href={l.href} aria-current={path === l.href ? "page" : undefined}>{l.label}</a>
-      ))}
-    </div>
+    {nav.map((l) => (
+      <a href={l.href} aria-current={path === l.href ? "page" : undefined}>{l.label}</a>
+    ))}
   </nav>
 </header>
 
@@ -41,37 +38,72 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
 
 <style>
   .top {
-    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
-    background: color-mix(in srgb, var(--sheet) 92%, transparent);
-    backdrop-filter: blur(10px);
-    color: var(--ink);
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + var(--panel-gap));
+    z-index: 20;
+    padding-inline: var(--panel-gap);
+    margin-block: var(--panel-gap);
   }
-  .bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 124px; }
-  .logo { display: flex; align-items: center; text-decoration: none; color: var(--ink); }
-  .logo :global(.logo-mark) { height: 100px; width: auto; }
-  @media (max-width: 900px) { .bar { height: 100px; } .logo :global(.logo-mark) { height: 80px; } }
-  @media (max-width: 420px) { .bar { height: 88px; } .logo :global(.logo-mark) { height: 68px; } }
+  .bar {
+    max-width: var(--panel-max);
+    margin-inline: auto;
+    height: 64px;
+    padding: 0 10px 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--dark);
+    color: var(--on-dark);
+    border-radius: 999px;
+    box-shadow: 0 10px 24px rgba(59, 23, 32, .16);
+  }
+
+  .brand {
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    font-size: 1.3rem;
+    line-height: 1;
+    color: var(--mango);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
   .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
-  .main a { text-decoration: none; color: var(--ink-soft); }
-  .mobile-menu a { text-decoration: none; color: var(--ink); }
-  .main a:hover, .main a[aria-current="page"] { color: var(--ink); }
+  .main a { text-decoration: none; color: color-mix(in srgb, var(--on-dark) 78%, transparent); }
+  .main a:hover, .main a[aria-current="page"] { color: var(--on-dark); }
   .main a[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--mango); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
   .actions { display: flex; align-items: center; gap: 10px; }
-  .menu-btn { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--ink) 35%, transparent); background: transparent; cursor: pointer; place-items: center; }
-  .burger, .burger::before, .burger::after { display: block; width: 18px; height: 2px; background: var(--ink); border-radius: 2px; position: relative; content: ""; }
+  .menu-btn {
+    display: none; width: 44px; height: 44px; border-radius: 999px;
+    border: 0; background: color-mix(in srgb, var(--on-dark) 14%, transparent);
+    cursor: pointer; place-items: center;
+  }
+  .burger, .burger::before, .burger::after { display: block; width: 18px; height: 2px; background: var(--on-dark); border-radius: 2px; position: relative; content: ""; }
   .burger::before { position: absolute; top: -6px; }
   .burger::after { position: absolute; top: 6px; }
   .menu-btn[aria-expanded="true"] .burger { background: transparent; }
   .menu-btn[aria-expanded="true"] .burger::before { top: 0; transform: rotate(45deg); }
   .menu-btn[aria-expanded="true"] .burger::after { top: 0; transform: rotate(-45deg); }
-  .mobile-menu { background: var(--ground); color: var(--ink); margin: 0 var(--panel-gap) var(--panel-gap); border-radius: var(--radius-panel); }
-  .mobile-menu .wrap { display: grid; padding-block: 8px 16px; }
+
+  .mobile-menu {
+    max-width: var(--panel-max);
+    margin: 8px auto 0;
+    padding: 8px 20px 14px;
+    display: grid;
+    background: var(--dark);
+    color: var(--on-dark);
+    border-radius: var(--radius-lg);
+  }
+  .mobile-menu a { text-decoration: none; color: var(--on-dark); padding-block: 12px; font-size: 1.05rem; font-weight: 500; border-bottom: 1px solid color-mix(in srgb, var(--on-dark) 18%, transparent); }
   .mobile-menu a:last-child { border-bottom: 0; }
-  .mobile-menu a { padding-block: 12px; font-size: 1.1rem; font-weight: 500; border-bottom: 1px solid var(--line); }
-  .mobile-menu a[aria-current="page"] { color: var(--ink); }
+
   @media (max-width: 900px) {
     .main, .cta { display: none; }
     .menu-btn { display: grid; }
+    .bar { height: 60px; padding-left: 20px; }
+    .brand { font-size: 1.15rem; }
   }
   @media (min-width: 901px) { .mobile-menu { display: none !important; } }
 </style>
