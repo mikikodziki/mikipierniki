@@ -25,7 +25,9 @@ const {
 
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników we Wrocławiu`;
 // Bez ustawionej domeny (astro.config.mjs) nie wypisujemy canonical ani og:url.
-const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+// build.format "file" gives "/warsztaty.html" here; publish the clean URL the nav links use.
+const cleanPath = Astro.url.pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
+const canonical = Astro.site ? new URL(cleanPath, Astro.site) : undefined;
 const buildSeason = seasonFor(new Date());
 const ranges = JSON.stringify(seasonRanges.map((r) => [r.season, r.from[0] * 100 + r.from[1], r.to[0] * 100 + r.to[1]]));
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
