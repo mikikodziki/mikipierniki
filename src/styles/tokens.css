@@ -1,6 +1,7 @@
 /*
  * Design tokens. Every colour in components comes from here.
- * Brand: logo outline #461F28 on cream #F6EBC8.
+ * Brand: plum #461F28 and cream #FDFBD8, mango #F79926 for actions.
+ * The page is a sand sheet (#DFCCA7) carrying lighter panels.
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
@@ -31,12 +32,9 @@
   --mango: #F79926;
   --mango-deep: #C06F0E;
   --ginger: #B86B35;
-  --ginger-deep: #8E4E22;
   --ginger-text: #8E4E22;
-  --icing: #FFFDF8;
   --berry: #9E1B33;
   --accent: #1B4634;
-  --accent-ink: #FFFDF6;
   --accent-tint: #DFE9DC;
   --shadow-cookie: rgba(59, 23, 32, .18);
 
