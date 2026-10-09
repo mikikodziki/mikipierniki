@@ -5,9 +5,10 @@ chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
 Paleta od Dominiki, siedem kolorów:
-- #FAF4E4 krem — tło całej strony (jednolite, bez gradientu), napisy na ciemnym.
-- #F5E5BD piaskowy — panele sekcji, etykiety na kartach terminów. Co druga sekcja
-  jest o ton głębsza (piaskowy z domieszką brązu).
+- #FAF4E4 krem — panele sekcji, napisy na ciemnym tle.
+- #F5E5BD piaskowy — tło całej strony (jednolite, bez gradientu), plakietki
+  i etykiety na kartach terminów. Co druga sekcja jest o ton głębsza
+  (piaskowy z domieszką brązu).
 - #764B31 brąz — drugoplanowe napisy, gwiazdki przy opiniach, okruszki na 404.
 - #4A2C24 ciemny brąz — pasek nagłówka, przyciski w stanie spoczynku, ciemne bloki
   (zapisy na powiadomienia, galeria).

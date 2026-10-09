@@ -1,8 +1,8 @@
 /*
  * Design tokens. Every colour in components comes from here.
  * Dominika's palette, seven colours:
- *   #FAF4E4 cream   · the page sheet, text on dark
- *   #F5E5BD sand    · the section panels
+ *   #FAF4E4 cream   · the section panels, text on dark
+ *   #F5E5BD sand    · the page sheet, badges, tags
  *   #764B31 brown   · secondary text, and mixed into sand for the deeper panels
  *   #4A2C24 dark brown · header bar and every dark block
  *   #36150D near-black brown · all text on light, the logo
@@ -17,8 +17,8 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: the lightest cream; panels sit one step deeper, in sand */
-  --sheet: #FAF4E4;
+  /* page: sand; the panels sit one step lighter, in cream */
+  --sheet: #F5E5BD;
   /* the two light tones are close, so the shadow does the cutting out */
   --panel-shadow: 0 1px 2px rgba(54, 21, 13, .07), 0 12px 30px rgba(54, 21, 13, .13);
   /* dark blocks: header bar, newsletter, gallery, term cards */
@@ -29,7 +29,7 @@
   --cherry: #500208;
   /* the sand tone on its own, for pieces that must not follow the season */
   --sand: #F5E5BD;
-  --ground: #F5E5BD;
+  --ground: #FAF4E4;
   --surface: #FFFDF6;
   /* cards: plain white, slightly see-through over the cream panel */
   --card: rgba(255, 255, 255, .55);
