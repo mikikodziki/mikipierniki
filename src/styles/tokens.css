@@ -12,8 +12,8 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: one flat, neutral sheet; the cream panels sit a step lighter on it */
-  --sheet: #DFDBD1;
+  /* page: one flat, milky-brown sheet; the cream panels sit a clear step lighter */
+  --sheet: #AC9589;
   /* lifts every panel off the sheet so the cut-out edge stays readable */
   --panel-shadow: 0 1px 2px rgba(32, 23, 14, .05), 0 14px 34px rgba(32, 23, 14, .07);
   /* dark blocks (voucher, newsletter, term card labels) keep the brand colour */
