@@ -7,7 +7,7 @@ const year = new Date().getFullYear();
   <div class="wrap">
     <div class="foot">
       <div class="brand">
-        <a class="logo" href="/"><Hug class="logo-mark" /><span class="logo-name">{site.name}</span></a>
+        <a class="logo" href="/"><span class="logo-badge"><Hug class="logo-mark" /></span><span class="logo-name">{site.name}</span></a>
         <p>{site.tagline}.</p>
       </div>
       <div>
@@ -48,7 +48,8 @@ const year = new Date().getFullYear();
   .brand p { color: var(--on-dark-soft); max-width: 34ch; }
   .logo { display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--on-dark); }
   .logo-name { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.6rem; line-height: 1.05; max-width: 6ch; }
-  .logo :global(.logo-mark) { height: 84px; width: auto; }
+  .logo-badge { display: grid; place-items: center; padding: 10px; border-radius: 20px; background: var(--ground); color: var(--ink); }
+  .logo :global(.logo-mark) { height: 76px; width: auto; }
   .h { margin: 0 0 10px; font: 600 .78rem var(--body); letter-spacing: .12em; text-transform: uppercase; color: var(--pistachio); }
   ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
   a { text-decoration: none; }
