@@ -5,14 +5,34 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 [id] { scroll-margin-top: 100px; }
 body {
   margin: 0;
-  background: var(--sheet-glow), var(--sheet);
-  background-attachment: fixed;
+  position: relative;
+  background: var(--sheet-base), var(--sheet);
   background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.6;
 }
+/* two warm washes drifting slowly behind the panels; they scroll with the page */
+body::before, body::after {
+  content: "";
+  position: absolute;
+  inset: -10vh 0;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
+}
+body::before { background: var(--sheet-wash-a); animation: drift-a 34s ease-in-out infinite alternate; }
+body::after { background: var(--sheet-wash-b); animation: drift-b 46s ease-in-out infinite alternate; }
+@keyframes drift-a {
+  from { transform: translate3d(-1.5%, 0, 0) scale(1); }
+  to { transform: translate3d(2%, 1.5%, 0) scale(1.08); }
+}
+@keyframes drift-b {
+  from { transform: translate3d(1.5%, 1%, 0) scale(1.05); }
+  to { transform: translate3d(-2%, -1%, 0) scale(1); }
+}
+
 img, svg { max-width: 100%; }
 a { color: inherit; }
 [hidden] { display: none !important; }
