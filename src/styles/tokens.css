@@ -16,12 +16,12 @@
   --sheet: #2B1016;
   /* the sheet: a vertical cocoa gradient with two drifting warm washes on top */
   --sheet-base: linear-gradient(180deg, #3A151D 0%, #2B1016 45%, #210E18 100%);
-  --sheet-wash-a:
-    radial-gradient(760px 520px at 14% 6%, rgba(138, 58, 26, .85) 0%, rgba(138, 58, 26, 0) 65%),
-    radial-gradient(680px 460px at 86% 32%, rgba(160, 76, 28, .6) 0%, rgba(160, 76, 28, 0) 62%);
-  --sheet-wash-b:
-    radial-gradient(820px 560px at 72% 72%, rgba(86, 30, 50, .7) 0%, rgba(86, 30, 50, 0) 64%),
-    radial-gradient(620px 420px at 22% 88%, rgba(122, 64, 24, .45) 0%, rgba(122, 64, 24, 0) 62%);
+  /* blurred waves drifting over the sheet */
+  --wave-1: #7A3218;
+  --wave-2: #9B4A1C;
+  --wave-3: #4A1A2E;
+  --wave-4: #B4702E;
+  --wave-5: #3A2418;
   /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #3C1A22;
   --on-dark: #FFF3DC;
@@ -58,7 +58,7 @@
   --radius-lg: 28px;
   --radius-panel: 34px;
   --panel-max: 1280px;
-  --panel-gap: clamp(10px, 1.4vw, 18px);
+  --panel-gap: clamp(12px, 2.4vw, 34px);
   --display: "Fraunces", "Cooper Black", "Georgia", serif;
   /* Fraunces axes: soft terminals, quirky letterforms — closest to the logo lettering */
   --display-weight: 800;

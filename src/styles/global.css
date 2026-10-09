@@ -16,16 +16,28 @@ body {
 /* two warm washes drifting slowly behind the panels; they scroll with the page.
    The wrapper clips them, so their motion never adds to the scrollable area. */
 .sheet-glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.sheet-glow span { position: absolute; inset: -12% -6%; display: block; will-change: transform; }
-.sheet-glow span:first-child { background: var(--sheet-wash-a); animation: drift-a 34s ease-in-out infinite alternate; }
-.sheet-glow span:last-child { background: var(--sheet-wash-b); animation: drift-b 46s ease-in-out infinite alternate; }
-@keyframes drift-a {
-  from { transform: translate3d(-1.5%, 0, 0) scale(1); }
-  to { transform: translate3d(2%, 1.5%, 0) scale(1.08); }
+/* one blur pass over all the blobs keeps this cheap */
+.sheet-glow .waves { position: absolute; inset: -8%; filter: blur(80px); opacity: .85; }
+.sheet-glow .waves span {
+  position: absolute; display: block; border-radius: 48% 52% 60% 40% / 55% 45% 55% 45%;
+  will-change: transform;
 }
-@keyframes drift-b {
-  from { transform: translate3d(1.5%, 1%, 0) scale(1.05); }
-  to { transform: translate3d(-2%, -1%, 0) scale(1); }
+.sheet-glow .waves span:nth-child(1) { left: -12%; top: 2%;  width: 74%; height: 26%; background: var(--wave-1); animation: wave-a 46s ease-in-out infinite alternate; }
+.sheet-glow .waves span:nth-child(2) { right: -14%; top: 16%; width: 66%; height: 22%; background: var(--wave-2); animation: wave-b 58s ease-in-out infinite alternate; }
+.sheet-glow .waves span:nth-child(3) { left: 8%;  top: 40%;  width: 80%; height: 24%; background: var(--wave-3); animation: wave-c 52s ease-in-out infinite alternate; }
+.sheet-glow .waves span:nth-child(4) { right: -8%; top: 62%; width: 70%; height: 22%; background: var(--wave-4); opacity: .7; animation: wave-b 64s ease-in-out infinite alternate-reverse; }
+.sheet-glow .waves span:nth-child(5) { left: -10%; top: 82%; width: 78%; height: 24%; background: var(--wave-5); animation: wave-a 70s ease-in-out infinite alternate-reverse; }
+@keyframes wave-a {
+  from { transform: translate3d(-4%, -2%, 0) rotate(-6deg) scale(1); }
+  to   { transform: translate3d(6%, 3%, 0) rotate(8deg) scale(1.15); }
+}
+@keyframes wave-b {
+  from { transform: translate3d(5%, 2%, 0) rotate(5deg) scale(1.12); }
+  to   { transform: translate3d(-5%, -3%, 0) rotate(-7deg) scale(1); }
+}
+@keyframes wave-c {
+  from { transform: translate3d(-6%, 1%, 0) rotate(4deg) scale(1.08); }
+  to   { transform: translate3d(4%, -2%, 0) rotate(-5deg) scale(1.18); }
 }
 
 img, svg { max-width: 100%; }
