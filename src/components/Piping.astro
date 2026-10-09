@@ -1,16 +1,17 @@
 ---
-// Row of piped royal-icing dots: the site's signature divider.
+// A piped line of royal icing: the site's signature divider.
+// Drawn as a masked wave so the colour still comes from a token.
 ---
 <div class="piping-row" aria-hidden="true"><div class="piping"></div></div>
 
 <style>
   .piping-row { max-width: var(--panel-max); width: 100%; margin-inline: auto; padding: 10px clamp(20px, 3vw, 40px); }
   .piping {
-    height: 10px;
-    background-image: radial-gradient(circle, var(--mango) 2.6px, transparent 3px);
-    background-size: 16px 10px;
-    background-repeat: repeat-x;
-    background-position: center;
-    opacity: .75;
+    height: 12px;
+    background: var(--ink-soft);
+    opacity: .55;
+    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 12' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M0 6C5 1 15 1 20 6s15 5 20 0'/%3E%3C/svg%3E");
+    -webkit-mask: var(--wave) repeat-x center / 40px 12px;
+    mask: var(--wave) repeat-x center / 40px 12px;
   }
 </style>

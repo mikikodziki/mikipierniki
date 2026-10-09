@@ -75,14 +75,14 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 
   .panel {
     position: absolute; left: 12px; right: 12px; bottom: 12px;
-    background: var(--dark); color: var(--on-dark);
+    background: var(--cherry); color: var(--on-dark);
     border-radius: 20px; padding: 18px;
     display: grid;
   }
   .top { display: grid; gap: 8px; justify-items: start; }
   .tag {
     font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-    color: var(--on-mango); background: var(--mango);
+    color: var(--ink); background: var(--sand);
     padding: 5px 11px; border-radius: 999px;
   }
   .when { font-size: .88rem; color: color-mix(in srgb, var(--on-dark) 92%, transparent); }
@@ -97,9 +97,9 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   .seats { display: grid; gap: 6px; font-size: .85rem; color: color-mix(in srgb, var(--on-dark) 90%, transparent); }
   .seats b { color: var(--on-dark); }
   .bar { height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--on-dark) 22%, transparent); overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--mango); border-radius: inherit; }
-  .seats.low b, .seats.soldOut b { color: var(--accent-tint); }
-  .seats.low .bar i, .seats.soldOut .bar i { background: var(--accent-tint); }
+  .bar i { display: block; height: 100%; background: var(--blue); border-radius: inherit; }
+  .seats.low b, .seats.soldOut b { color: var(--sand); }
+  .seats.low .bar i, .seats.soldOut .bar i { background: var(--sand); }
 
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--on-dark); }

@@ -5,18 +5,23 @@ chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
 Paleta od Dominiki, siedem kolorów:
-- #FAF4E4 krem — panele sekcji, napisy na ciemnym tle.
-- #F5E5BD piaskowy — drugi ton paneli, ramki formularzy, plakietki.
-- #764B31 brąz — tło całej strony (jednolite, bez gradientu) i drugoplanowe napisy.
-- #4A2C24 ciemny brąz — pasek nagłówka i wszystkie ciemne bloki (zapisy, galeria,
-  karty terminów).
+- #FAF4E4 krem — tło całej strony (jednolite, bez gradientu), napisy na ciemnym.
+- #F5E5BD piaskowy — panele sekcji, etykiety na kartach terminów. Co druga sekcja
+  jest o ton głębsza (piaskowy z domieszką brązu).
+- #764B31 brąz — drugoplanowe napisy, gwiazdki przy opiniach, okruszki na 404.
+- #4A2C24 ciemny brąz — pasek nagłówka, przyciski w stanie spoczynku, ciemne bloki
+  (zapisy na powiadomienia, galeria).
 - #36150D prawie czarny brąz — wszystkie napisy na jasnym tle, logo i ikona strony.
-- #500208 wiśnia — voucher, nadtytuły sekcji w sezonie świątecznym, komunikaty błędów.
-- #98BEDF błękit — przyciski i inne wezwania do działania. Napisy na nim są w #36150D,
-  bo błękit jest jasny i jaśniejszy napis byłby nieczytelny.
-- Kolor sezonowy: wiśnia #500208 (święta), brąz #764B31 z błękitnym tłem #98BEDF
-  (Wielkanoc), ciemny brąz #4A2C24 (reszta roku).
-- Każdy panel ma miękki cień, żeby krawędź odcinała się od brązowego tła.
+- #500208 wiśnia — voucher i karty terminów, nadtytuły sekcji w sezonie świątecznym,
+  komunikaty błędów.
+- #98BEDF błękit — przyciski po najechaniu, plusy w FAQ, paski wolnych miejsc,
+  obramowanie zaznaczenia. Napisy na błękicie są w #36150D.
+- Przyciski na ciemnych blokach (nagłówek, zapisy, karty terminów) są kremowe,
+  bo czekoladowy zlałby się z tłem. Po najechaniu i one robią się błękitne.
+- Kolor sezonowy: wiśnia #500208 (święta), brąz #764B31 (Wielkanoc),
+  ciemny brąz #4A2C24 (reszta roku).
+- Każdy panel ma miękki cień, bo krem i piaskowy są blisko siebie.
+- Przerywnik między sekcjami: falista linia lukru w brązie, nie kropki.
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
   i jako ikona strony.
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.

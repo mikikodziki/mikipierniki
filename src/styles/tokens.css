@@ -1,13 +1,13 @@
 /*
  * Design tokens. Every colour in components comes from here.
  * Dominika's palette, seven colours:
- *   #FAF4E4 cream   · panels, text on dark
- *   #F5E5BD sand    · the second panel tone, sunken blocks, form boxes
- *   #764B31 brown   · the page sheet, secondary text
+ *   #FAF4E4 cream   · the page sheet, text on dark
+ *   #F5E5BD sand    · the section panels
+ *   #764B31 brown   · secondary text, and mixed into sand for the deeper panels
  *   #4A2C24 dark brown · header bar and every dark block
  *   #36150D near-black brown · all text on light, the logo
  *   #500208 cherry  · the voucher, the season accent, errors
- *   #98BEDF blue    · buttons and other calls to action
+ *   #98BEDF blue    · button hover, FAQ markers, progress bars, focus
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
@@ -17,39 +17,46 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: one flat brown sheet; the cream panels sit far lighter on it */
-  --sheet: #764B31;
-  /* lifts every panel off the sheet so the cut-out edge stays readable */
-  --panel-shadow: 0 1px 2px rgba(54, 21, 13, .08), 0 14px 34px rgba(54, 21, 13, .14);
+  /* page: the lightest cream; panels sit one step deeper, in sand */
+  --sheet: #FAF4E4;
+  /* the two light tones are close, so the shadow does the cutting out */
+  --panel-shadow: 0 1px 2px rgba(54, 21, 13, .07), 0 12px 30px rgba(54, 21, 13, .13);
   /* dark blocks: header bar, newsletter, gallery, term cards */
   --dark: #4A2C24;
   --on-dark: #FAF4E4;
   --on-dark-soft: color-mix(in srgb, #FAF4E4 68%, #764B31);
   /* the voucher ticket, kept apart from the other dark blocks */
   --cherry: #500208;
-  --ground: #FAF4E4;
+  /* the sand tone on its own, for pieces that must not follow the season */
+  --sand: #F5E5BD;
+  --ground: #F5E5BD;
   --surface: #FFFDF6;
   /* cards: plain white, slightly see-through over the cream panel */
   --card: rgba(255, 255, 255, .55);
   /* form fields: filled, never outlined */
   --field: #FFFDF6;
   --field-strong: #FFFFFF;
-  --sunk: #F5E5BD;
-  --panel-deep: #F5E5BD;
+  /* the palette holds two light tones, so the third is mixed from them */
+  --sunk: color-mix(in srgb, #F5E5BD 86%, #764B31);
+  --panel-deep: color-mix(in srgb, #F5E5BD 86%, #764B31);
   --ink: #36150D;
   --ink-soft: #764B31;
   --line: color-mix(in srgb, #764B31 20%, #FAF4E4);
-  /* calls to action */
-  --mango: #98BEDF;
-  /* the blue is light, so its labels carry the darkest brown */
-  --on-mango: #36150D;
-  --mango-deep: color-mix(in srgb, #98BEDF 76%, #36150D);
+  /* highlights, and the hover state of every primary button */
+  --blue: #98BEDF;
+  /* the blue is light, so labels on it carry the darkest brown */
+  --on-blue: #36150D;
   --ginger: #764B31;
   --ginger-text: #764B31;
   --berry: #500208;
   --accent: #500208;
-  --accent-tint: #F5E5BD;
   --shadow-cookie: rgba(54, 21, 13, .25);
+
+  /* backing colours for gallery tiles, picked per photo in the data */
+  --tile-1: #F5E5BD;
+  --tile-2: #98BEDF;
+  --tile-3: #FAF4E4;
+  --tile-4: color-mix(in srgb, #F5E5BD 86%, #764B31);
 
   --radius: 14px;
   --radius-lg: 28px;
@@ -62,7 +69,6 @@
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 1160px;
 }
-/* the palette holds one blue and one cherry, so Easter borrows the blue as a
-   tint and the rest of the year leans on the browns */
-:root[data-season="wielkanoc"] { --accent: #764B31; --accent-tint: #98BEDF; }
-:root[data-season="rok"] { --accent: #4A2C24; --accent-tint: #F5E5BD; }
+/* the palette has one cherry, so the other seasons lean on the browns */
+:root[data-season="wielkanoc"] { --accent: #764B31; }
+:root[data-season="rok"] { --accent: #4A2C24; }
