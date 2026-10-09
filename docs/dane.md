@@ -9,12 +9,12 @@ Paleta „kakao i guma balonowa”:
   palona pomarańcz #94451A i śliwka #4A1A2E). Treść leży na nim w kremowych panelach
   #FFF3DC (co druga sekcja #F6E2C2 albo #FBE9CE).
 - Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
-  terminów): jaśniejsze kakao #3C1A22 z kremowym tekstem #FFF3DC.
+  terminów): #20170E z kremowym tekstem #FFF3DC. Ten sam kolor ma logo.
 - Wyróżnienie: pistacja #4E7A2A na jasnym tle i #A9CF6B na ciemnym
   (wyróżnione słowo w nagłówku, duże liczby, podpisy w stopce).
 - Akcja: pomarańcz #F79926 (przyciski, nazwa w nagłówku).
 - Ostrzeżenia: ceglasty #C0392B.
-- Napisy: #2B1016 na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
+- Napisy: #20170E na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
 - Kolor sezonowy: pistacja #4E7A2A (święta), kobalt #2B2BD6 (Wielkanoc),
   palona pomarańcz #B4581C (reszta roku).
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
