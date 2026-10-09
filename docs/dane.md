@@ -4,22 +4,19 @@ Jedyne źródło prawdy dla treści na stronie. Wszystko poniżej jest potwierdz
 chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
-Paleta „kakao i guma balonowa”:
-- Tło strony: jednolity, lekko brązowy kamień #AC9589 — bez gradientu i bez animacji.
-  Treść leży na nim w kremowych panelach #FFF3DC (co druga sekcja #F6E2C2 albo
-  #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
-- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, karty terminów): śliwka
-  #591920 z kremowym tekstem #FFF3DC. Ten sam kolor mają napisy i logo.
-- Wyróżnienie: butelkowa zieleń #2F592D (wyróżnione słowo w nagłówku, duże liczby,
-  podpisy w stopce, nadtytuły sekcji).
-- Akcja: ceglasta pomarańcz #E74B2B (przyciski, aktywna zakładka, plusy w FAQ),
-  po najechaniu ciemniejsza #C03A1D.
-- Ostrzeżenia: karminowa czerwień #A4162A (wyraźnie inna niż kolor akcji).
-- Napisy: #591920 na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
-  Wyjątek: napisy na pomarańczowych przyciskach są ciemniejsze (#2A0C10),
-  bo śliwka na pomarańczu jest za mało czytelna.
-- Kolor sezonowy: butelkowa zieleń #2F592D (święta), kobalt #2B2BD6 (Wielkanoc),
-  palona pomarańcz #B4581C (reszta roku).
+Paleta od Dominiki, siedem kolorów:
+- #FAF4E4 krem — panele sekcji, napisy na ciemnym tle.
+- #F5E5BD piaskowy — drugi ton paneli, ramki formularzy, plakietki.
+- #764B31 brąz — tło całej strony (jednolite, bez gradientu) i drugoplanowe napisy.
+- #4A2C24 ciemny brąz — pasek nagłówka i wszystkie ciemne bloki (zapisy, galeria,
+  karty terminów).
+- #36150D prawie czarny brąz — wszystkie napisy na jasnym tle, logo i ikona strony.
+- #500208 wiśnia — voucher, nadtytuły sekcji w sezonie świątecznym, komunikaty błędów.
+- #98BEDF błękit — przyciski i inne wezwania do działania. Napisy na nim są w #36150D,
+  bo błękit jest jasny i jaśniejszy napis byłby nieczytelny.
+- Kolor sezonowy: wiśnia #500208 (święta), brąz #764B31 z błękitnym tłem #98BEDF
+  (Wielkanoc), ciemny brąz #4A2C24 (reszta roku).
+- Każdy panel ma miękki cień, żeby krawędź odcinała się od brązowego tła.
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
   i jako ikona strony.
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
