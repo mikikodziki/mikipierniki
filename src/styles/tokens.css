@@ -18,6 +18,8 @@
   --panel-shadow: 0 1px 2px rgba(32, 23, 14, .05), 0 14px 34px rgba(32, 23, 14, .07);
   /* dark blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #20170E;
+  /* a lighter cocoa for panels that lie on a photo, so the picture still breathes */
+  --cocoa: #4E3A2A;
   --on-dark: #FFF3DC;
   --on-dark-soft: #D8B9AC;
   --ground: #FFF3DC;

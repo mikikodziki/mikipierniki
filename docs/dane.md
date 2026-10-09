@@ -8,8 +8,9 @@ Paleta „kakao i guma balonowa”:
 - Tło strony: jednolity, lekko brązowy kamień #AC9589 — bez gradientu i bez animacji.
   Treść leży na nim w kremowych panelach #FFF3DC (co druga sekcja #F6E2C2 albo
   #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
-- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
-  terminów): #20170E z kremowym tekstem #FFF3DC. Ten sam kolor ma logo.
+- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria): #20170E z kremowym
+  tekstem #FFF3DC. Ten sam kolor ma logo.
+- Rozwijane karty terminów leżą na zdjęciu, więc mają jaśniejsze kakao #4E3A2A.
 - Wyróżnienie: butelkowa zieleń #2F592D (wyróżnione słowo w nagłówku, duże liczby,
   podpisy w stopce, nadtytuły sekcji).
 - Akcja: ceglasta pomarańcz #E74B2B (przyciski, aktywna zakładka, plusy w FAQ),
