@@ -5,9 +5,9 @@ chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
 Paleta „kakao i guma balonowa”:
-- Tło strony: ciemne kakao #2B1016 z ciepłą poświatą (gradient: rdza #7A3218,
-  palona pomarańcz #94451A i śliwka #4A1A2E). Treść leży na nim w kremowych panelach
-  #FFF3DC (co druga sekcja #F6E2C2 albo #FBE9CE).
+- Tło strony: jednolity, neutralny kamień #DFDBD1 — bez gradientu i bez animacji.
+  Treść leży na nim w kremowych panelach #FFF3DC (co druga sekcja #F6E2C2 albo
+  #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
 - Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
   terminów): #20170E z kremowym tekstem #FFF3DC. Ten sam kolor ma logo.
 - Wyróżnienie: pistacja #4E7A2A na jasnym tle i #A9CF6B na ciemnym

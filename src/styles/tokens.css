@@ -12,17 +12,11 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: one light sheet, content sits on it in lighter panels */
-  --sheet: #2B1016;
-  /* the sheet: a vertical cocoa gradient with two drifting warm washes on top */
-  --sheet-base: linear-gradient(180deg, #3A151D 0%, #2B1016 45%, #210E18 100%);
-  /* blurred waves drifting over the sheet */
-  --wave-1: #3B2128;
-  --wave-2: #452A2C;
-  --wave-3: #301B22;
-  --wave-4: #4A3330;
-  --wave-5: #28161C;
-  /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
+  /* page: one flat, neutral sheet; the cream panels sit a step lighter on it */
+  --sheet: #DFDBD1;
+  /* lifts every panel off the sheet so the cut-out edge stays readable */
+  --panel-shadow: 0 1px 2px rgba(32, 23, 14, .05), 0 14px 34px rgba(32, 23, 14, .07);
+  /* dark blocks (voucher, newsletter, term card labels) keep the brand colour */
   --dark: #20170E;
   --on-dark: #FFF3DC;
   --on-dark-soft: #D8B9AC;

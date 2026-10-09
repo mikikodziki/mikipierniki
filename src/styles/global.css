@@ -5,66 +5,11 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 [id] { scroll-margin-top: 100px; }
 body {
   margin: 0;
-  position: relative;
-  background: var(--sheet-base), var(--sheet);
-  background-repeat: no-repeat;
+  background: var(--sheet);
   color: var(--ink);
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.6;
-}
-/* two warm washes drifting slowly behind the panels; they scroll with the page.
-   The wrapper clips them, so their motion never adds to the scrollable area. */
-.sheet-glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-/* one blur pass over all the blobs keeps this cheap */
-.sheet-glow .waves { position: absolute; inset: -8%; filter: blur(120px); opacity: .7; }
-.sheet-glow .waves span {
-  position: absolute; display: block; border-radius: 48% 52% 60% 40% / 55% 45% 55% 45%;
-  will-change: transform;
-}
-/* broad bands flowing across the sheet, plus two soft bends */
-.sheet-glow .waves span:nth-child(1) {
-  inset: -35% -20%;
-  background: linear-gradient(168deg, transparent 8%, var(--wave-2) 42%, transparent 72%);
-  animation: band-a 64s ease-in-out infinite alternate;
-}
-.sheet-glow .waves span:nth-child(2) {
-  inset: -30% -20%;
-  background: linear-gradient(196deg, transparent 18%, var(--wave-1) 55%, transparent 88%);
-  animation: band-b 82s ease-in-out infinite alternate;
-}
-.sheet-glow .waves span:nth-child(3) {
-  inset: -20% -15%;
-  background: radial-gradient(62% 38% at 32% 30%, var(--wave-4) 0%, transparent 72%);
-  opacity: .75;
-  animation: bend-a 56s ease-in-out infinite alternate;
-}
-.sheet-glow .waves span:nth-child(4) {
-  inset: -20% -15%;
-  background: radial-gradient(68% 34% at 72% 74%, var(--wave-3) 0%, transparent 70%);
-  animation: bend-b 70s ease-in-out infinite alternate-reverse;
-}
-.sheet-glow .waves span:nth-child(5) {
-  inset: -25% -20%;
-  background: linear-gradient(8deg, var(--wave-5) 5%, transparent 45%);
-  animation: band-a 92s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes band-a {
-  from { transform: translate3d(-3%, -6%, 0) rotate(-3deg) scale(1.05); }
-  to   { transform: translate3d(3%, 7%, 0) rotate(4deg) scale(1.15); }
-}
-@keyframes band-b {
-  from { transform: translate3d(4%, 5%, 0) rotate(3deg) scale(1.12); }
-  to   { transform: translate3d(-4%, -6%, 0) rotate(-4deg) scale(1.04); }
-}
-@keyframes bend-a {
-  from { transform: translate3d(-5%, 2%, 0) scale(1); }
-  to   { transform: translate3d(6%, -3%, 0) scale(1.2); }
-}
-@keyframes bend-b {
-  from { transform: translate3d(5%, -2%, 0) scale(1.15); }
-  to   { transform: translate3d(-6%, 3%, 0) scale(1); }
 }
 
 img, svg { max-width: 100%; }
@@ -85,7 +30,7 @@ p { margin: 0; }
 :root[data-season="wielkanoc"] [data-for-season]:not([data-for-season~="wielkanoc"]),
 :root[data-season="rok"] [data-for-season]:not([data-for-season~="rok"]) { display: none !important; }
 
-/* Layout: every section is a cream panel cut out of the dark page */
+/* Layout: every section is a cream panel laid on the neutral sheet */
 .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: clamp(20px, 3vw, 40px); }
 main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); padding-bottom: var(--panel-gap); }
 .section, .page-head, .hero {
@@ -95,6 +40,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
   width: 100%;
   margin-inline: auto;
   overflow: clip;
+  box-shadow: var(--panel-shadow);
 }
 .section { padding-block: clamp(44px, 6vw, 80px); }
 .section--sunk { background: var(--sunk); }
