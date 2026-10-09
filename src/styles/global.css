@@ -83,7 +83,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
   transition: transform .15s ease, border-color .15s ease;
 }
 .btn:hover { transform: translateY(-1px); }
-.btn-primary { background: var(--mango); color: var(--ink); }
+.btn-primary { background: var(--mango); color: var(--on-mango); }
 .btn-primary:hover { background: var(--mango-deep); color: var(--on-dark); }
 .btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }

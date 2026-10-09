@@ -8,15 +8,16 @@ Paleta „kakao i guma balonowa”:
 - Tło strony: jednolity, lekko brązowy kamień #AC9589 — bez gradientu i bez animacji.
   Treść leży na nim w kremowych panelach #FFF3DC (co druga sekcja #F6E2C2 albo
   #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
-- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria): #20170E z kremowym
-  tekstem #FFF3DC. Ten sam kolor ma logo.
-- Rozwijane karty terminów leżą na zdjęciu, więc mają jaśniejszą śliwkę #591920.
+- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, karty terminów): śliwka
+  #591920 z kremowym tekstem #FFF3DC. Ten sam kolor mają napisy i logo.
 - Wyróżnienie: butelkowa zieleń #2F592D (wyróżnione słowo w nagłówku, duże liczby,
   podpisy w stopce, nadtytuły sekcji).
 - Akcja: ceglasta pomarańcz #E74B2B (przyciski, aktywna zakładka, plusy w FAQ),
   po najechaniu ciemniejsza #C03A1D.
 - Ostrzeżenia: karminowa czerwień #A4162A (wyraźnie inna niż kolor akcji).
-- Napisy: #20170E na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
+- Napisy: #591920 na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
+  Wyjątek: napisy na pomarańczowych przyciskach są ciemniejsze (#2A0C10),
+  bo śliwka na pomarańczu jest za mało czytelna.
 - Kolor sezonowy: butelkowa zieleń #2F592D (święta), kobalt #2B2BD6 (Wielkanoc),
   palona pomarańcz #B4581C (reszta roku).
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce

@@ -16,10 +16,8 @@
   --sheet: #AC9589;
   /* lifts every panel off the sheet so the cut-out edge stays readable */
   --panel-shadow: 0 1px 2px rgba(32, 23, 14, .05), 0 14px 34px rgba(32, 23, 14, .07);
-  /* dark blocks (voucher, newsletter, term card labels) keep the brand colour */
-  --dark: #20170E;
-  /* a lighter plum for panels that lie on a photo, so the picture still breathes */
-  --plum: #591920;
+  /* dark blocks (header, voucher, newsletter, gallery, term cards) and the logo */
+  --dark: #591920;
   --on-dark: #FFF3DC;
   --on-dark-soft: #D8B9AC;
   --ground: #FFF3DC;
@@ -31,10 +29,12 @@
   --field-strong: #FFFFFF;
   --sunk: #FBE9CE;
   --panel-deep: #F6E2C2;
-  --ink: #20170E;
+  --ink: #591920;
   --ink-soft: #70454C;
   --line: #EBD9BC;
   --mango: #E74B2B;
+  /* the plum ink is too light to sit on the orange; labels there use this */
+  --on-mango: #2A0C10;
   --mango-deep: #C03A1D;
   --cobalt: #2B2BD6;
   --ginger: #2F592D;
