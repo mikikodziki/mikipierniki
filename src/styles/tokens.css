@@ -1,8 +1,8 @@
 /*
  * Design tokens. Every colour in components comes from here.
  * Palette "kakao i guma balonowa": a dark cocoa sheet carries cream panels;
- * cocoa blocks sit on top of them, pink is the highlight, orange the action
- * colour and cobalt a small detail.
+ * cocoa blocks sit on top of them, pistachio is the highlight, orange the
+ * action colour.
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
@@ -32,17 +32,17 @@
   --line: #EBD9BC;
   --mango: #F79926;
   --mango-deep: #C06F0E;
-  --pink: #FF7FB2;
+  --pistachio: #A9CF6B;
   --cobalt: #2B2BD6;
-  --ginger: #E0356F;
-  --ginger-text: #C01E57;
-  --berry: #D6245F;
-  --accent: #C01E57;
-  --accent-tint: #FADDE8;
+  --ginger: #4E7A2A;
+  --ginger-text: #4E7A2A;
+  --berry: #C0392B;
+  --accent: #4E7A2A;
+  --accent-tint: #E4EFD4;
   --shadow-cookie: rgba(43, 16, 22, .25);
 
   --tile-1: #F3E2C6;
-  --tile-2: #F7D9E5;
+  --tile-2: #E6EFD6;
   --tile-3: #E3DFF6;
   --tile-4: #F6E7D2;
 
@@ -58,4 +58,4 @@
   --wrap: 1160px;
 }
 :root[data-season="wielkanoc"] { --accent: #2B2BD6; --accent-tint: #DEDEF8; }
-:root[data-season="rok"] { --accent: #0E7C66; --accent-tint: #D8EDE7; }
+:root[data-season="rok"] { --accent: #B4581C; --accent-tint: #F6E3D1; }

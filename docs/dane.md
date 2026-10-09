@@ -9,13 +9,13 @@ Paleta „kakao i guma balonowa”:
   #FFF3DC (co druga sekcja #F6E2C2 albo #FBE9CE).
 - Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
   terminów): jaśniejsze kakao #3C1A22 z kremowym tekstem #FFF3DC.
-- Wyróżnienie: róż #E0356F (wyróżnione słowo w nagłówku, duże liczby),
-  jaśniejszy róż #FF7FB2 na ciemnym tle.
+- Wyróżnienie: pistacja #4E7A2A na jasnym tle i #A9CF6B na ciemnym
+  (wyróżnione słowo w nagłówku, duże liczby, podpisy w stopce).
 - Akcja: pomarańcz #F79926 (przyciski, nazwa w nagłówku).
-- Detal: kobalt #2B2BD6 (akcent wielkanocny).
+- Ostrzeżenia: ceglasty #C0392B.
 - Napisy: #2B1016 na jasnym, #FFF3DC na ciemnym, drugoplanowe #70454C.
-- Kolor sezonowy: róż #C01E57 (święta), kobalt #2B2BD6 (Wielkanoc),
-  morska zieleń #0E7C66 (reszta roku).
+- Kolor sezonowy: pistacja #4E7A2A (święta), kobalt #2B2BD6 (Wielkanoc),
+  palona pomarańcz #B4581C (reszta roku).
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
   i jako ikona strony.
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
