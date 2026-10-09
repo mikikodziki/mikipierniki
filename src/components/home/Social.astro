@@ -36,7 +36,7 @@ const testimonials = await getTestimonials();
     <div class="quotes">
       {testimonials.map((t) => (
         <figure class="quote card">
-          <div class="stars" aria-label="Ocena 5 na 5">★★★★★</div>
+          <div class="stars" role="img" aria-label="Ocena 5 na 5">★★★★★</div>
           <blockquote>„{t.text}”</blockquote>
           <figcaption><b>{t.author}</b> · {t.context}</figcaption>
         </figure>

@@ -1,5 +1,6 @@
 ---
 import Photo from "../Photo.astro";
+import { seasonFor } from "@/lib/site";
 import type { CookieShape, Season } from "@/lib/types";
 
 const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; photo: string; photoAlt: string; shapes: [CookieShape, CookieShape, CookieShape, CookieShape] }[] = [
@@ -28,6 +29,8 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     shapes: ["heart", "pumpkin", "man", "star"],
   },
 ];
+// Only the current season's photo loads eagerly; the hidden variants stay lazy and are never fetched.
+const buildSeason = seasonFor(new Date());
 ---
 <section class="hero panel--cherry">
   <div class="wrap grid">
@@ -45,7 +48,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     ))}
     {variants.map((v) => (
       <div class="tray" data-for-season={v.season}>
-        <Photo name={v.photo} alt={v.photoAlt} ratio="5 / 4" sizes="(max-width: 860px) 100vw, 45vw" eager />
+        <Photo name={v.photo} alt={v.photoAlt} ratio="5 / 4" sizes="(max-width: 860px) 100vw, 45vw" eager={v.season === buildSeason} />
       </div>
     ))}
   </div>

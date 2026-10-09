@@ -55,8 +55,9 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     gap: 16px;
     background: var(--cherry);
     color: var(--on-dark);
+    --focus: var(--blue);
     border-radius: 999px;
-    box-shadow: 0 10px 24px rgba(54, 21, 13, .28);
+    box-shadow: var(--shadow-bar);
   }
 
   .brand {
@@ -97,6 +98,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     display: grid;
     background: var(--cherry);
     color: var(--on-dark);
+    --focus: var(--blue);
     border-radius: var(--radius-lg);
   }
   .mobile-menu a { text-decoration: none; color: var(--on-dark); padding-block: 12px; font-size: 1.05rem; font-weight: 500; border-bottom: 1px solid color-mix(in srgb, var(--on-dark) 18%, transparent); }

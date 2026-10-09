@@ -45,7 +45,7 @@ const {
   </label>
   <p class="form-error" role="alert" hidden></p>
   <div><button class="btn btn-primary" type="submit">{submitLabel}</button></div>
-  <p class="form-ok" role="status" hidden>{successText}</p>
+  <p class="form-ok" role="status" tabindex="-1" hidden>{successText}</p>
 </form>
 
 <script>
@@ -68,6 +68,7 @@ const {
       if (!valid || !consent.checked) {
         err.hidden = false;
         err.textContent = !valid ? "Uzupełnij zaznaczone pola." : "Zaznacz zgodę na kontakt, żebym mogła odpisać.";
+        (form.querySelector<HTMLElement>('[aria-invalid="true"]') ?? consent).focus();
         return;
       }
       err.hidden = true;
@@ -83,6 +84,7 @@ const {
         await sendInquiry({ kind: form.dataset.inquiry as InquiryKind, name: val("name"), email: val("email"), phone: val("phone") || undefined, message: val("message"), details });
         form.querySelectorAll<HTMLElement>(":scope > *:not(.form-ok)").forEach((el) => (el.hidden = true));
         ok.hidden = false;
+        ok.focus();
       } catch {
         err.hidden = false;
         err.textContent = "Nie udało się wysłać wiadomości. Spróbuj ponownie albo napisz bezpośrednio na e-mail.";

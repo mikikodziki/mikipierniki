@@ -15,7 +15,7 @@ body {
 img, svg { max-width: 100%; }
 a { color: inherit; }
 [hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
 
 h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
 h1, h2, h3 { font-family: var(--display); font-weight: var(--display-weight); line-height: 1.12; letter-spacing: -0.005em; }
@@ -46,8 +46,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .section--sunk { background: var(--sunk); }
 .section--warm { background: var(--panel-deep); }
 /* panels that carry light type: dark brown for photo sections, cherry for the hero */
-.section--dark { background: var(--dark); }
-.panel--cherry { background: var(--cherry); }
+.section--dark { background: var(--dark); --focus: var(--blue); }
+.panel--cherry { background: var(--cherry); --focus: var(--blue); }
 .section--dark, .panel--cherry { color: var(--on-dark); }
 .section--dark .eyebrow, .panel--cherry .eyebrow { color: var(--blue); }
 .section--dark .lead, .panel--cherry .lead { color: var(--on-dark-soft); }
@@ -143,6 +143,8 @@ fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width:
 legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; padding: 0; }
 .form-error { color: var(--berry); font-size: .9rem; }
 .form-ok { font-weight: 600; color: var(--accent); }
+/* focused from script after sending, so screen readers land on it; no ring */
+.form-ok:focus { outline: none; }
 
 /* Photo placeholder: replace with <img> when real photos arrive */
 .ph { position: relative; background: var(--sunk); overflow: hidden; }

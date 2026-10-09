@@ -14,6 +14,8 @@ interface Props {
   mobileCta?: boolean;
   /** JSON-LD object(s) for structured data */
   jsonLd?: object | object[];
+  /** Keep the page out of search results (404): no canonical, no og:url */
+  noindex?: boolean;
 }
 
 const {
@@ -21,13 +23,14 @@ const {
   description = `${site.tagline} we Wrocławiu. Małe grupy, wszystkie materiały w cenie, pierniki do zabrania do domu.`,
   mobileCta = true,
   jsonLd,
+  noindex = false,
 } = Astro.props;
 
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników we Wrocławiu`;
 // Bez ustawionej domeny (astro.config.mjs) nie wypisujemy canonical ani og:url.
 // build.format "file" gives "/warsztaty.html" here; publish the clean URL the nav links use.
 const cleanPath = Astro.url.pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "");
-const canonical = Astro.site ? new URL(cleanPath, Astro.site) : undefined;
+const canonical = Astro.site && !noindex ? new URL(cleanPath, Astro.site) : undefined;
 const buildSeason = seasonFor(new Date());
 const ranges = JSON.stringify(seasonRanges.map((r) => [r.season, r.from[0] * 100 + r.from[1], r.to[0] * 100 + r.to[1]]));
 const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
@@ -40,6 +43,7 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {canonical && <link rel="canonical" href={canonical} />}
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
@@ -61,7 +65,7 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
         document.documentElement.dataset.season = s;
       })();
     </script>
-    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o)} />)}
+    {ld.map((o) => <script type="application/ld+json" set:html={JSON.stringify(o).replace(/</g, "\\u003c")} />)}
   </head>
   <body>
     <CookieSprite />
@@ -93,10 +97,23 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "sel";
+    // combobox, so aria-activedescendant is allowed and the button text is read as the value
+    btn.setAttribute("role", "combobox");
     btn.setAttribute("aria-haspopup", "listbox");
     btn.setAttribute("aria-expanded", "false");
     const label = select.closest("label");
-    if (label) btn.setAttribute("aria-label", (label.textContent || "").trim());
+    if (label) {
+      // the label wraps the select, so name the button from the label without its options
+      const caption = label.cloneNode(true) as HTMLElement;
+      caption.querySelectorAll("select").forEach((s) => s.remove());
+      btn.setAttribute("aria-label", (caption.textContent || "").replace(/\s+/g, " ").trim());
+      // a click on the caption would focus the hidden native select; send it to the button
+      label.addEventListener("click", (e) => {
+        if (e.target === btn) return;
+        e.preventDefault();
+        btn.focus();
+      });
+    }
 
     const list = document.createElement("ul");
     list.className = "sel-list";

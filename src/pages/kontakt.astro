@@ -10,14 +10,14 @@ const home = venues[0];
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
-// Bez pola `url` — adres strony nie jest jeszcze ustalony.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
   name: site.name,
   description: site.tagline,
   email: site.email,
-  telephone: site.phone,
+  url: Astro.site?.href,
+  telephone: site.phoneHref.replace("tel:", ""),
   sameAs: [site.instagram],
   ...(home && {
     address: {
