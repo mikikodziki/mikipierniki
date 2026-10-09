@@ -10,7 +10,7 @@ Paleta „kakao i guma balonowa”:
   #FBE9CE), każdy panel ma miękki cień, żeby krawędź była wyraźna.
 - Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria): #20170E z kremowym
   tekstem #FFF3DC. Ten sam kolor ma logo.
-- Rozwijane karty terminów leżą na zdjęciu, więc mają jaśniejsze kakao #4E3A2A.
+- Rozwijane karty terminów leżą na zdjęciu, więc mają jaśniejszą śliwkę #591920.
 - Wyróżnienie: butelkowa zieleń #2F592D (wyróżnione słowo w nagłówku, duże liczby,
   podpisy w stopce, nadtytuły sekcji).
 - Akcja: ceglasta pomarańcz #E74B2B (przyciski, aktywna zakładka, plusy w FAQ),
