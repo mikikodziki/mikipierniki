@@ -4,11 +4,18 @@ Jedyne źródło prawdy dla treści na stronie. Wszystko poniżej jest potwierdz
 chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
-- Logo: wordmark „Miki Pierniki” z dziewczyną i piernikowym ludzikiem, jednokolorowy.
-- Tło strony: piaskowy #DFCCA7. Treść leży na nim w jaśniejszych panelach #FBF8EE
-  (co druga sekcja #F3EEE0). Śliwka #461F28 została kolorem bloków akcentowych
-  (voucher, zapisy na powiadomienia, etykiety na kartach terminów) i logo.
-- Akcent: pomarańcz #F79926 (przyciski, podkreślenia, kropki lukru).
+Paleta „piernik i mięta”:
+- Tło strony: karmel #E8C79A. Treść leży na nim w kremowych panelach #FFF8EC
+  (co druga sekcja #F3E3C6 albo #FAEFDC).
+- Ciemne bloki (pasek nagłówka, voucher, zapisy, galeria, etykiety na kartach
+  terminów): zieleń butelkowa #0E4F3F z kremowym tekstem #FFF8EC.
+- Akcja: pomarańcz #F2621F (przyciski, nazwa w nagłówku, kropki lukru).
+- Ostrzeżenia i drobne detale: malina #C2185B.
+- Napisy: #2A1A12, drugoplanowe #6B4A38.
+- Kolor sezonowy: zieleń #0E4F3F (święta), oliwka #4C6B2F (Wielkanoc),
+  malina #C2185B (reszta roku).
+- Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
+  i jako ikona strony.
 - Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
 
 ## Kontakt i miejsce

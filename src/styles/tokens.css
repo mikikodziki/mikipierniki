@@ -1,7 +1,7 @@
 /*
  * Design tokens. Every colour in components comes from here.
- * Brand: plum #461F28 and cream #FDFBD8, mango #F79926 for actions.
- * The page is a sand sheet (#DFCCA7) carrying lighter panels.
+ * Palette "piernik i mięta": caramel sheet, cream panels, bottle green for the
+ * dark blocks, strong orange for actions and raspberry for warnings.
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
@@ -12,36 +12,36 @@
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
   /* page: one light sheet, content sits on it in lighter panels */
-  --sheet: #DFCCA7;
+  --sheet: #E8C79A;
   /* plum blocks (voucher, newsletter, term card labels) keep the brand colour */
-  --dark: #461F28;
-  --on-dark: #FDFBD8;
-  --on-dark-soft: #CBAE9E;
-  --ground: #FBF8EE;
-  --surface: #FFFDF8;
+  --dark: #0E4F3F;
+  --on-dark: #FFF8EC;
+  --on-dark-soft: #BBD2C7;
+  --ground: #FFF8EC;
+  --surface: #FFFCF4;
   /* cards: plain white, slightly see-through over the cream panel */
-  --card: rgba(255, 255, 255, .45);
+  --card: rgba(255, 255, 255, .55);
   /* form fields: filled, never outlined */
-  --field: #FFFDF8;
+  --field: #FFFCF4;
   --field-strong: #FFFFFF;
-  --sunk: #F3EEE0;
-  --panel-deep: #ECE2D0;
-  --ink: #3B1720;
-  --ink-soft: #6E464F;
-  --line: #E6DECB;
-  --mango: #F79926;
-  --mango-deep: #C06F0E;
+  --sunk: #FAEFDC;
+  --panel-deep: #F3E3C6;
+  --ink: #2A1A12;
+  --ink-soft: #6B4A38;
+  --line: #E7D7BC;
+  --mango: #F2621F;
+  --mango-deep: #C94A10;
   --ginger: #B86B35;
   --ginger-text: #8E4E22;
-  --berry: #9E1B33;
-  --accent: #1B4634;
-  --accent-tint: #DFE9DC;
-  --shadow-cookie: rgba(59, 23, 32, .18);
+  --berry: #C2185B;
+  --accent: #0E4F3F;
+  --accent-tint: #DCE9E2;
+  --shadow-cookie: rgba(42, 26, 18, .2);
 
-  --tile-1: #EDE4D2;
-  --tile-2: #DEE6DC;
-  --tile-3: #F0DED9;
-  --tile-4: #E8E4D4;
+  --tile-1: #F0E0C4;
+  --tile-2: #DCE8DF;
+  --tile-3: #F6DDD2;
+  --tile-4: #EDE6CE;
 
   --radius: 14px;
   --radius-lg: 28px;
@@ -54,5 +54,5 @@
   --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
   --wrap: 1160px;
 }
-:root[data-season="wielkanoc"] { --accent: #47581F; --accent-tint: #E5E9CD; }
-:root[data-season="rok"] { --accent: #86253D; --accent-tint: #F1DBDE; }
+:root[data-season="wielkanoc"] { --accent: #4C6B2F; --accent-tint: #E4EBD6; }
+:root[data-season="rok"] { --accent: #C2185B; --accent-tint: #F7DDE7; }

@@ -82,7 +82,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   .top { display: grid; gap: 8px; justify-items: start; }
   .tag {
     font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-    color: #3B1720; background: var(--mango);
+    color: var(--ink); background: var(--mango);
     padding: 5px 11px; border-radius: 999px;
   }
   .when { font-size: .88rem; color: color-mix(in srgb, var(--on-dark) 92%, transparent); }
@@ -98,8 +98,8 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   .seats b { color: var(--on-dark); }
   .bar { height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--on-dark) 22%, transparent); overflow: hidden; }
   .bar i { display: block; height: 100%; background: var(--mango); border-radius: inherit; }
-  .seats.low b, .seats.soldOut b { color: #FFC2B4; }
-  .seats.low .bar i, .seats.soldOut .bar i { background: #E2657A; }
+  .seats.low b, .seats.soldOut b { color: #FFC9DC; }
+  .seats.low .bar i, .seats.soldOut .bar i { background: #F2779F; }
 
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--on-dark); }
