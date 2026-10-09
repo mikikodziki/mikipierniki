@@ -8,10 +8,10 @@ import SectionHead from "../SectionHead.astro";
 import type { CookieShape } from "@/lib/types";
 
 const facts = [
-  { num: "3–4 h", title: "Spokojne tempo", text: "Tyle trwają warsztaty dla dorosłych i wieczorne. Jest czas na naukę technik, próby i dekorowanie bez pośpiechu. Warsztaty dla dzieci trwają 2 godziny." },
-  { num: "6–8", title: "Pierników do domu", text: "Tyle pierników zdobisz na warsztacie i zabierasz wszystkie w pudełku. Lukier, który Ci zostanie, też możesz wziąć ze sobą." },
-  { num: "0", title: "Doświadczenia potrzeba", text: "Zaczynamy od trzymania rękawa. Konturowanie, zalewanie i mokre na mokrym przychodzą same." },
-  { num: "4–10", title: "Osób w grupie", text: "Na tyle osób mam miejsce i tyle daje radę spokojnie prowadzić. W cenie pierniki, lukry, rękawy, fartuch, napoje i pudełko." },
+  { num: "3–4 h", title: "Spokojne tempo", text: "Tyle trwają warsztaty dla dorosłych i wieczorne. Dla dzieci: 2 godziny." },
+  { num: "6–8", title: "Pierników do domu", text: "Tyle zdobisz i tyle zabierasz w pudełku. Lukier, który zostanie, też jest Twój." },
+  { num: "0", title: "Potrzebne doświadczenie", text: "Zaczynamy od trzymania rękawa. Reszta przychodzi sama." },
+  { num: "4–10", title: "Osób w grupie", text: "Tyle daję radę prowadzić spokojnie, z czasem dla każdego przy stole." },
 ];
 
 const audiences: { shape: CookieShape; title: string; text: string; href: string; go: string }[] = [
@@ -75,11 +75,11 @@ const orders: { shape: CookieShape; photo: string; photoAlt: string; title: stri
 </section>
 
 <style>
-  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
-  .fact { display: grid; gap: 8px; align-content: start; }
-  .num { font-family: var(--display); font-weight: var(--display-weight); font-size: 2.4rem; color: var(--ginger); line-height: 1; }
-  .fact h3 { font: 700 1.15rem var(--body); }
-  .fact p { color: var(--ink-soft); font-size: .95rem; }
+  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .fact { display: grid; gap: 10px; align-content: start; background: var(--card); border-radius: var(--radius-lg); padding: clamp(24px, 3vw, 34px); }
+  .num { font-family: var(--display); font-weight: var(--display-weight); font-size: clamp(2.6rem, 4vw, 3.4rem); color: var(--ginger); line-height: 1; }
+  .fact h3 { font: 700 1.2rem/1.3 var(--body); }
+  .fact p { color: var(--ink-soft); font-size: 1rem; line-height: 1.65; max-width: 34ch; }
 
   .aud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .aud a { display: grid; gap: 10px; align-content: start; text-decoration: none; padding: 22px; transition: transform .15s ease, background-color .15s ease; }
@@ -97,6 +97,6 @@ const orders: { shape: CookieShape; photo: string; photoAlt: string; title: stri
   .deadline span { color: var(--berry); }
 
   @media (max-width: 960px) { .aud { grid-template-columns: repeat(2, 1fr); } }
-  @media (max-width: 860px) { .facts { grid-template-columns: repeat(2, 1fr); } .orders { grid-template-columns: 1fr; } }
-  @media (max-width: 480px) { .facts, .aud { grid-template-columns: 1fr; } }
+  @media (max-width: 860px) { .orders { grid-template-columns: 1fr; } }
+  @media (max-width: 620px) { .facts, .aud { grid-template-columns: 1fr; } }
 </style>
