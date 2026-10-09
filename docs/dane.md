@@ -5,10 +5,10 @@ chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Kolory i logo
 Paleta od Dominiki, siedem kolorów:
-- #FAF4E4 krem — panele sekcji, napisy na ciemnym tle.
-- #F5E5BD piaskowy — tło całej strony (jednolite, bez gradientu), plakietki
-  i etykiety na kartach terminów. Co druga sekcja jest o ton głębsza
-  (piaskowy z domieszką brązu).
+- #FFFBF1 prawie biały — panele sekcji, napisy na ciemnym tle, pola formularzy.
+- #F6EEDB neutralny beż — tło całej strony (jednolite, bez gradientu).
+- #FFF2D9 ciepły krem — co druga sekcja, ramki formularzy, plakietki
+  i etykiety na kartach terminów.
 - #764B31 brąz — drugoplanowe napisy, gwiazdki przy opiniach, okruszki na 404.
 - #4A2C24 ciemny brąz — pasek nagłówka, przyciski w stanie spoczynku, ciemne bloki
   (zapisy na powiadomienia, galeria).
@@ -21,7 +21,7 @@ Paleta od Dominiki, siedem kolorów:
   bo czekoladowy zlałby się z tłem. Po najechaniu i one robią się błękitne.
 - Kolor sezonowy: wiśnia #500208 (święta), brąz #764B31 (Wielkanoc),
   ciemny brąz #4A2C24 (reszta roku).
-- Każdy panel ma miękki cień, bo krem i piaskowy są blisko siebie.
+- Każdy panel ma miękki cień, bo trzy jasne tony leżą blisko siebie.
 - Przerywnik między sekcjami: falista linia lukru w brązie, nie kropki.
 - Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
   i jako ikona strony.

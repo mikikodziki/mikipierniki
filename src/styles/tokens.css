@@ -1,9 +1,10 @@
 /*
  * Design tokens. Every colour in components comes from here.
  * Dominika's palette, seven colours:
- *   #FAF4E4 cream   · the section panels, text on dark
- *   #F5E5BD sand    · the page sheet, badges, tags
- *   #764B31 brown   · secondary text, and mixed into sand for the deeper panels
+ *   #FFFBF1 near-white · the section panels, text on dark, form fields
+ *   #F6EEDB beige  · the page sheet
+ *   #FFF2D9 warm cream · the deeper panels, form boxes, badges and tags
+ *   #764B31 brown   · secondary text, hairlines, gingerbread crumbs
  *   #4A2C24 dark brown · header bar and every dark block
  *   #36150D near-black brown · all text on light, the logo
  *   #500208 cherry  · the voucher, the season accent, errors
@@ -17,31 +18,30 @@
   /* inherited by everything; ignored by fonts without these axes */
   font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: sand; the panels sit one step lighter, in cream */
-  --sheet: #F5E5BD;
-  /* the two light tones are close, so the shadow does the cutting out */
-  --panel-shadow: 0 1px 2px rgba(54, 21, 13, .07), 0 12px 30px rgba(54, 21, 13, .13);
+  /* page: the neutral beige; every panel sits lighter on it */
+  --sheet: #F6EEDB;
+  /* the three light tones are close, so the shadow does the cutting out */
+  --panel-shadow: 0 1px 2px rgba(54, 21, 13, .08), 0 12px 30px rgba(54, 21, 13, .15);
   /* dark blocks: header bar, newsletter, gallery, term cards */
   --dark: #4A2C24;
-  --on-dark: #FAF4E4;
-  --on-dark-soft: color-mix(in srgb, #FAF4E4 68%, #764B31);
+  --on-dark: #FFFBF1;
+  --on-dark-soft: color-mix(in srgb, #FFFBF1 68%, #764B31);
   /* the voucher ticket, kept apart from the other dark blocks */
   --cherry: #500208;
-  /* the sand tone on its own, for pieces that must not follow the season */
-  --sand: #F5E5BD;
-  --ground: #FAF4E4;
-  --surface: #FFFDF6;
+  /* the warm cream on its own, for pieces that must not follow the season */
+  --sand: #FFF2D9;
+  --ground: #FFFBF1;
+  --surface: #FFFBF1;
   /* cards: plain white, slightly see-through over the cream panel */
   --card: rgba(255, 255, 255, .55);
   /* form fields: filled, never outlined */
-  --field: #FFFDF6;
+  --field: #FFFBF1;
   --field-strong: #FFFFFF;
-  /* the palette holds two light tones, so the third is mixed from them */
-  --sunk: color-mix(in srgb, #F5E5BD 86%, #764B31);
-  --panel-deep: color-mix(in srgb, #F5E5BD 86%, #764B31);
+  --sunk: #FFF2D9;
+  --panel-deep: #FFF2D9;
   --ink: #36150D;
   --ink-soft: #764B31;
-  --line: color-mix(in srgb, #764B31 20%, #FAF4E4);
+  --line: color-mix(in srgb, #764B31 20%, #FFFBF1);
   /* highlights, and the hover state of every primary button */
   --blue: #98BEDF;
   /* the blue is light, so labels on it carry the darkest brown */
@@ -53,10 +53,10 @@
   --shadow-cookie: rgba(54, 21, 13, .25);
 
   /* backing colours for gallery tiles, picked per photo in the data */
-  --tile-1: #F5E5BD;
+  --tile-1: #FFF2D9;
   --tile-2: #98BEDF;
-  --tile-3: #FAF4E4;
-  --tile-4: color-mix(in srgb, #F5E5BD 86%, #764B31);
+  --tile-3: #FFFBF1;
+  --tile-4: color-mix(in srgb, #FFF2D9 82%, #764B31);
 
   --radius: 14px;
   --radius-lg: 28px;
