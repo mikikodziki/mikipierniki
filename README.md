@@ -38,6 +38,8 @@ docs/szkic.html         zatwierdzony szkic wizualny
 - Dane tylko przez `src/lib/api.ts`. Strony nie importują `mock-data.ts`.
 - Treść sezonowa: renderuj wszystkie warianty z `data-for-season="swieta"` itd., CSS pokazuje właściwy.
 - Zdjęcia: do czasu prawdziwych zdjęć `<div class="ph" data-label="zdjęcie: …">` z ilustracją `<Cookie>`.
+- Nowe zdjęcie: `node scripts/zdjecia.mjs <plik> <nazwa>` tworzy w `public/zdjecia` wszystkie szerokości, których używa `<Photo>`.
+- Czcionki są w `public/fonts` (bez Google Fonts), deklaracje w `styles/fonts.css`.
 - Teksty po polsku, w pierwszej osobie Dominiki (forma żeńska), zwracamy się do czytelnika na „Ty”.
 - Każda kontrolka formularza ma stałe `id` i `<label>`.
 - Mobile first, strona nie może przewijać się w poziomie przy 360 px.
