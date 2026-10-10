@@ -1,6 +1,6 @@
 ---
 /**
- * Photo from /public/zdjecia, served as WebP in three widths.
+ * Photo from /public/zdjecia, served as WebP in five widths (made by scripts/zdjecia.mjs).
  * `name` is the file stem, e.g. "kamieniczki" → /zdjecia/kamieniczki-1000.webp
  */
 interface Props {
@@ -10,24 +10,28 @@ interface Props {
   ratio?: string;
   /** Rendered width hint for the browser */
   sizes?: string;
-  /** Available file widths; keep the largest within the source image's resolution. */
+  /** Main file widths; keep the largest within the source image's resolution.
+   *  The 400 and 800 px phone sizes are always there too. */
   widths?: [number, number, number];
   class?: string;
-  /** First screenful images skip lazy loading */
+  /** First screenful images skip lazy loading and download first */
   eager?: boolean;
   /** Crop focus, e.g. "50% 20%" to keep a face in frame */
   position?: string;
 }
 const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", widths = [600, 1000, 1600], class: className, eager = false, position } = Astro.props;
 const base = `/zdjecia/${name}`;
+// phones pick the 400 and 800 px files instead of the 600 and 1000 ones
+const srcWidths = [...new Set([400, 800, ...widths])].sort((a, b) => a - b);
 ---
 <img
   class:list={["photo", className]}
   src={`${base}-${widths[1]}.webp`}
-  srcset={widths.map((width) => `${base}-${width}.webp ${width}w`).join(", ")}
+  srcset={srcWidths.map((width) => `${base}-${width}.webp ${width}w`).join(", ")}
   sizes={sizes}
   alt={alt}
   loading={eager ? "eager" : "lazy"}
+  fetchpriority={eager ? "high" : undefined}
   decoding="async"
   style={[ratio && `aspect-ratio: ${ratio}`, position && `object-position: ${position}`].filter(Boolean).join("; ") || undefined}
 />

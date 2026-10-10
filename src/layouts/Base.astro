@@ -52,9 +52,6 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta name="theme-color" content="#E4E7DD" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Berkshire+Swash&family=DM+Serif+Display:ital@0;1&family=Jost:wght@300;400;500;600&family=Pinyon+Script&display=swap" />
     <script is:inline define:vars={{ ranges }}>
       // Pick the season from the visitor's date (or ?sezon=) before first paint.
       (function () {

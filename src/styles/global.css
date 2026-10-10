@@ -1,4 +1,5 @@
 @import "./tokens.css";
+@import "./fonts.css";
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
