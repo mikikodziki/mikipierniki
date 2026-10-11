@@ -43,7 +43,7 @@ const orders: { photo: string; photoAlt: string; title: string; text: string; de
     <div class="aud">
       {audiences.map((a) => (
         <a class="card" href={a.href}>
-          <span class="aud-pic"><Photo name={a.photo} alt={a.photoAlt} ratio="16 / 10" sizes="(max-width: 960px) 50vw, 25vw" /></span>
+          <span class="aud-pic"><Photo name={a.photo} alt={a.photoAlt} ratio="16 / 10" sizes="(max-width: 620px) 100vw, (max-width: 960px) 50vw, 25vw" /></span>
           <span class="aud-body">
             <span class="aud-meta">{a.meta}</span>
             <h3>{a.title}</h3>
