@@ -42,7 +42,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
           <li data-category={item.category}>
             <figure class="tile" style={`--tile: var(--tile-${item.tile})`}>
               {item.photo ? (
-                <Photo name={item.photo} alt={item.alt} sizes="(max-width: 700px) 50vw, 25vw" />
+                <Photo name={item.photo} alt={item.alt} sizes="(max-width: 700px) 60vw, (max-width: 1000px) 40vw, (max-width: 1240px) 32vw, 420px" />
               ) : (
                 <div class="tile-ph" role="img" aria-label={item.alt}>
                   <Cookie shape={item.shape} />
