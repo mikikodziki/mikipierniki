@@ -46,8 +46,13 @@ jobs:
           ssh "$TARGET" "set -e
             cd $RELEASE
             npm ci --omit=dev --no-audit --no-fund
+            PREVIOUS=\$(readlink /srv/mikipierniki/current || true)
             ln -sfn $RELEASE /srv/mikipierniki/current
             sudo /usr/bin/systemctl restart mikipierniki
-            sleep 2
-            curl -fsS -o /dev/null http://127.0.0.1:4390/warsztaty
-            cd /srv/mikipierniki/releases && ls -1t | tail -n +4 | xargs -r rm -rf"
+            sleep 3
+            if ! curl -fsS -o /dev/null http://127.0.0.1:4390/warsztaty; then
+              echo 'Health check failed, rolling back to' \$PREVIOUS
+              if [ -n \"\$PREVIOUS\" ]; then ln -sfn \$PREVIOUS /srv/mikipierniki/current && sudo /usr/bin/systemctl restart mikipierniki; fi
+              exit 1
+            fi
+            cd /srv/mikipierniki/releases && ls -1t | grep -vx \"\$(basename $RELEASE)\" | tail -n +3 | xargs -r rm -rf"

@@ -8,8 +8,8 @@ import type { BookingRequest, BookingResult, BookingStatus, Term } from "@/lib/t
 import { bookingBlockers } from "./config";
 import { getDb, nowIso, tx } from "./db";
 import {
-  bookingAwaitingTransfer, bookingCancelled, bookingConfirmed, bookingNotify, bookingReminder, bookingVoucher, bookingWaitlist,
-  type BookingMailData, when,
+  bookingAwaitingTransfer, bookingCancelled, bookingConfirmed, bookingNotify, bookingOverdue, bookingReminder, bookingVoucher, bookingWaitlist,
+  type BookingMailData, whenInText,
 } from "./emails";
 import { UserError } from "./http";
 import { enqueue } from "./mail";
@@ -23,6 +23,7 @@ export interface BookingRow {
   id: string; term_id: string; status: BookingStatus; name: string; email: string; phone: string; people: number;
   guardians: number | null; notes: string | null; payment: "przelew" | "voucher"; voucher_code: string | null; total: number;
   created_at: string; payment_due_at: string | null; paid_at: string | null; cancelled_at: string | null; reminded_at: string | null;
+  overdue_notified_at?: string | null;
 }
 
 const mailData = (b: BookingRow): BookingMailData => ({
@@ -47,7 +48,11 @@ export function createBooking(req: BookingRequest): BookingResult {
   if (req.people > term.capacity) throw new UserError(`Na jeden termin mogę przyjąć najwyżej ${term.capacity} osób.`);
 
   const db = getDb();
+  const email = normalizeEmail(req.email);
   const row = tx(db, () => {
+    // one active booking per person and term, so a single address can't hold the whole term
+    const dup = db.prepare("SELECT id FROM bookings WHERE term_id = ? AND email = ? AND status != 'cancelled'").get(term.id, email);
+    if (dup) throw new UserError("Masz już rezerwację na ten termin. Jeśli chcesz coś zmienić, odpisz na maila z potwierdzeniem.", 409);
     const left = term.capacity - seatsTaken(term.id);
     let status: BookingStatus;
     if (left <= 0) status = "waitlist";
@@ -59,7 +64,7 @@ export function createBooking(req: BookingRequest): BookingResult {
     // the waitlist hides the payment choice, so whoever gets a place later pays by transfer unless they say otherwise
     const payment = status === "waitlist" ? "przelew" : req.payment;
     const b: BookingRow = {
-      id, term_id: term.id, status, name: req.name, email: normalizeEmail(req.email), phone: req.phone, people: req.people,
+      id, term_id: term.id, status, name: req.name, email, phone: req.phone, people: req.people,
       guardians: term.type === "dzieci" ? (req.guardians ?? 0) : null, notes: req.notes ?? null, payment,
       voucher_code: payment === "voucher" ? (req.voucherCode ?? null) : null, total: bookingTotal(term, req.people),
       created_at: nowIso(), payment_due_at: status === "awaiting_payment" && payment === "przelew" ? dueDate() : null,
@@ -109,7 +114,7 @@ export function admitFromWaitlist(id: string): void {
     const left = t.capacity - seatsTaken(t.id);
     if (left < b.people) throw new UserError(`Wolnych miejsc: ${left}, a ta rezerwacja potrzebuje ${b.people}.`);
     db.prepare("UPDATE bookings SET status = 'awaiting_payment', payment_due_at = ? WHERE id = ?").run(dueDate(), id);
-    enqueue(bookingAwaitingTransfer(mailData(b), t, `zwolniło się miejsce na warsztatach ${when(t)}! Rezerwacja czeka na Ciebie.`));
+    enqueue(bookingAwaitingTransfer(mailData(b), t, `zwolniło się miejsce na warsztatach ${whenInText(t)}! Rezerwacja czeka na Ciebie.`));
   });
 }
 
@@ -131,6 +136,26 @@ export function cancelAllForTerm(termId: string, t: Term): number {
   for (const b of rows) {
     upd.run(nowIso(), b.id);
     enqueue(bookingCancelled(mailData(b), t, "term"));
+  }
+  return rows.length;
+}
+
+/**
+ * Transfers past their 3-day deadline: Dominika gets one e-mail per booking and decides in the panel
+ * (the terms say an unpaid booking *may* be cancelled, so nothing is cancelled automatically).
+ */
+export function notifyOverdue(): number {
+  const db = getDb();
+  const now = nowIso();
+  const rows = db.prepare(`SELECT * FROM bookings WHERE status = 'awaiting_payment' AND payment = 'przelew'
+    AND payment_due_at IS NOT NULL AND payment_due_at < ? AND overdue_notified_at IS NULL`).all(now) as unknown as BookingRow[];
+  for (const b of rows) {
+    const t = getTerm(b.term_id);
+    if (!t) continue;
+    tx(db, () => {
+      enqueue(bookingOverdue(mailData(b), t));
+      db.prepare("UPDATE bookings SET overdue_notified_at = ? WHERE id = ?").run(now, b.id);
+    });
   }
   return rows.length;
 }

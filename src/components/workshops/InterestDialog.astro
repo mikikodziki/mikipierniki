@@ -40,7 +40,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         <input class="input" type="number" id="in-people" name="people" min="1" max="10" value="1" inputmode="numeric" />
       </label>
       <label class="field" for="in-name">Imię i nazwisko
-        <input class="input" type="text" id="in-name" name="name" autocomplete="name" required />
+        <input class="input" type="text" id="in-name" name="name" autocomplete="name" maxlength="120" required />
       </label>
       <div class="row2">
         <label class="field" for="in-email">E-mail
@@ -51,7 +51,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         </label>
       </div>
       <label class="field" for="in-notes">Uwagi <span class="hint">opcjonalnie</span>
-        <textarea class="input" id="in-notes" name="notes" rows="2"></textarea>
+        <textarea class="input" id="in-notes" name="notes" rows="2" maxlength="2000"></textarea>
       </label>
       <div class="hp" aria-hidden="true"><label for="in-website">Strona www</label><input type="text" id="in-website" name="website" tabindex="-1" autocomplete="off" /></div>
       <label class="check" for="in-consent"><input type="checkbox" id="in-consent" name="consent" required />
@@ -83,8 +83,14 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
     const boxes = [...form.querySelectorAll<HTMLInputElement>('input[name="termIds"]')];
     const people = $<HTMLInputElement>("in-people");
 
+    // ticks survive closing and reopening; after a sent form the next one starts clean
+    let sent = false;
     function open(id: string) {
-      boxes.forEach((b) => (b.checked = b.value === id));
+      boxes.forEach((b) => {
+        if (sent) b.checked = false;
+        if (b.value === id) b.checked = true;
+      });
+      sent = false;
       $("in-fields").hidden = false;
       $("in-done").hidden = true;
       err.hidden = true;
@@ -102,6 +108,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
       }
       if (!boxes.some((b) => b.checked)) return "Zaznacz co najmniej jeden termin.";
       if (!(Number(people.value) >= 1)) return "Dodaj co najmniej jedną osobę.";
+      if (Number(people.value) > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
       if (bad.length) return "Uzupełnij imię i nazwisko oraz poprawny e-mail. Telefon jest opcjonalny.";
       if (!$<HTMLInputElement>("in-consent").checked) return "Zaznacz zgodę na kontakt, żebym mogła dać Ci znać.";
       return null;
@@ -132,6 +139,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
           website: $<HTMLInputElement>("in-website").value,
         });
         $("in-done-text").textContent = `Gdy zbierze się grupa, napiszę na ${email} z linkiem do rezerwacji. Potwierdzenie zgłoszenia już do Ciebie leci.`;
+        sent = true;
         $("in-fields").hidden = true;
         $("in-done").hidden = false;
         $("in-done-title").focus();

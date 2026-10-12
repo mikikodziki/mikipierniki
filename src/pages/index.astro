@@ -17,7 +17,8 @@ import { publicTerms } from "@/server/terms";
 // Rendered per request: terms and seat counts come live from the database.
 export const prerender = false;
 
-const upcoming = publicTerms().filter((t) => t.status === "proposed" || t.seatsLeft > 0).slice(0, 3);
+const terms = publicTerms();
+const upcoming = terms.filter((t) => t.status === "proposed" || t.seatsLeft > 0).slice(0, 3);
 const faq = (await getFaq()).slice(0, 5);
 
 const jsonLd = {
@@ -66,8 +67,9 @@ const jsonLd = {
 
   <Newsletter />
 
-  <SignupDialog slot="end" terms={upcoming} />
-  <InterestDialog slot="end" terms={upcoming} />
+  <!-- dialogs offer every date, not just the three cards shown here -->
+  <SignupDialog slot="end" terms={terms} />
+  <InterestDialog slot="end" terms={terms} />
 </Base>
 
 <style>

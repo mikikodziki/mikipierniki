@@ -1,7 +1,7 @@
 /**
  * Outgoing e-mail. Everything is queued in the `outbox` table first and sent by `flushOutbox()`,
- * which retries with a growing delay. Without SMTP settings (local development) messages are
- * written to data/mail/ and logged instead of sent.
+ * which retries with a growing delay. In development (or with MAIL_TO_FILES=1) and no SMTP settings,
+ * messages are written to data/mail/ and logged instead of sent.
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -60,6 +60,7 @@ export async function flushOutbox(): Promise<void> {
     const t = getTransport();
     for (const m of due) {
       try {
+        if (!t && !config.mailToFiles) throw new Error("SMTP_HOST is not set; e-mail can't be sent");
         if (t) {
           await t.sendMail({
             from: config.mailFrom, to: m.to_addr, replyTo: m.reply_to ?? undefined,

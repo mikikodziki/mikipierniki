@@ -69,8 +69,11 @@ export function cancelTerm(id: string, notify: boolean): { bookings: number; int
   const db = getDb();
   return tx(db, () => {
     setTermStatus(id, "cancelled");
+    // interest in a date that won't happen has no purpose left, and the e-mail says it was deleted
+    const dropInterest = () => db.prepare("DELETE FROM interest WHERE term_id = ?").run(id);
     if (!notify) {
       db.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE term_id = ? AND status != 'cancelled'").run(new Date().toISOString(), id);
+      dropInterest();
       return { bookings: 0, interest: 0 };
     }
     const booked = new Set(bookingsForTerm(id).filter((b) => b.status !== "cancelled").map((b) => b.email));
@@ -78,6 +81,7 @@ export function cancelTerm(id: string, notify: boolean): { bookings: number; int
     // people who booked already get the cancellation; the rest of the interested get "won't happen"
     const interest = interestForTerm(id).filter((r) => !r.withdrawn_at && !booked.has(r.email));
     for (const r of interest) enqueue(termDropped(r.email, r.name, t));
+    dropInterest();
     return { bookings, interest: interest.length };
   });
 }

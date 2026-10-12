@@ -10,7 +10,7 @@ export function saveInquiry(req: InquiryRequest): void {
   const details = req.details ?? {};
   getDb().prepare("INSERT INTO inquiries (kind, name, email, phone, message, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
     .run(req.kind, req.name, email, req.phone ?? null, req.message, JSON.stringify(details), nowIso());
-  enqueue(inquiryNotify(req.kind, req.name, email, req.phone, req.message, details), inquiryAutoreply(email, req.name, req.kind, req.message));
+  enqueue(inquiryNotify(req.kind, req.name, email, req.phone, req.message, details), inquiryAutoreply(email, req.name, req.kind));
 }
 
 export interface InquiryRow {

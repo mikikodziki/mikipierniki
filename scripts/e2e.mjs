@@ -17,7 +17,7 @@ const env = {
   PANEL_PASSWORD: "sekret", CRON_TOKEN: "tok", BANK_ACCOUNT: "12 3456 7890 0000 0000 1111 2222",
   BANK_RECIPIENT: "Dominika Testowa", STUDIO_ADDRESS: "ul. Testowa 1, Wrocław",
   // never send real mail from a test, even if the shell has SMTP settings
-  SMTP_HOST: "",
+  SMTP_HOST: "", MAIL_TO_FILES: "1",
 };
 const server = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env, stdio: ["ignore", "pipe", "pipe"] });
 let log = "";
@@ -62,6 +62,12 @@ try {
   r = await get("/panel", { authorization: auth });
   check("/panel with password → 200", r.status === 200);
   check("/panel is noindex", r.headers.get("x-robots-tag")?.includes("noindex"));
+  for (const p of ["/panel.html", "/panel/newsletter.html", "/panel/eksport", "/%70anel"]) {
+    check(`${p} without password → 401`, (await get(p)).status === 401, String((await get(p)).status));
+  }
+  r = await get("/panel/");
+  check("/panel/ redirects to /panel (which asks for the password)", r.status === 401 || ([301, 308].includes(r.status) && r.headers.get("location")?.endsWith("/panel")), `${r.status} ${r.headers.get("location")}`);
+  check("POST /panel.html without password → 401", (await fetch(BASE + "/panel.html", { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: "title=x" })).status === 401);
 
   // ---------- creating terms ----------
   const day = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
@@ -136,8 +142,13 @@ try {
   m = lastMails(2);
   check("transfer mail has account, recipient, ref; no address yet", m.some((x) => x.includes("12 3456 7890") && x.includes("Dominika Testowa") && x.includes(b1.bookingId) && !x.includes("Testowa 1")));
   check("booking notify to Dominika", m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Rezerwacja (przelew)")));
-  r = await book({ people: 8 });
+  r = await book({ people: 1 });
+  check("second booking with the same e-mail → 409", r.status === 409 && (await r.json()).error.includes("Masz już rezerwację"));
+  r = await book({ people: 8, email: "osiem@example.com" });
   check("too many people → 409 with seats left", r.status === 409 && (await r.json()).error.includes("7"));
+  r = await book({ people: 1, email: "dlugie@example.com", notes: "x".repeat(3000) });
+  const longErr = (await r.json()).error;
+  check("too-long notes → Polish error, not Zod's English", r.status === 400 && longErr.startsWith("Sprawdź"), longErr);
   r = await book({ people: 7, payment: "voucher" });
   check("voucher without code rejected", r.status === 400);
   r = await book({ people: 7, payment: "voucher", voucherCode: "MIKI-2026", email: "dorota@example.com", name: "Dorota Voucher" });
@@ -170,6 +181,13 @@ try {
   const won = racers.filter((x) => x.status === "awaiting_payment").length;
   const taken = db().prepare("SELECT SUM(people) n FROM bookings WHERE term_id = ? AND status IN ('awaiting_payment','confirmed')").get(t1).n;
   check("concurrent bookings never overbook", taken <= 10 && won === 2, `won=${won} taken=${taken} ${JSON.stringify(racers)}`);
+
+  // ---------- overdue transfer → one notice to Dominika ----------
+  db().prepare("UPDATE bookings SET payment_due_at = ? WHERE id = ?").run(new Date(Date.now() - 3600000).toISOString(), b3.bookingId);
+  await get("/api/cron", { "x-cron-token": "tok" });
+  await get("/api/cron", { "x-cron-token": "tok" });
+  await settle();
+  check("overdue transfer → one 'Brak wpłaty' notice", mails().map(mail).filter((x) => x.includes(`Brak wpłaty: ${b3.bookingId}`)).length === 1);
 
   // ---------- reminders via cron ----------
   c = await create({ title: "Jutro", date: day(1), start: "10:00", end: "12:00" });
@@ -228,12 +246,17 @@ try {
   await panel(`/panel/termin/${t2}`, { action: "cancel", notify: "on" });
   await settle();
   check("cancel proposed term → 'nie dojdzie do skutku' only to active interest", mails().length === beforeC + 1 && lastMails(1)[0].includes("hania@example.com") && lastMails(1)[0].includes("nie uda się"));
+  check("cancelled term's interest deleted", db().prepare("SELECT COUNT(*) n FROM interest WHERE term_id = ?").get(t2).n === 0);
   check("cancelled term gone from site", !(await (await get("/warsztaty")).text()).includes(`data-interest="${t2}"`));
 
   // ---------- inquiry ----------
   r = await api("/api/zapytanie", { kind: "zamowienie", name: "Irena Firma", email: "irena@example.com", message: "Poproszę 100 pierników z logo.", details: { okazja: "Firma", liczba_sztuk: "100" } });
   await settle();
   m = lastMails(2);
+  check("autoreply quotes nothing the sender typed, asks for photo by reply", m.some((x) => x.includes("To: irena@example.com") && !x.includes("100 pierników") && x.includes("dołącz")));
+  r = await api("/api/zapytanie", { kind: "kontakt", name: "http://spam.example", email: "ofiara@example.com", message: "Kliknij http://spam.example" });
+  await settle();
+  check("autoreply greeting drops a name that isn't a name", lastMails(2).some((x) => x.includes("To: ofiara@example.com") && x.includes("Cześć,") && !x.includes("spam.example")));
   check("inquiry → notify (Reply-To customer) + autoreply", r.status === 200 && m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Reply-To: irena@example.com") && x.includes("liczba sztuk: 100")) && m.some((x) => x.includes("To: irena@example.com")));
 
   // ---------- CSV + misc ----------
@@ -247,6 +270,18 @@ try {
   check("HTML mail escapes user input", !htmlMail.includes("<script"));
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "<script>alert(1)</script>", email: "xss@example.com", consent: true });
   check("interest on open term rejected (only proposed)", r.status === 409);
+  // ---------- production without SMTP: mail must fail visibly, not pretend to be sent ----------
+  const bare = { ...env, PORT: "4392", DATABASE_PATH: join(dataDir, "bare.sqlite"), MAIL_TO_FILES: "" };
+  const second = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: bare, stdio: "ignore" });
+  try {
+    for (let i = 0; i < 100; i++) { try { await fetch("http://127.0.0.1:4392/faq"); break; } catch { await sleep(100); } }
+    await fetch("http://127.0.0.1:4392/api/newsletter", { method: "POST", headers: { origin: "http://127.0.0.1:4392", "content-type": "application/json" }, body: JSON.stringify({ email: "x@example.com" }) });
+    await settle();
+    const row = new DatabaseSync(bare.DATABASE_PATH).prepare("SELECT status, last_error FROM outbox").get();
+    check("no SMTP in production → mail not marked sent", row && row.status !== "sent" && /SMTP_HOST/.test(row.last_error ?? ""), JSON.stringify(row));
+  } finally {
+    second.kill();
+  }
   check("no server errors logged", !/\[api\]|Error/.test(log), log.slice(0, 500));
 } finally {
   server.kill();

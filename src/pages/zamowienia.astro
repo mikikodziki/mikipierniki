@@ -270,9 +270,7 @@ const occasions = [
             <input type="checkbox" id="order-form-custom" name="custom" data-detail="personalizacja" value="tak, własny kształt i foremka na zamówienie" />
             <span>Chcę pierniki w niestandardowym kształcie: logo, produkt, budynek albo maskotka.</span>
           </label>
-          <label class="field" for="order-form-files">Zdjęcie inspiracji albo logo <span class="hint">opcjonalnie, na tej podstawie robię foremkę</span>
-            <input class="input file" type="file" id="order-form-files" name="inspiration" data-detail="inspiracja" accept="image/*" multiple />
-          </label>
+          <p class="files-note"><b>Zdjęcie inspiracji albo logo?</b> Po wysłaniu formularza dostaniesz ode mnie maila. Odpowiedz na niego i dołącz zdjęcie, na tej podstawie zrobię foremkę.</p>
         </InquiryForm>
       </div>
     </div>
@@ -374,7 +372,8 @@ const occasions = [
   .contact { font-size: .95rem; overflow-wrap: anywhere; }
   .form-box { display: grid; gap: 18px; align-self: start; min-width: 0; }
   .form-box h3 { font-size: 1.6rem; }
-  .form-box .file { padding: 10px; font-size: .9rem; }
+  .files-note { font-size: .9rem; color: var(--ink-soft); }
+  .files-note b { color: var(--ink); }
   @media (min-width: 900px) { .split { grid-template-columns: 1fr 1fr; gap: 56px; } }
 
   .faq-grid { display: grid; gap: 8px; }

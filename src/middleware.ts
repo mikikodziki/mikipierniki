@@ -32,13 +32,21 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   ensureWorker();
 
   const { request, url } = ctx;
-  const path = url.pathname.replace(/\/$/, "");
+  // the router also answers /panel.html and /panel/ for /panel, so match the normalised path and the route
+  let raw = url.pathname;
+  try {
+    raw = decodeURIComponent(raw);
+  } catch {
+    // malformed escapes: match on the raw path
+  }
+  const path = raw.replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+  const route = ctx.routePattern ?? "";
 
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method) && !ORIGIN_FREE.has(path) && !sameOrigin(request, url)) {
     return new Response("Formularz wysłany z innej strony.", { status: 403 });
   }
 
-  const isPanel = path === "/panel" || path.startsWith("/panel/");
+  const isPanel = path === "/panel" || path.startsWith("/panel/") || route === "/panel" || route.startsWith("/panel/");
   if (isPanel) {
     if (!config.panelPassword) {
       if (!config.dev) return new Response("Panel jest wyłączony: ustaw PANEL_PASSWORD na serwerze.", { status: 503 });
@@ -51,7 +59,7 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   }
 
   const res = await next();
-  if (isPanel || path.startsWith("/api/")) {
+  if (isPanel || path.startsWith("/api/") || route.startsWith("/api/")) {
     try {
       res.headers.set("cache-control", "no-store");
       res.headers.set("x-robots-tag", "noindex, nofollow");

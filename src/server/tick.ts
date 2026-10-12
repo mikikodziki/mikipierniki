@@ -3,7 +3,7 @@
  * in the privacy policy. Runs every minute inside the server process, and /api/cron triggers it
  * too (a systemd timer calls it, so it also runs after a restart with no visitors).
  */
-import { sendReminders } from "./bookings";
+import { notifyOverdue, sendReminders } from "./bookings";
 import { getDb } from "./db";
 import { flushOutbox } from "./mail";
 
@@ -23,14 +23,20 @@ export function cleanup(now = Date.now()): void {
     // allergy notes: 30 days after the workshop
     db.prepare("UPDATE bookings SET notes = NULL WHERE term_id = ? AND notes IS NOT NULL").run(id);
   }
+  // withdrawn interest and unsubscribed addresses: gone within a day (the confirmation pages still work meanwhile)
+  db.prepare("DELETE FROM interest WHERE withdrawn_at IS NOT NULL AND withdrawn_at < ?").run(ago(1));
+  db.prepare("DELETE FROM subscribers WHERE status = 'unsubscribed' AND unsubscribed_at < ?").run(ago(1));
   db.prepare("DELETE FROM subscribers WHERE status = 'pending' AND created_at < ?").run(ago(30));
   db.prepare("DELETE FROM inquiries WHERE created_at < ?").run(ago(365));
   // sent mail holds names and addresses; keep it only long enough to answer "did you get my e-mail?"
-  db.prepare("DELETE FROM outbox WHERE status = 'sent' AND sent_at < ?").run(ago(90));
+  // (30 days also keeps allergy notes in booking notices within the 30-days-after-the-workshop promise)
+  db.prepare("DELETE FROM outbox WHERE status = 'sent' AND sent_at < ?").run(ago(30));
+  db.prepare("DELETE FROM outbox WHERE status = 'failed' AND created_at < ?").run(ago(30));
 }
 
 export async function tick(): Promise<void> {
   sendReminders();
+  notifyOverdue();
   if (Date.now() - lastCleanup > 60 * 60 * 1000) {
     cleanup();
     lastCleanup = Date.now();

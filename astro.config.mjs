@@ -23,6 +23,8 @@ export default defineConfig({
       SMTP_PASS: secret(),
       MAIL_FROM: secret(),
       MAIL_NOTIFY: secret(),
+      /** "1" writes e-mails to data/mail/ instead of sending (local preview, tests) */
+      MAIL_TO_FILES: secret(),
       PANEL_PASSWORD: secret(),
       CRON_TOKEN: secret(),
       BANK_ACCOUNT: secret(),
