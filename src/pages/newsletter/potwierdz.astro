@@ -1,0 +1,21 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import { confirmSubscription } from "@/server/newsletter";
+
+export const prerender = false;
+
+const t = Astro.url.searchParams.get("t") ?? "";
+const result = t ? confirmSubscription(t) : "unknown";
+---
+<Base title="Potwierdzenie zapisu" noindex mobileCta={false}>
+  {result === "ok" ? (
+    <PageHead eyebrow="Powiadomienia" title="Gotowe, jesteś na liście!" lead="Napiszę, gdy tylko pojawią się nowe terminy warsztatów. Do zobaczenia przy lukrze!">
+      <div><a class="btn btn-primary" href="/warsztaty">Zobacz warsztaty</a></div>
+    </PageHead>
+  ) : (
+    <PageHead eyebrow="Powiadomienia" title="Ten link już nie działa" lead="Może wygasł albo adres został wypisany. Zapisz się jeszcze raz na stronie głównej, a wyślę nowy link.">
+      <div><a class="btn btn-primary" href="/#powiadomienia">Zapisz się ponownie</a></div>
+    </PageHead>
+  )}
+</Base>

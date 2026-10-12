@@ -47,7 +47,13 @@ Paleta od Dominiki, siedem kolorów:
 - Każdy dekoruje 6–8 pierników i zabiera wszystkie do domu.
 - W cenie: gotowe pierniki, lukry (resztę lukru można zabrać do domu), rękawy cukiernicze,
   fartuchy, napoje, pudełko na pierniki.
-- Terminy w `src/lib/mock-data.ts` są nadal PRZYKŁADOWE — czekamy na prawdziwy grafik.
+- Terminy Dominika dodaje sama w panelu (`/panel`). Najpierw jako „propozycję terminu”:
+  chętni zaznaczają, że im pasuje, a gdy zbierze się grupa, Dominika otwiera zapisy
+  i jednym przyciskiem wysyła im link do rezerwacji.
+- Płatność: przelew w ciągu 3 dni albo voucher. Płatności online (BLIK, karta) będą później.
+- Rezygnacja: zwrot całej kwoty albo przeniesienie do 7 dni przed terminem, później można
+  przekazać miejsce innej osobie (potwierdzone 12.10.2026).
+- E-maile do uczestników wychodzą z warsztaty@mikipierniki.pl i tam wracają odpowiedzi.
 
 ## Warsztaty firmowe i zamknięte
 - Wycena indywidualna, zależna od liczby osób i czasu.
@@ -92,8 +98,8 @@ na stronie głównej. Nadal brak zdjęć z warsztatów, więc galeria nie ma kat
 „Z warsztatów”.
 
 ## Czeka na dane
-- Prawdziwe terminy, liczba wolnych miejsc.
+- Prawdziwe terminy (Dominika dodaje je w panelu).
+- Numer konta i odbiorca przelewu do maili z danymi do przelewu (bez nich panel nie pozwala otworzyć zapisów).
 - Prawdziwe opinie uczestników (obecne są przykładowe).
 - Zdjęcia z warsztatów.
 - Dane działalności do regulaminu i polityki prywatności (nazwa, NIP, adres, numer konta).
-- Zasady rezygnacji: na stronie jest zwrot do 7 dni przed terminem — DO POTWIERDZENIA.

@@ -8,7 +8,7 @@ const {
   lead = "Terminy świąteczne rozchodzą się w kilka dni. Zapisz się, a dam Ci znać jako pierwszej osobie.",
 } = Astro.props;
 ---
-<section class="section section--dark">
+<section class="section section--dark" id="powiadomienia">
   <div class="wrap">
     <div class="news">
       <div class="copy">
@@ -20,17 +20,19 @@ const {
           <label class="visually-hidden" for="news-email">Adres e-mail</label>
           <input class="input" type="email" id="news-email" placeholder="Twój adres e-mail" autocomplete="email" required />
           <button class="btn btn-primary" type="submit">Powiadom mnie</button>
+          <div class="hp" aria-hidden="true"><label for="news-website">Strona www</label><input type="text" id="news-website" tabindex="-1" autocomplete="off" /></div>
         </form>
+        <p class="consent" id="news-consent">Wyślę Ci tylko wiadomości o nowych terminach. Wypiszesz się jednym kliknięciem, szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>.</p>
         <p class="form-error" id="news-err" role="alert" hidden>Wpisz poprawny adres e-mail, np. imie@gmail.com.</p>
         <p class="form-error" id="news-fail" role="alert" hidden>Nie udało się zapisać. Spróbuj ponownie za chwilę.</p>
-        <p class="form-ok" id="news-ok" role="status" tabindex="-1" hidden>Gotowe. Napiszę, gdy tylko ruszą zapisy.</p>
+        <p class="form-ok" id="news-ok" role="status" tabindex="-1" hidden>Prawie gotowe! Kliknij link w mailu, który właśnie wysłałam, żeby potwierdzić zapis.</p>
       </div>
     </div>
   </div>
 </section>
 
 <script>
-  import { subscribeNewsletter } from "@/lib/api";
+  import { ApiError, subscribeNewsletter } from "@/lib/api";
   const form = document.getElementById("news-form") as HTMLFormElement | null;
   const input = document.getElementById("news-email") as HTMLInputElement | null;
   form?.addEventListener("submit", async (e) => {
@@ -43,12 +45,14 @@ const {
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
     btn.disabled = true;
     try {
-      await subscribeNewsletter(input.value.trim());
+      await subscribeNewsletter(input.value.trim(), (document.getElementById("news-website") as HTMLInputElement).value);
       form.hidden = true;
+      document.getElementById("news-consent")!.hidden = true;
       const ok = document.getElementById("news-ok")!;
       ok.hidden = false;
       ok.focus();
-    } catch {
+    } catch (e) {
+      if (e instanceof ApiError) fail.textContent = e.message;
       fail.hidden = false;
     } finally {
       btn.disabled = false;
@@ -68,6 +72,8 @@ const {
   .form .input:focus { background: transparent; outline: 2px solid var(--blue); outline-offset: -2px; }
   .form .btn { flex: 0 0 auto; }
   .form-error { margin-top: 10px; color: var(--sand); }
+  .consent { margin-top: 10px; font-size: .85rem; color: var(--on-dark-soft); }
+  .consent a { color: inherit; }
   .form-ok { margin-top: 10px; color: var(--blue); }
 
   @media (max-width: 760px) { .news { grid-template-columns: 1fr; } }

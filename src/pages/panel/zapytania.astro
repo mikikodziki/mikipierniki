@@ -1,0 +1,42 @@
+---
+import Panel from "@/layouts/Panel.astro";
+import { inquiries } from "@/server/inquiries";
+
+export const prerender = false;
+
+const rows = inquiries();
+const kindLabel: Record<string, string> = { zamowienie: "Zamówienie", "warsztaty-zamkniete": "Warsztaty zamknięte", voucher: "Voucher", kontakt: "Kontakt" };
+const dt = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
+---
+<Panel title="Zapytania z formularzy">
+  <section class="box">
+    <p class="note">Każde zapytanie przychodzi też mailem; odpowiedź na tamtego maila trafia prosto do nadawcy. Tu jest kopia z ostatnich 12 miesięcy.</p>
+    {rows.length === 0 ? <p>Brak zapytań.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Kiedy</th><th>Rodzaj</th><th>Od</th><th>Wiadomość</th></tr></thead>
+          <tbody>
+            {rows.map((r) => {
+              const details = Object.entries(JSON.parse(r.details || "{}") as Record<string, string>);
+              return (
+                <tr>
+                  <td>{dt(r.created_at)}</td>
+                  <td>{kindLabel[r.kind] ?? r.kind}</td>
+                  <td>{r.name}<br /><a href={`mailto:${r.email}`}>{r.email}</a>{r.phone && <><br />{r.phone}</>}</td>
+                  <td>
+                    {details.length > 0 && <p class="note">{details.map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" · ")}</p>}
+                    <p class="msg">{r.message}</p>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+</Panel>
+
+<style>
+  .msg { white-space: pre-wrap; max-width: 60ch; }
+</style>

@@ -43,13 +43,14 @@ const {
   <label class="check" for={`${id}-consent`}><input type="checkbox" id={`${id}-consent`} name="consent" required />
     <span>Zgadzam się na kontakt w sprawie zapytania zgodnie z <a href="/polityka-prywatnosci" target="_blank">polityką prywatności</a>.</span>
   </label>
+  <div class="hp" aria-hidden="true"><label for={`${id}-website`}>Strona www</label><input type="text" id={`${id}-website`} name="website" tabindex="-1" autocomplete="off" /></div>
   <p class="form-error" role="alert" hidden></p>
   <div><button class="btn btn-primary" type="submit">{submitLabel}</button></div>
   <p class="form-ok" role="status" tabindex="-1" hidden>{successText}</p>
 </form>
 
 <script>
-  import { sendInquiry } from "@/lib/api";
+  import { ApiError, sendInquiry } from "@/lib/api";
   import type { InquiryKind } from "@/lib/types";
 
   document.querySelectorAll<HTMLFormElement>("form[data-inquiry]").forEach((form) => {
@@ -81,13 +82,13 @@ const {
       });
       btn.disabled = true;
       try {
-        await sendInquiry({ kind: form.dataset.inquiry as InquiryKind, name: val("name"), email: val("email"), phone: val("phone") || undefined, message: val("message"), details });
+        await sendInquiry({ kind: form.dataset.inquiry as InquiryKind, name: val("name"), email: val("email"), phone: val("phone") || undefined, message: val("message"), details, website: val("website") });
         form.querySelectorAll<HTMLElement>(":scope > *:not(.form-ok)").forEach((el) => (el.hidden = true));
         ok.hidden = false;
         ok.focus();
-      } catch {
+      } catch (e) {
         err.hidden = false;
-        err.textContent = "Nie udało się wysłać wiadomości. Spróbuj ponownie albo napisz bezpośrednio na e-mail.";
+        err.textContent = e instanceof ApiError ? e.message : "Nie udało się wysłać wiadomości. Spróbuj ponownie albo napisz bezpośrednio na e-mail.";
       } finally {
         btn.disabled = false;
       }

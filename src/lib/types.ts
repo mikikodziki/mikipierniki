@@ -1,14 +1,21 @@
 /**
- * Data contract shared by the frontend and the future booking backend
- * (Supabase + Stripe). Pages only talk to `src/lib/api.ts`, never to mocks directly.
+ * Data contract shared by the frontend and the booking backend (src/server, SQLite on the VPS).
+ * Client scripts only talk to `src/lib/api.ts`; server-rendered pages read terms through `src/server/terms.ts`.
  */
 
 export type Season = "swieta" | "wielkanoc" | "rok";
 
 export type WorkshopType = "dorosli" | "dzieci" | "wieczor";
 
+/**
+ * draft: only in the panel · proposed: visitors say which dates suit them, no booking yet ·
+ * open: bookings (a full term takes waitlist sign-ups) · cancelled: off the site
+ */
+export type TermStatus = "draft" | "proposed" | "open" | "cancelled";
+
 export interface Term {
   id: string;
+  status: TermStatus;
   type: WorkshopType;
   title: string;
   /** ISO 8601 with offset, e.g. 2026-11-14T11:00:00+01:00 */
@@ -20,6 +27,7 @@ export interface Term {
   /** What one paid place means: an adult seat or a child's seat */
   priceUnit: "osoba" | "dziecko";
   capacity: number;
+  /** capacity minus places in bookings that are confirmed or awaiting payment */
   seatsLeft: number;
   /** How many cookies a participant decorates and takes home, e.g. "6–8" */
   cookies: string;
@@ -36,7 +44,8 @@ export interface Venue {
   city: string;
 }
 
-export type PaymentMethod = "online" | "przelew" | "voucher";
+/** Online payment (Stripe / Przelewy24) comes later; until then a transfer or a gift card. */
+export type PaymentMethod = "przelew" | "voucher";
 
 export interface BookingRequest {
   termId: string;
@@ -54,14 +63,24 @@ export interface BookingRequest {
   acceptedTerms: true;
 }
 
-export type BookingStatus = "confirmed" | "awaiting_payment" | "waitlist";
+export type BookingStatus = "confirmed" | "awaiting_payment" | "waitlist" | "cancelled";
 
 export interface BookingResult {
   bookingId: string;
   status: BookingStatus;
   total: number;
-  /** Stripe Checkout URL when payment === "online" */
-  checkoutUrl?: string;
+}
+
+/** "This proposed date suits me": no payment, no seat held. */
+export interface InterestRequest {
+  termIds: string[];
+  /** Adults, or children on a children's workshop */
+  people: number;
+  name: string;
+  email: string;
+  phone?: string;
+  notes?: string;
+  consent: true;
 }
 
 export type InquiryKind = "zamowienie" | "warsztaty-zamkniete" | "voucher" | "kontakt";

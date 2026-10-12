@@ -20,9 +20,13 @@ const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
       ))}
     </div>
   )}
-  <div class="grid">
-    {terms.map((t) => <TermCard term={t} />)}
-  </div>
+  {terms.length > 0 ? (
+    <div class="grid">
+      {terms.map((t) => <TermCard term={t} />)}
+    </div>
+  ) : (
+    <p class="none">Nowe terminy pojawią się tu wkrótce. <a href="/#powiadomienia">Zapisz się na powiadomienia</a>, a dam Ci znać jako pierwszej osobie, albo <a href="/kontakt">napisz do mnie</a>.</p>
+  )}
   <p class="empty" hidden>Brak terminów w tej kategorii. <a href="/kontakt">Napisz</a>, a dam znać o nowych.</p>
 </div>
 
@@ -50,4 +54,6 @@ const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
   .terms-list { display: grid; gap: 24px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
   .empty { color: var(--ink-soft); }
+  .none { padding: 22px 24px; border-radius: var(--radius-lg); background: var(--card); max-width: 70ch; }
+  .none a { font-weight: 600; }
 </style>

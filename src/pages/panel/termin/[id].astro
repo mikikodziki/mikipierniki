@@ -1,0 +1,224 @@
+---
+import Panel from "@/layouts/Panel.astro";
+import TermForm from "@/components/panel/TermForm.astro";
+import { plural, pln, shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { site } from "@/lib/site";
+import { admitFromWaitlist, bookingsForTerm, cancelBooking, markPaid } from "@/server/bookings";
+import { bookingBlockers } from "@/server/config";
+import { UserError } from "@/server/http";
+import { interestForTerm, notifyInterested } from "@/server/interest";
+import { flushOutbox } from "@/server/mail";
+import { back, cancelTerm, changeStatus, statusLabel, termFromForm } from "@/server/panel";
+import { deleteTerm, getTerm, updateTerm } from "@/server/terms";
+
+export const prerender = false;
+
+const id = Astro.params.id!;
+const here = `/panel/termin/${id}`;
+
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const action = String(f.get("action"));
+  const booking = String(f.get("booking") ?? "");
+  try {
+    let ok = "Zapisano.";
+    switch (action) {
+      case "save":
+        updateTerm(id, termFromForm(f));
+        ok = "Zmiany zapisane.";
+        break;
+      case "propose":
+        changeStatus(id, "proposed");
+        ok = "Termin jest teraz propozycją widoczną na stronie.";
+        break;
+      case "draft":
+        changeStatus(id, "draft");
+        ok = "Termin wrócił do szkiców i zniknął ze strony.";
+        break;
+      case "open":
+        changeStatus(id, "open");
+        ok = "Zapisy otwarte. Teraz możesz wysłać link chętnym.";
+        break;
+      case "notify": {
+        const n = notifyInterested(id);
+        ok = n ? `Wysyłam link do rezerwacji: ${n} ${plural(n, "osoba", "osoby", "osób")}.` : "Wszyscy chętni dostali już wiadomość.";
+        break;
+      }
+      case "cancel": {
+        const r = cancelTerm(id, f.get("notify") === "on");
+        ok = `Termin odwołany.${r.bookings + r.interest ? ` Powiadamiam: ${r.bookings} rezerwacji, ${r.interest} chętnych.` : ""}`;
+        break;
+      }
+      case "delete":
+        if (!deleteTerm(id)) throw new UserError("Ten termin ma już zgłoszenia, więc można go tylko odwołać.");
+        return back("/panel", { ok: "Termin usunięty." });
+      case "paid":
+        markPaid(booking);
+        ok = `Rezerwacja ${booking} potwierdzona, wysyłam potwierdzenie z adresem.`;
+        break;
+      case "admit":
+        admitFromWaitlist(booking);
+        ok = `Wysyłam dane do przelewu osobie z listy rezerwowej (${booking}).`;
+        break;
+      case "cancel-booking":
+        cancelBooking(booking, f.get("notify") === "on");
+        ok = `Rezerwacja ${booking} anulowana.`;
+        break;
+      default:
+        throw new UserError("Nieznana akcja.");
+    }
+    void flushOutbox();
+    return back(here, { ok });
+  } catch (e) {
+    if (e instanceof UserError) return back(here, { err: e.message });
+    throw e;
+  }
+}
+
+const term = getTerm(id);
+if (!term) return back("/panel", { err: "Nie ma takiego terminu." });
+const interest = interestForTerm(id);
+const activeInterest = interest.filter((r) => !r.withdrawn_at);
+const interestPeople = activeInterest.reduce((n, r) => n + r.people, 0);
+const unnotified = activeInterest.filter((r) => !r.notified_at).length;
+const bookings = bookingsForTerm(id);
+const taken = bookings.filter((b) => b.status === "awaiting_payment" || b.status === "confirmed").reduce((n, b) => n + b.people, 0);
+const blockers = bookingBlockers();
+const now = Date.now();
+const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" }) : "");
+const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpłatę", confirmed: "Opłacona", waitlist: "Lista rezerwowa", cancelled: "Anulowana" };
+---
+<Panel title={`${shortDate(term.startsAt)} · ${term.title}`}>
+  <section class="box">
+    <div class="actions">
+      <span class={`pill pill--${term.status}`}>{statusLabel[term.status]}</span>
+      <span>{weekday(term.startsAt)}, {shortDate(term.startsAt)}, {timeRange(term)} · {workshopTypeLabel[term.type]} · {pln(term.price)}</span>
+    </div>
+    <div class="grid3">
+      <div><b>{interestPeople} os.</b><br /><span class="note">chętnych ({activeInterest.length} zgłoszeń{interestPeople >= site.groupMin ? ", grupa się zbiera" : `, minimum to ${site.groupMin}`})</span></div>
+      <div><b>{taken}/{term.capacity}</b><br /><span class="note">miejsc zajętych przez rezerwacje</span></div>
+      <div><b>{bookings.filter((b) => b.status === "waitlist").length}</b><br /><span class="note">na liście rezerwowej</span></div>
+    </div>
+
+    <div class="actions">
+      {term.status === "draft" && (
+        <form method="post"><input type="hidden" name="action" value="propose" /><button class="btn btn-primary btn-small">Opublikuj jako propozycję</button></form>
+      )}
+      {(term.status === "draft" || term.status === "proposed") && (
+        <form method="post"><input type="hidden" name="action" value="open" /><button class="btn btn-primary btn-small" disabled={blockers.length > 0}>Otwórz zapisy</button></form>
+      )}
+      {term.status === "open" && (
+        <form method="post"><input type="hidden" name="action" value="notify" /><button class="btn btn-primary btn-small" disabled={unnotified === 0}>Wyślij link chętnym ({unnotified})</button></form>
+      )}
+      {term.status === "proposed" && activeInterest.length === 0 && (
+        <form method="post"><input type="hidden" name="action" value="draft" /><button class="btn btn-ghost btn-small">Cofnij do szkicu</button></form>
+      )}
+      {term.status === "open" && taken === 0 && bookings.every((b) => b.status === "cancelled") && (
+        <form method="post"><input type="hidden" name="action" value="propose" /><button class="btn btn-ghost btn-small">Cofnij do propozycji</button></form>
+      )}
+      <a class="btn btn-ghost btn-small" href={`/panel/eksport?termin=${term.id}`}>Pobierz CSV</a>
+      {term.status !== "cancelled" && term.status !== "draft" && <a class="btn btn-ghost btn-small" href={term.status === "open" ? `/warsztaty?termin=${term.id}` : "/warsztaty#terminy"} target="_blank">Na stronie ↗</a>}
+    </div>
+    {(term.status === "draft" || term.status === "proposed") && blockers.length > 0 && (
+      <p class="note">Otwarcie zapisów wymaga uzupełnienia na serwerze: {blockers.join(", ")}.</p>
+    )}
+  </section>
+
+  <section class="box">
+    <h2>Chętni ({activeInterest.length})</h2>
+    {interest.length === 0 ? <p class="note">Nikt jeszcze nie zaznaczył tego terminu.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Imię i nazwisko</th><th>Kontakt</th><th>Osób</th><th>Uwagi</th><th>Zgłoszenie</th><th>Link wysłany</th></tr></thead>
+          <tbody>
+            {interest.map((r) => (
+              <tr class:list={{ muted: !!r.withdrawn_at }}>
+                <td>{r.name}{r.withdrawn_at && <><br /><span class="pill pill--warn">wycofane</span></>}</td>
+                <td><a href={`mailto:${r.email}`}>{r.email}</a>{r.phone && <><br />{r.phone}</>}</td>
+                <td data-label="Osób">{r.people}</td>
+                <td data-label="Uwagi">{r.notes ?? ""}</td>
+                <td data-label="Zgłoszenie">{dt(r.created_at)}</td>
+                <td data-label="Link wysłany">{dt(r.notified_at) || "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+
+  <section class="box">
+    <h2>Rezerwacje ({bookings.filter((b) => b.status !== "cancelled").length})</h2>
+    {bookings.length === 0 ? <p class="note">Brak rezerwacji.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Nr</th><th>Imię i nazwisko</th><th>Kontakt</th><th>Osób</th><th>Płatność</th><th>Status</th><th>Uwagi</th><th></th></tr></thead>
+          <tbody>
+            {bookings.map((b) => {
+              const overdue = b.status === "awaiting_payment" && b.payment_due_at && new Date(b.payment_due_at).getTime() < now;
+              return (
+                <tr class:list={{ muted: b.status === "cancelled" }}>
+                  <td>{b.id}<br /><span class="note">{dt(b.created_at)}</span></td>
+                  <td>{b.name}</td>
+                  <td><a href={`mailto:${b.email}`}>{b.email}</a><br />{b.phone}</td>
+                  <td data-label="Osób">{b.people}{b.guardians ? <><br /><span class="note">+ {b.guardians} rodz.</span></> : null}</td>
+                  <td>{b.payment === "voucher" ? `voucher ${b.voucher_code ?? ""}` : "przelew"}<br /><b>{pln(b.total)}</b></td>
+                  <td>
+                    <span class:list={["pill", { "pill--ok": b.status === "confirmed", "pill--warn": overdue || b.status === "cancelled" }]}>{bookingLabel[b.status]}</span>
+                    {overdue && <><br /><span class="note">termin wpłaty minął {dt(b.payment_due_at)}</span></>}
+                    {b.status === "awaiting_payment" && !overdue && b.payment_due_at && <><br /><span class="note">wpłata do {dt(b.payment_due_at)}</span></>}
+                  </td>
+                  <td data-label="Uwagi">{b.notes ?? ""}</td>
+                  <td>
+                    <div class="actions">
+                      {b.status === "awaiting_payment" && (
+                        <form method="post"><input type="hidden" name="action" value="paid" /><input type="hidden" name="booking" value={b.id} /><button class="btn btn-primary btn-small">{b.payment === "voucher" ? "Voucher OK" : "Opłacone"}</button></form>
+                      )}
+                      {b.status === "waitlist" && (
+                        <form method="post"><input type="hidden" name="action" value="admit" /><input type="hidden" name="booking" value={b.id} /><button class="btn btn-primary btn-small">Daj miejsce</button></form>
+                      )}
+                      {b.status !== "cancelled" && (
+                        <details>
+                          <summary>Anuluj</summary>
+                          <form method="post" class="confirm">
+                            <input type="hidden" name="action" value="cancel-booking" /><input type="hidden" name="booking" value={b.id} />
+                            <label class="check" for={`nb-${b.id}`}><input type="checkbox" id={`nb-${b.id}`} name="notify" checked /><span>wyślij maila</span></label>
+                            <button class="btn btn-ghost btn-small">Anuluj rezerwację</button>
+                          </form>
+                        </details>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+
+  {term.status !== "cancelled" && (
+    <section class="box">
+      <h2>Edytuj termin</h2>
+      {term.status === "open" && taken > 0 && <p class="note">Ten termin ma rezerwacje. Jeśli zmieniasz datę albo godzinę, napisz do uczestników, bo zmiana nie wysyła maili sama.</p>}
+      <TermForm term={term} submitLabel="Zapisz zmiany" />
+    </section>
+
+    <section class="box">
+      <h2>Odwołaj albo usuń</h2>
+      <form method="post" class="actions">
+        <input type="hidden" name="action" value="cancel" />
+        <label class="check" for="cancel-notify"><input type="checkbox" id="cancel-notify" name="notify" checked /><span>Wyślij maila wszystkim zapisanym i chętnym</span></label>
+        <button class="btn btn-ghost btn-small">Odwołaj termin</button>
+      </form>
+      {interest.length === 0 && bookings.length === 0 && (
+        <form method="post"><input type="hidden" name="action" value="delete" /><button class="btn btn-ghost btn-small">Usuń termin (nikt się nie zapisał)</button></form>
+      )}
+    </section>
+  )}
+</Panel>
+
+<style>
+  .confirm { display: grid !important; gap: 8px; margin-top: 8px; }
+</style>

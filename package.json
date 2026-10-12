@@ -7,13 +7,18 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "check": "astro check"
+    "check": "astro check",
+    "test:e2e": "node scripts/e2e.mjs"
   },
   "dependencies": {
-    "astro": "^7.3.3"
+    "@astrojs/node": "^11.1.7",
+    "astro": "^7.3.3",
+    "nodemailer": "^8.0.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@types/node": "^24.19.2",
+    "@types/nodemailer": "^8.0.2",
     "typescript": "^6.0.3"
   }
 }

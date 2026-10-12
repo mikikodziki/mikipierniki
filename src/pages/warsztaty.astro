@@ -7,21 +7,27 @@ import FaqList from "@/components/FaqList.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import TermsList from "@/components/workshops/TermsList.astro";
 import SignupDialog from "@/components/workshops/SignupDialog.astro";
+import InterestDialog from "@/components/workshops/InterestDialog.astro";
 import VoucherCard from "@/components/VoucherCard.astro";
-import { getFaq, getTerms, venueById } from "@/lib/api";
+import { getFaq, venueById } from "@/lib/api";
 import { pln } from "@/lib/format";
-import { site } from "@/lib/site";
+import { site, workshopDefaults } from "@/lib/site";
 import type { WorkshopType } from "@/lib/types";
+import { publicTerms } from "@/server/terms";
 
-const terms = await getTerms();
+// Rendered per request: terms and seat counts come live from the database.
+export const prerender = false;
+
+const terms = publicTerms();
+const anyProposed = terms.some((t) => t.status === "proposed");
 const faq = [...(await getFaq("warsztaty")), ...(await getFaq("platnosci"))];
 
 // Wszystkie warsztaty otwarte odbywają się w pracowni — adres bierzemy z danych terminu.
 const studio = venueById(terms[0]?.venueId ?? "pracownia");
 
-// Ceny warsztatów otwartych (docs/dane.md). Voucher jest jeden, kwotowy.
+// Ceny warsztatów otwartych (docs/dane.md); bez terminów w kalendarzu bierzemy cennik domyślny. Voucher jest jeden, kwotowy.
 const voucherPrice = site.voucherPrice;
-const priceOf = (type: WorkshopType) => terms.find((t) => t.type === type)?.price;
+const priceOf = (type: WorkshopType) => terms.find((t) => t.type === type)?.price ?? workshopDefaults[type].price;
 const adultPrice = priceOf("dorosli");
 const eveningPrice = priceOf("wieczor");
 const kidsPrice = priceOf("dzieci");
@@ -29,7 +35,8 @@ const kidsPrice = priceOf("dzieci");
 const siteUrl = Astro.site?.href.replace(/\/$/, "") ?? "";
 const organizer = { "@type": "Organization", name: site.name, url: siteUrl, email: site.email };
 
-const jsonLd = terms.map((t) => {
+// Only confirmed (open) dates are events; proposed ones may never happen.
+const jsonLd = terms.filter((t) => t.status === "open").map((t) => {
   const venue = venueById(t.venueId);
   return {
     "@context": "https://schema.org",
@@ -115,9 +122,9 @@ const closedFacts = [
         title="Wybierz termin i zarezerwuj miejsce"
         lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne z lampką grzanego wina (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}, od 18 lat) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Wszystkie prowadzę w jednym miejscu — w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
       />
-      <!-- DO UZUPEŁNIENIA: prawdziwy grafik terminów i liczba wolnych miejsc (terminy w mock-data są przykładowe) -->
       <TermsList terms={terms} />
       <ul class="terms-notes">
+        {anyProposed && <li>Terminy oznaczone jako propozycja dopiero zbieram. Zaznacz te, które Ci pasują, a gdy zbierze się grupa, potwierdzę termin i napiszę z linkiem do rezerwacji.</li>}
         <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat razem z rodzicem. Starsze dzieci radzą sobie same i mogą przyjść bez opiekuna. W sezonie mam tylko dwa takie terminy.</li>
         <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać — wtedy zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
         <li>Każda osoba dekoruje 6–8 pierników i zabiera do domu wszystkie.</li>
@@ -269,6 +276,7 @@ const closedFacts = [
   </section>
 
   <SignupDialog slot="end" terms={terms} />
+  <InterestDialog slot="end" terms={terms} />
 </Base>
 
 <style>

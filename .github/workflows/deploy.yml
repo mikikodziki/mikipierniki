@@ -1,0 +1,53 @@
+# Builds on every push to main and ships the release to the VPS over SSH.
+# Each release gets its own folder; "current" is switched only after its packages are installed,
+# so the running server never sees half-copied files.
+# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (private key), DEPLOY_KNOWN_HOSTS (ssh-keyscan output).
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency: deploy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+      - name: SSH setup
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Upload release
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          RELEASE: /srv/mikipierniki/releases/${{ github.sha }}
+        run: |
+          ssh "$TARGET" "mkdir -p $RELEASE"
+          rsync -az dist package.json package-lock.json "$TARGET:$RELEASE/"
+
+      - name: Install, switch and restart
+        env:
+          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
+          RELEASE: /srv/mikipierniki/releases/${{ github.sha }}
+        run: |
+          ssh "$TARGET" "set -e
+            cd $RELEASE
+            npm ci --omit=dev --no-audit --no-fund
+            ln -sfn $RELEASE /srv/mikipierniki/current
+            sudo /usr/bin/systemctl restart mikipierniki
+            sleep 2
+            curl -fsS -o /dev/null http://127.0.0.1:4390/warsztaty
+            cd /srv/mikipierniki/releases && ls -1t | tail -n +4 | xargs -r rm -rf"

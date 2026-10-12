@@ -191,3 +191,20 @@ legend { font-weight: 600; font-size: .9rem; margin-bottom: 6px; padding: 0; }
 .sel-opt[aria-selected="true"] { background: color-mix(in srgb, var(--blue) 22%, transparent); font-weight: 600; }
 .sel-opt.is-active { background: color-mix(in srgb, var(--ink) 10%, transparent); }
 .sel-opt[aria-selected="true"].is-active { background: color-mix(in srgb, var(--blue) 34%, transparent); }
+
+/* Dialogs (sign-up and "this date suits me"): <dialog class="dlg"> with .body, .head, .done inside */
+.dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-dialog); }
+.dlg::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
+.dlg .body { display: grid; gap: 18px; padding: 28px; }
+.dlg .head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
+.dlg .head-text { display: grid; gap: 6px; }
+.dlg .head h2, .dlg .done h2 { font-size: 1.7rem; }
+.dlg .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
+/* the result heading is focused from script only, so screen readers land on it; no ring */
+.dlg .done h2:focus { outline: none; }
+.dlg .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
+.dlg .done .done-cookie { width: 90px; }
+.dlg .done p { color: var(--ink-soft); max-width: 40ch; }
+
+/* Honeypot: invisible to people, filled in by bots; the server drops those posts */
+.hp { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -1,0 +1,30 @@
+---
+/** Withdraws an interest sign-up for proposed dates. GET shows what will be withdrawn, POST does it. */
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import { shortDate } from "@/lib/format";
+import { interestByToken, withdrawInterest } from "@/server/interest";
+
+export const prerender = false;
+
+const t = Astro.url.searchParams.get("t") ?? "";
+let rows = t ? interestByToken(t) : [];
+if (Astro.request.method === "POST" && rows.length) {
+  withdrawInterest(t);
+  rows = interestByToken(t);
+}
+const active = rows.filter((r) => !r.withdrawn && r.term);
+---
+<Base title="Wycofanie zgłoszenia" noindex mobileCta={false}>
+  {rows.length === 0 ? (
+    <PageHead eyebrow="Zgłoszenie" title="Ten link już nie działa" lead="Zgłoszenie mogło zostać już usunięte. W razie pytań odpisz na dowolną wiadomość ode mnie." />
+  ) : active.length === 0 ? (
+    <PageHead eyebrow="Zgłoszenie" title="Zgłoszenie wycofane" lead="Nie będę już pisać w sprawie tych terminów. Jeśli zmienisz zdanie, zaznacz je ponownie na stronie.">
+      <div><a class="btn btn-primary" href="/warsztaty">Zobacz warsztaty</a></div>
+    </PageHead>
+  ) : (
+    <PageHead eyebrow="Zgłoszenie" title="Wycofać zgłoszenie?" lead={`Przestanę pisać w sprawie terminów: ${active.map((r) => `${shortDate(r.term!.startsAt)} (${r.term!.title})`).join(", ")}.`}>
+      <form method="post"><button class="btn btn-primary" type="submit">Tak, wycofuję</button></form>
+    </PageHead>
+  )}
+</Base>

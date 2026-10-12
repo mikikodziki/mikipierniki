@@ -1,0 +1,98 @@
+---
+/** Layout for Dominika's admin panel (/panel). Not indexed, no site header or footer. */
+import "@/styles/global.css";
+import { outboxStats } from "@/server/mail";
+
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+const ok = Astro.url.searchParams.get("ok");
+const err = Astro.url.searchParams.get("err");
+const mail = outboxStats();
+const here = Astro.url.pathname;
+const nav = [
+  { href: "/panel", label: "Terminy" },
+  { href: "/panel/newsletter", label: "Powiadomienia" },
+  { href: "/panel/zapytania", label: "Zapytania" },
+];
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} · Panel Miki Pierniki</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="bar">
+      <div class="wrap bar-in">
+        <a class="brand" href="/panel">Panel Miki Pierniki</a>
+        <nav aria-label="Panel">
+          {nav.map((n) => <a href={n.href} aria-current={here === n.href ? "page" : undefined}>{n.label}</a>)}
+          <a href="/" target="_blank">Strona ↗</a>
+        </nav>
+      </div>
+    </header>
+    <main class="wrap panel">
+      {ok && <p class="flash flash--ok" role="status">{ok}</p>}
+      {err && <p class="flash flash--err" role="alert">{err}</p>}
+      {(mail.failed ?? 0) > 0 && (
+        <form class="flash flash--err" method="post" action="/panel/newsletter">
+          <span>{mail.failed} wiadomości nie udało się wysłać. Sprawdź ustawienia poczty na serwerze.</span>
+          <input type="hidden" name="action" value="retry-mail" />
+          <button class="btn btn-ghost btn-small" type="submit">Wyślij ponownie</button>
+        </form>
+      )}
+      <h1>{title}</h1>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  body { background: var(--sheet); }
+  .bar { background: var(--dark); color: var(--on-dark); --focus: var(--blue); }
+  .bar-in { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; justify-content: space-between; padding-block: 14px; }
+  .brand { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.2rem; color: var(--on-dark); text-decoration: none; }
+  .bar nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .bar nav a { color: var(--on-dark); text-decoration: none; font-weight: 500; }
+  .bar nav a[aria-current="page"] { color: var(--blue); }
+  .panel { display: grid; gap: 20px; padding-block: 28px 64px; }
+  .panel h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); }
+  .panel h2 { font-size: 1.4rem; }
+  .flash { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: var(--radius); font-weight: 600; }
+  .flash--ok { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .flash--err { background: color-mix(in srgb, var(--berry) 14%, var(--ground)); color: var(--berry); }
+  .box { background: var(--ground); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 24px); box-shadow: var(--panel-shadow); display: grid; gap: 14px; min-width: 0; }
+  .note { color: var(--ink-soft); font-size: .92rem; }
+  .scroll { overflow-x: auto; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  .tbl th, .tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tbl th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+  .tbl tr.muted td { color: var(--ink-soft); }
+  .pill { display: inline-block; font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--sunk); white-space: nowrap; }
+  .pill--proposed { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .pill--open { background: var(--dark); color: var(--on-dark); }
+  .pill--cancelled, .pill--warn { background: color-mix(in srgb, var(--berry) 14%, var(--ground)); color: var(--berry); }
+  .pill--ok { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .actions form { display: contents; }
+  .grid3 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  details > summary { cursor: pointer; font-weight: 600; }
+  /* fields sit on the light panel card, so they take the deeper cream to stay visible */
+  .box .input, .box .radio { background: var(--panel-deep); }
+  .box .input:hover, .box .input:focus { background: var(--field-strong); }
+  .box .radio:has(input:checked) { background: color-mix(in srgb, var(--blue) 30%, var(--panel-deep)); }
+  /* on a phone every table row becomes a small card; data-label names the cells that need it */
+  @media (max-width: 700px) {
+    .tbl thead { display: none; }
+    .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; }
+    .tbl tr { padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .tbl td { border: 0; padding: 3px 0; }
+    .tbl td:empty { display: none; }
+    .tbl td[data-label]::before { content: attr(data-label) ": "; color: var(--ink-soft); font-size: .85rem; }
+  }
+</style>

@@ -1,0 +1,10 @@
+# /etc/systemd/system/mikipierniki-backup.timer
+[Unit]
+Description=Miki Pierniki database backup every night
+
+[Timer]
+OnCalendar=*-*-* 03:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target

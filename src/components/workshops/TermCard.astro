@@ -2,6 +2,7 @@
 import type { Term } from "@/lib/types";
 import { venueById } from "@/lib/api";
 import { day, LOW_SEATS, month, plural, pln, seatsWord, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { site } from "@/lib/site";
 import Photo from "../Photo.astro";
 
 interface Props {
@@ -9,18 +10,23 @@ interface Props {
 }
 const { term } = Astro.props;
 const venue = venueById(term.venueId);
+// a proposed date only collects "this suits me" sign-ups; nothing is booked yet
+const proposed = term.status === "proposed";
 const soldOut = term.seatsLeft === 0;
 const low = !soldOut && term.seatsLeft <= LOW_SEATS;
 const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100);
 ---
-<article class="term" data-type={term.type} data-term-id={term.id}>
+<article class:list={["term", { proposed }]} data-type={term.type} data-term-id={term.id}>
   <div class="media">
     <Photo name={term.photo} alt={term.photoAlt} sizes="(max-width: 700px) 100vw, 33vw" />
   </div>
 
   <div class="panel">
     <div class="top">
-      <span class="tag">{workshopTypeLabel[term.type]}</span>
+      <div class="tags">
+        <span class="tag">{workshopTypeLabel[term.type]}</span>
+        {proposed && <span class="tag tag--soft">Propozycja terminu</span>}
+      </div>
       <p class="when">{day(term.startsAt)} {month(term.startsAt)} · {weekday(term.startsAt)} · {timeRange(term)}</p>
       <h3>{term.title}</h3>
     </div>
@@ -34,6 +40,9 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
           {term.type === "wieczor" && <li>Lampka grzanego wina w cenie</li>}
         </ul>
 
+        {proposed ? (
+          <p class="seats">Zbieram chętnych. Gdy zbierze się grupa od {site.groupMin} osób, potwierdzę termin i napiszę z linkiem do zapisu.</p>
+        ) : (
         <div class:list={["seats", { low, soldOut }]}>
           <span>
             {soldOut ? (
@@ -46,12 +55,17 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
           </span>
           <div class="bar" role="presentation"><i style={`width:${pct}%`}></i></div>
         </div>
+        )}
 
         <div class="foot">
           <span class="price">{pln(term.price)} <small>/ {term.priceUnit === "dziecko" ? "dziecko" : "os."}</small></span>
-          <button class="btn btn-primary btn-small" type="button" data-book={term.id}>
-            {soldOut ? "Lista rezerwowa" : "Zapisz się"}
-          </button>
+          {proposed ? (
+            <button class="btn btn-primary btn-small" type="button" data-interest={term.id}>Pasuje mi</button>
+          ) : (
+            <button class="btn btn-primary btn-small" type="button" data-book={term.id}>
+              {soldOut ? "Lista rezerwowa" : "Zapisz się"}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -80,11 +94,13 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
     display: grid;
   }
   .top { display: grid; gap: 8px; justify-items: start; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
   .tag {
     font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
     color: var(--ink); background: var(--sand);
     padding: 5px 11px; border-radius: 999px;
   }
+  .tag--soft { color: var(--on-dark); background: color-mix(in srgb, var(--on-dark) 18%, transparent); }
   .when { font-size: .88rem; color: color-mix(in srgb, var(--on-dark) 92%, transparent); }
   h3 { font-size: 1.25rem; color: var(--on-dark); }
 

@@ -1,4 +1,4 @@
-import type { Season } from "./types";
+import type { Season, Term, WorkshopType } from "./types";
 
 export const site = {
   name: "Miki Pierniki",
@@ -16,6 +16,13 @@ export const site = {
   /** Group size on open workshops */
   groupMin: 4,
   groupMax: 10,
+};
+
+/** Prices and usual hours per workshop type (docs/dane.md); the panel fills new terms with these. */
+export const workshopDefaults: Record<WorkshopType, Pick<Term, "price" | "priceUnit" | "cookies"> & { start: string; end: string }> = {
+  dorosli: { price: 450, priceUnit: "osoba", cookies: "6–8", start: "11:00", end: "15:00" },
+  wieczor: { price: 500, priceUnit: "osoba", cookies: "6–8", start: "18:00", end: "21:30" },
+  dzieci: { price: 200, priceUnit: "dziecko", cookies: "6–8", start: "10:00", end: "12:00" },
 };
 
 export const nav = [

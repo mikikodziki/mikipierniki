@@ -1,27 +1,11 @@
 /**
- * Prices, venue, group sizes and workshop formats are REAL (docs/dane.md).
- * Dates, seats left and testimonials are still EXAMPLES until Dominika sends the 2026 schedule.
+ * Static site content. FAQ, venue and gallery are REAL (docs/dane.md); testimonials are still EXAMPLES.
+ * Workshop terms are not here: Dominika manages them in /panel (database).
  */
-import type { FaqItem, GalleryItem, Term, Testimonial, Venue } from "./types";
+import type { FaqItem, GalleryItem, Testimonial, Venue } from "./types";
 
 export const venues: Venue[] = [
   { id: "pracownia", name: "Pracownia Miki", city: "Wrocław" },
-];
-
-const adult = { type: "dorosli", price: 450, priceUnit: "osoba", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
-const evening = { type: "wieczor", price: 500, priceUnit: "osoba", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
-const kids = { type: "dzieci", price: 200, priceUnit: "dziecko", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
-
-export const terms: Term[] = [
-  { ...adult, id: "t-2026-11-14", photo: "swieta-stol", photoAlt: "Piernikowe domki, misie i bałwanki na drewnianym stole", title: "Świąteczne klasyki", startsAt: "2026-11-14T11:00:00+01:00", endsAt: "2026-11-14T15:00:00+01:00", seatsLeft: 4 },
-  { ...kids, id: "t-2026-11-15", photo: "mis-choinka", photoAlt: "Piernikowy miś w szaliku i choinka z wesołą buzią", title: "Pierniczki dla dzieci", startsAt: "2026-11-15T10:00:00+01:00", endsAt: "2026-11-15T12:00:00+01:00", seatsLeft: 7 },
-  { ...evening, id: "t-2026-11-20", photo: "gwiazdka-zlota", photoAlt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem", title: "Lukier i grzane wino", startsAt: "2026-11-20T18:00:00+01:00", endsAt: "2026-11-20T21:30:00+01:00", seatsLeft: 2 },
-  { ...adult, id: "t-2026-11-28", photo: "sniezynka-zlota", photoAlt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem", title: "Zawieszki na choinkę", startsAt: "2026-11-28T11:00:00+01:00", endsAt: "2026-11-28T15:00:00+01:00", seatsLeft: 0 },
-  { ...adult, id: "t-2026-11-29", photo: "mis-mikolaj", photoAlt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja", title: "Renifery i bałwanki", startsAt: "2026-11-29T11:00:00+01:00", endsAt: "2026-11-29T14:30:00+01:00", seatsLeft: 8 },
-  { ...evening, id: "t-2026-12-04", photo: "kamieniczki", photoAlt: "Trzy piernikowe kamieniczki z lukrowymi wieńcami", title: "Pierniki i swing", startsAt: "2026-12-04T18:00:00+01:00", endsAt: "2026-12-04T21:30:00+01:00", seatsLeft: 6 },
-  { ...kids, id: "t-2026-12-06", photo: "swieta-mikolaj-domek", photoAlt: "Piernikowy Mikołaj i domek z czerwonymi drzwiami", title: "Mikołajkowe pierniki dla dzieci", startsAt: "2026-12-06T10:00:00+01:00", endsAt: "2026-12-06T12:00:00+01:00", seatsLeft: 9 },
-  { ...evening, id: "t-2026-12-11", photo: "gwiazdka-zlota", photoAlt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem", title: "Wieczór z lukrem i winem", startsAt: "2026-12-11T18:00:00+01:00", endsAt: "2026-12-11T21:30:00+01:00", seatsLeft: 5 },
-  { ...adult, id: "t-2026-12-12", photo: "sniezynka-zlota", photoAlt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem", title: "Wianki i gwiazdy", startsAt: "2026-12-12T11:00:00+01:00", endsAt: "2026-12-12T15:00:00+01:00", seatsLeft: 3 },
 ];
 
 // PRZYKŁADOWE opinie — Dominika prześle prawdziwe.
@@ -40,7 +24,7 @@ export const faq: FaqItem[] = [
   { topic: "warsztaty", q: "Ile osób jest w grupie?", a: "Od 4 do 10 osób. Przy mniejszej liczbie chętnych termin może zostać odwołany, a wtedy przenoszę zapis na inny termin albo zwracam całą wpłatę." },
   { topic: "warsztaty", q: "Czy na warsztatach wieczornych jest alkohol?", a: "Tak, lampka grzanego wina jest w cenie, więc te warsztaty są dla osób pełnoletnich. Kto nie pije, dostaje to samo w wersji bezalkoholowej." },
   { topic: "warsztaty", q: "Czy pierniki są odpowiednie dla alergików?", a: "Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów. Alergie wpisz w formularzu zapisu, a przygotuję się na miejscu." },
-  { topic: "platnosci", q: "Jak mogę zapłacić?", a: "Online przez BLIK lub kartą, zwykłym przelewem w ciągu 3 dni od rezerwacji albo kartą podarunkową, jeśli dostałaś voucher." },
+  { topic: "platnosci", q: "Jak mogę zapłacić?", a: "Przelewem w ciągu 3 dni od rezerwacji (dane do przelewu przychodzą mailem) albo kartą podarunkową, jeśli masz voucher." },
   { topic: "platnosci", q: "Co jeśli nie mogę przyjść?", a: "Do 7 dni przed terminem zwracam całą kwotę albo przenoszę rezerwację na inny termin. Później możesz przekazać swoje miejsce innej osobie." },
   { topic: "platnosci", q: "Jak działa voucher?", a: "Voucher kosztuje 500 zł i jest ważny rok. Obdarowana osoba zapisuje się na dowolny termin i przy płatności wybiera kartę podarunkową. Wersję PDF wysyłam mailem, drukowaną odbiera się w pracowni." },
   { topic: "zamowienia", q: "Ile kosztują pierniki na zamówienie?", a: "Cena zależy od wielkości piernika i tego, jak pracochłonne jest zdobienie: mały 15 zł, średni 25 zł, duży 35 zł. Zestaw w pudełku (1 duży, 2 średnie, 3 małe) kosztuje 120 zł. Minimalne zamówienie to 100 zł." },

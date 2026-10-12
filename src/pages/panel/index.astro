@@ -1,0 +1,83 @@
+---
+import Panel from "@/layouts/Panel.astro";
+import TermForm from "@/components/panel/TermForm.astro";
+import { shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { site } from "@/lib/site";
+import type { TermStatus } from "@/lib/types";
+import { bookingBlockers } from "@/server/config";
+import { UserError } from "@/server/http";
+import { back, statusLabel, termFromForm } from "@/server/panel";
+import { createTerm, panelTerms } from "@/server/terms";
+
+export const prerender = false;
+
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  try {
+    const status: TermStatus = f.get("status") === "draft" ? "draft" : "proposed";
+    const id = createTerm(termFromForm(f), status);
+    return back(`/panel/termin/${id}`, { ok: status === "draft" ? "Szkic zapisany." : "Termin dodany jako propozycja. Jest już widoczny na stronie." });
+  } catch (e) {
+    if (e instanceof UserError) return back("/panel#nowy", { err: e.message });
+    throw e;
+  }
+}
+
+const past = Astro.url.searchParams.has("minione");
+const terms = panelTerms({ past });
+const blockers = bookingBlockers();
+---
+<Panel title={past ? "Minione terminy" : "Terminy"}>
+  {blockers.length > 0 && (
+    <p class="flash flash--err">Zapisy z płatnością są wyłączone, dopóki na serwerze brakuje: {blockers.join(", ")}. Propozycje terminów działają normalnie.</p>
+  )}
+
+  <section class="box">
+    <div class="actions">
+      <p class="note">Propozycje zbierają chętnych bez płatności. Gdy na termin zgłosi się co najmniej {site.groupMin} osoby, otwórz zapisy i wyślij chętnym link.</p>
+      <a class="btn btn-ghost btn-small" href={past ? "/panel" : "/panel?minione"}>{past ? "Nadchodzące" : "Minione"}</a>
+    </div>
+    {terms.length === 0 ? (
+      <p>{past ? "Brak minionych terminów." : "Nie ma jeszcze żadnych terminów. Dodaj pierwszy poniżej."}</p>
+    ) : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Kiedy</th><th>Warsztaty</th><th>Status</th><th>Chętni</th><th>Rezerwacje</th><th></th></tr></thead>
+          <tbody>
+            {terms.map((t) => (
+              <tr class:list={{ muted: t.status === "cancelled" }}>
+                <td>{weekday(t.startsAt)}, {shortDate(t.startsAt)}<br /><span class="note">{timeRange(t)}</span></td>
+                <td>{t.title}<br /><span class="note">{workshopTypeLabel[t.type]}</span></td>
+                <td><span class={`pill pill--${t.status}`}>{statusLabel[t.status]}</span></td>
+                <td data-label="Chętni">
+                  {t.interestCount > 0 ? (
+                    <>
+                      <b>{t.interestPeople} os.</b> <span class="note">({t.interestCount} zgł.)</span>
+                      {t.interestPeople >= site.groupMin && t.status === "proposed" && <><br /><span class="pill pill--ok">grupa się zbiera</span></>}
+                    </>
+                  ) : "—"}
+                </td>
+                <td data-label="Rezerwacje">
+                  {t.status === "open" || t.confirmed + t.awaiting + t.waitlist > 0 ? (
+                    <>
+                      <b>{t.confirmed + t.awaiting}/{t.capacity}</b>
+                      <span class="note"> ({t.confirmed} opłac.{t.waitlist ? `, ${t.waitlist} na liście` : ""})</span>
+                    </>
+                  ) : "—"}
+                </td>
+                <td><a class="btn btn-ghost btn-small" href={`/panel/termin/${t.id}`}>Szczegóły</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+
+  {!past && (
+    <section class="box" id="nowy">
+      <h2>Dodaj termin</h2>
+      <TermForm submitLabel="Dodaj termin" withStatus />
+    </section>
+  )}
+</Panel>
