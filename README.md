@@ -10,13 +10,14 @@ z bazą SQLite. Wdrożenie na VPS: `deploy/README.md`.
 npm install
 npm run dev      # http://localhost:4321
 npm run build    # astro check + build do dist/ (client/ statyczne, server/ Node)
-node dist/server/entry.mjs   # zbudowana wersja, jak na serwerze (HOST, PORT z env)
+MAIL_TO_FILES=1 node dist/server/entry.mjs   # zbudowana wersja, jak na serwerze (HOST, PORT z env)
 npm run test:e2e # po buildzie: zapisy, maile, newsletter i panel na tymczasowej bazie
 ```
 
 Ustawienia serwera są w `.env` (wzór: `deploy/env.example`); lokalnie wszystkie są opcjonalne.
-Baza tworzy się sama w `data/mikipierniki.sqlite`. Bez `SMTP_HOST` maile nie wychodzą, tylko
-zapisują się w `data/mail/` (tekst i HTML), więc można je obejrzeć. Panel lokalnie działa bez
+Baza tworzy się sama w `data/mikipierniki.sqlite`. W `npm run dev` bez `SMTP_HOST` maile nie wychodzą, tylko
+zapisują się w `data/mail/` (tekst i HTML), więc można je obejrzeć. Zbudowana wersja robi to samo tylko
+z `MAIL_TO_FILES=1`; bez niej i bez SMTP oznacza maile jako nieudane (panel to pokazuje). Panel lokalnie działa bez
 hasła, na serwerze wymaga `PANEL_PASSWORD`.
 
 **Jak działają zapisy:** Dominika dodaje w panelu termin jako *propozycję*. Odwiedzający
