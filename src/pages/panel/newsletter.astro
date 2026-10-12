@@ -1,0 +1,76 @@
+---
+import Panel from "@/layouts/Panel.astro";
+import { UserError } from "@/server/http";
+import { flushOutbox, retryFailed } from "@/server/mail";
+import { broadcast, subscribers } from "@/server/newsletter";
+import { back } from "@/server/panel";
+
+export const prerender = false;
+
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  try {
+    if (f.get("action") === "retry-mail") {
+      const n = retryFailed();
+      void flushOutbox();
+      return back("/panel/newsletter", { ok: `Ponawiam wysyłkę ${n} wiadomości.` });
+    }
+    const subject = String(f.get("subject") ?? "").trim();
+    const body = String(f.get("body") ?? "").trim();
+    if (subject.length < 3 || body.length < 10) throw new UserError("Wpisz temat i treść wiadomości.");
+    if (f.get("confirm") !== "on") throw new UserError("Zaznacz, że chcesz wysłać wiadomość do wszystkich.");
+    const n = broadcast(subject, body);
+    void flushOutbox();
+    return back("/panel/newsletter", { ok: `Wiadomość trafiła do kolejki: ${n} adresów.` });
+  } catch (e) {
+    if (e instanceof UserError) return back("/panel/newsletter", { err: e.message });
+    throw e;
+  }
+}
+
+const all = subscribers();
+const active = all.filter((s) => s.status === "active");
+const pending = all.filter((s) => s.status === "pending").length;
+const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pl-PL", { timeZone: "Europe/Warsaw" }) : "");
+---
+<Panel title="Powiadomienia o terminach">
+  <section class="box">
+    <p><b>{active.length}</b> potwierdzonych adresów · {pending} czeka na kliknięcie w link · {all.length - active.length - pending} wypisanych</p>
+    <p class="note">Adres trafia na listę dopiero po kliknięciu w link z maila potwierdzającego. Każda wiadomość ma link do wypisania się.</p>
+    <div><a class="btn btn-ghost btn-small" href="/panel/eksport?co=newsletter">Pobierz CSV</a></div>
+  </section>
+
+  <section class="box">
+    <h2>Wyślij wiadomość</h2>
+    <form method="post" class="form-grid">
+      <label class="field" for="nl-subject">Temat
+        <input class="input" id="nl-subject" name="subject" required placeholder="Np. Nowe terminy świąteczne są już w kalendarzu" />
+      </label>
+      <label class="field" for="nl-body">Treść <span class="hint">pusta linia zaczyna nowy akapit; podpis i link do wypisania dodam sama</span>
+        <textarea class="input" id="nl-body" name="body" rows="8" required placeholder={"Cześć,\n\nw kalendarzu pojawiły się nowe terminy...\n\nZapisy: https://mikipierniki.pl/warsztaty"}></textarea>
+      </label>
+      <label class="check" for="nl-confirm"><input type="checkbox" id="nl-confirm" name="confirm" /><span>Wyślij do {active.length} osób</span></label>
+      <div><button class="btn btn-primary" type="submit" disabled={active.length === 0}>Wyślij</button></div>
+    </form>
+  </section>
+
+  <section class="box">
+    <h2>Adresy</h2>
+    {all.length === 0 ? <p class="note">Nikt jeszcze się nie zapisał.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>E-mail</th><th>Status</th><th>Zapis</th></tr></thead>
+          <tbody>
+            {all.map((s) => (
+              <tr class:list={{ muted: s.status !== "active" }}>
+                <td>{s.email}</td>
+                <td>{s.status === "active" ? "potwierdzony" : s.status === "pending" ? "czeka na potwierdzenie" : "wypisany"}</td>
+                <td>{dt(s.confirmed_at ?? s.created_at)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </section>
+</Panel>

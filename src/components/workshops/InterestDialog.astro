@@ -1,0 +1,165 @@
+---
+/**
+ * "This date suits me" dialog for proposed terms. Visitors tick every proposed date that
+ * works for them; nothing is booked or paid. Any element with data-interest="<termId>"
+ * (or ?termin=<termId> in the URL) opens it with that date ticked.
+ */
+import type { Term } from "@/lib/types";
+import { shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { site } from "@/lib/site";
+import Cookie from "../Cookie.astro";
+
+interface Props {
+  terms: Term[];
+}
+const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
+---
+{proposed.length > 0 && (
+<dialog class="dlg" id="interest-dialog" aria-labelledby="interest-title">
+  <form class="body" id="interest-form" novalidate>
+    <div class="head">
+      <div class="head-text">
+        <span class="eyebrow">Propozycja terminu</span>
+        <h2 id="interest-title">Który termin Ci pasuje?</h2>
+      </div>
+      <button class="x" type="button" data-close aria-label="Zamknij">✕</button>
+    </div>
+
+    <div class="form-grid form-grid--boxed" id="in-fields">
+      <p class="intro">Zaznacz wszystkie terminy, które Ci pasują. Niczego jeszcze nie płacisz. Gdy na któryś zbierze się grupa od {site.groupMin} osób, napiszę do Ciebie z linkiem do rezerwacji.</p>
+      <fieldset>
+        <legend>Terminy</legend>
+        {proposed.map((t) => (
+          <label class="radio" for={`in-t-${t.id}`}>
+            <input type="checkbox" id={`in-t-${t.id}`} name="termIds" value={t.id} />
+            <span><b>{weekday(t.startsAt)}, {shortDate(t.startsAt)}, {timeRange(t)}</b><br /><span class="sub">{t.title} · {workshopTypeLabel[t.type].toLowerCase()}</span></span>
+          </label>
+        ))}
+      </fieldset>
+      <label class="field" for="in-people">Ile osób chcesz zapisać? <span class="hint">na warsztatach dla dzieci liczę dzieci</span>
+        <input class="input" type="number" id="in-people" name="people" min="1" max="10" value="1" inputmode="numeric" />
+      </label>
+      <label class="field" for="in-name">Imię i nazwisko
+        <input class="input" type="text" id="in-name" name="name" autocomplete="name" required />
+      </label>
+      <div class="row2">
+        <label class="field" for="in-email">E-mail
+          <input class="input" type="email" id="in-email" name="email" autocomplete="email" required />
+        </label>
+        <label class="field" for="in-phone">Telefon <span class="hint">opcjonalnie</span>
+          <input class="input" type="tel" id="in-phone" name="phone" autocomplete="tel" pattern="[0-9 +\(\)\-]{9,}" />
+        </label>
+      </div>
+      <label class="field" for="in-notes">Uwagi <span class="hint">opcjonalnie</span>
+        <textarea class="input" id="in-notes" name="notes" rows="2"></textarea>
+      </label>
+      <div class="hp" aria-hidden="true"><label for="in-website">Strona www</label><input type="text" id="in-website" name="website" tabindex="-1" autocomplete="off" /></div>
+      <label class="check" for="in-consent"><input type="checkbox" id="in-consent" name="consent" required />
+        <span>Zgadzam się na kontakt w sprawie tych terminów zgodnie z <a href="/polityka-prywatnosci" target="_blank">polityką prywatności</a>.</span>
+      </label>
+      <p class="form-error" id="in-error" role="alert" hidden></p>
+      <button class="btn btn-primary" type="submit" id="in-submit">Daj mi znać</button>
+    </div>
+
+    <div class="done" id="in-done" hidden>
+      <Cookie shape="star" class="done-cookie" />
+      <h2 id="in-done-title" tabindex="-1">Dziękuję!</h2>
+      <p id="in-done-text"></p>
+      <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
+    </div>
+  </form>
+</dialog>
+)}
+
+<script>
+  import { ApiError, registerInterest } from "@/lib/api";
+
+  const dlg = document.getElementById("interest-dialog") as HTMLDialogElement | null;
+  if (dlg) {
+    const $ = <E extends HTMLElement>(id: string) => document.getElementById(id) as E;
+    const form = $<HTMLFormElement>("interest-form");
+    const err = $("in-error");
+    const submit = $<HTMLButtonElement>("in-submit");
+    const boxes = [...form.querySelectorAll<HTMLInputElement>('input[name="termIds"]')];
+    const people = $<HTMLInputElement>("in-people");
+
+    function open(id: string) {
+      boxes.forEach((b) => (b.checked = b.value === id));
+      $("in-fields").hidden = false;
+      $("in-done").hidden = true;
+      err.hidden = true;
+      form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+      dlg!.showModal();
+    }
+
+    function validate(): string | null {
+      const bad: string[] = [];
+      for (const id of ["in-name", "in-email", "in-phone"]) {
+        const el = $<HTMLInputElement>(id);
+        const ok = el.checkValidity() && (!el.required || el.value.trim() !== "");
+        el.setAttribute("aria-invalid", String(!ok));
+        if (!ok) bad.push(id);
+      }
+      if (!boxes.some((b) => b.checked)) return "Zaznacz co najmniej jeden termin.";
+      if (!(Number(people.value) >= 1)) return "Dodaj co najmniej jedną osobę.";
+      if (bad.length) return "Uzupełnij imię i nazwisko oraz poprawny e-mail. Telefon jest opcjonalny.";
+      if (!$<HTMLInputElement>("in-consent").checked) return "Zaznacz zgodę na kontakt, żebym mogła dać Ci znać.";
+      return null;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const problem = validate();
+      err.hidden = !problem;
+      err.textContent = problem ?? "";
+      if (problem) {
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        return;
+      }
+      const email = $<HTMLInputElement>("in-email").value.trim();
+      submit.disabled = true;
+      const label = submit.textContent;
+      submit.textContent = "Wysyłam…";
+      try {
+        await registerInterest({
+          termIds: boxes.filter((b) => b.checked).map((b) => b.value),
+          people: Math.floor(Number(people.value)),
+          name: $<HTMLInputElement>("in-name").value.trim(),
+          email,
+          phone: $<HTMLInputElement>("in-phone").value.trim() || undefined,
+          notes: $<HTMLTextAreaElement>("in-notes").value.trim() || undefined,
+          consent: true,
+          website: $<HTMLInputElement>("in-website").value,
+        });
+        $("in-done-text").textContent = `Gdy zbierze się grupa, napiszę na ${email} z linkiem do rezerwacji. Potwierdzenie zgłoszenia już do Ciebie leci.`;
+        $("in-fields").hidden = true;
+        $("in-done").hidden = false;
+        $("in-done-title").focus();
+      } catch (e) {
+        err.hidden = false;
+        err.textContent = e instanceof ApiError ? e.message : "Nie udało się wysłać zgłoszenia. Sprawdź połączenie z internetem i spróbuj ponownie.";
+      } finally {
+        submit.disabled = false;
+        submit.textContent = label;
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>("[data-interest]");
+      if (b?.dataset.interest) open(b.dataset.interest);
+    });
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg || (e.target as HTMLElement).closest("[data-close]")) dlg.close();
+    });
+
+    const fromUrl = new URLSearchParams(location.search).get("termin");
+    if (fromUrl && boxes.some((b) => b.value === fromUrl)) open(fromUrl);
+  }
+</script>
+
+<style>
+  .intro { color: var(--ink-soft); font-size: .95rem; }
+  .radio { align-items: start; }
+  .radio b { font-weight: 600; }
+  .sub { color: var(--ink-soft); font-size: .9rem; }
+</style>

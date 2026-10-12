@@ -1,0 +1,88 @@
+---
+/** Add / edit a workshop term in the panel. Without `term` the fields start from the per-type defaults. */
+import { termPhotos } from "@/lib/api";
+import { workshopTypeLabel } from "@/lib/format";
+import { site, workshopDefaults } from "@/lib/site";
+import type { Term, WorkshopType } from "@/lib/types";
+import { warsawParts } from "@/server/util";
+
+interface Props {
+  term?: Term;
+  submitLabel: string;
+  /** Show the "save as draft / as proposal" choice (new terms only) */
+  withStatus?: boolean;
+}
+const { term, submitLabel, withStatus = false } = Astro.props;
+const type: WorkshopType = term?.type ?? "dorosli";
+const d = workshopDefaults[type];
+const start = term ? warsawParts(term.startsAt) : undefined;
+const end = term ? warsawParts(term.endsAt) : undefined;
+const photos = termPhotos();
+const types = Object.keys(workshopTypeLabel) as WorkshopType[];
+---
+<form method="post" class="form-grid term-form" data-defaults={JSON.stringify(workshopDefaults)}>
+  <input type="hidden" name="action" value={term ? "save" : "create"} />
+  <div class="grid3">
+    <label class="field" for="tf-type">Rodzaj
+      <select class="input" id="tf-type" name="type">
+        {types.map((t) => <option value={t} selected={t === type}>{workshopTypeLabel[t]}</option>)}
+      </select>
+    </label>
+    <label class="field" for="tf-title">Tytuł
+      <input class="input" id="tf-title" name="title" required value={term?.title ?? ""} placeholder="Np. Świąteczne klasyki" />
+    </label>
+  </div>
+  <div class="grid3">
+    <label class="field" for="tf-date">Data
+      <input class="input" type="date" id="tf-date" name="date" required value={start?.date ?? ""} />
+    </label>
+    <label class="field" for="tf-start">Początek
+      <input class="input" type="time" id="tf-start" name="start" required value={start?.time ?? d.start} />
+    </label>
+    <label class="field" for="tf-end">Koniec
+      <input class="input" type="time" id="tf-end" name="end" required value={end?.time ?? d.end} />
+    </label>
+  </div>
+  <div class="grid3">
+    <label class="field" for="tf-capacity">Miejsc
+      <input class="input" type="number" id="tf-capacity" name="capacity" min="1" max="30" required value={term?.capacity ?? site.groupMax} />
+    </label>
+    <label class="field" for="tf-price">Cena (zł) <span class="hint" id="tf-unit">{(term?.priceUnit ?? d.priceUnit) === "dziecko" ? "za dziecko" : "za osobę"}</span>
+      <input class="input" type="number" id="tf-price" name="price" min="0" max="5000" required value={term?.price ?? d.price} />
+    </label>
+    <label class="field" for="tf-cookies">Pierników na osobę
+      <input class="input" id="tf-cookies" name="cookies" value={term?.cookies ?? d.cookies} />
+    </label>
+  </div>
+  <label class="field" for="tf-photo">Zdjęcie na karcie
+    <select class="input" id="tf-photo" name="photo">
+      {photos.map((p) => <option value={p.photo} selected={p.photo === term?.photo}>{p.caption}</option>)}
+    </select>
+  </label>
+  {withStatus && (
+    <fieldset>
+      <legend>Jak opublikować</legend>
+      <label class="radio" for="tf-st-proposed"><input type="radio" name="status" id="tf-st-proposed" value="proposed" checked />Propozycja: chętni zaznaczają, że im pasuje (bez płatności)</label>
+      <label class="radio" for="tf-st-draft"><input type="radio" name="status" id="tf-st-draft" value="draft" />Szkic: widoczny tylko w panelu</label>
+    </fieldset>
+  )}
+  <div><button class="btn btn-primary" type="submit">{submitLabel}</button></div>
+</form>
+
+<script>
+  // switching the type of a new term fills in that type's price and usual hours
+  document.querySelectorAll<HTMLFormElement>("form.term-form").forEach((form) => {
+    const defaults = JSON.parse(form.dataset.defaults || "{}");
+    const isNew = (form.elements.namedItem("action") as HTMLInputElement).value === "create";
+    const type = form.elements.namedItem("type") as HTMLSelectElement;
+    type.addEventListener("change", () => {
+      const d = defaults[type.value];
+      if (!d) return;
+      form.querySelector("#tf-unit")!.textContent = d.priceUnit === "dziecko" ? "za dziecko" : "za osobę";
+      if (!isNew) return;
+      (form.elements.namedItem("price") as HTMLInputElement).value = String(d.price);
+      (form.elements.namedItem("start") as HTMLInputElement).value = d.start;
+      (form.elements.namedItem("end") as HTMLInputElement).value = d.end;
+    });
+  });
+</script>

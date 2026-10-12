@@ -1,29 +1,23 @@
 /**
- * The only data access layer pages and components use.
- * Today it serves mock data; later the same signatures are backed by
- * Supabase (reads) and serverless endpoints (bookings, inquiries).
+ * Data access for pages and client scripts.
+ * - Static content (FAQ, gallery, testimonials, venues) is read at build time from mock-data.ts.
+ * - Workshop terms live in the database: server-rendered pages read them via src/server/terms.ts.
+ * - The write functions below run in the browser and post to the /api endpoints.
  */
-import { faq, gallery, terms, testimonials, venues } from "./mock-data";
+import { faq, gallery, testimonials, venues } from "./mock-data";
 import type {
   BookingRequest,
   BookingResult,
   FaqItem,
   GalleryItem,
   InquiryRequest,
+  InterestRequest,
   Term,
   Testimonial,
   Venue,
-  WorkshopType,
 } from "./types";
 
 /* ---------- build-time reads ---------- */
-
-export async function getTerms(opts: { type?: WorkshopType; limit?: number } = {}): Promise<Term[]> {
-  const list = terms
-    .filter((t) => !opts.type || t.type === opts.type)
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  return opts.limit ? list.slice(0, opts.limit) : list;
-}
 
 export async function getVenues(): Promise<Venue[]> {
   return venues;
@@ -47,31 +41,49 @@ export async function getGallery(): Promise<GalleryItem[]> {
   return gallery;
 }
 
+/** Photos a term card can use (the panel offers these), with their alt text. */
+export function termPhotos(): { photo: string; alt: string; caption: string }[] {
+  const seen = new Set<string>();
+  return gallery.flatMap((g) => (g.photo && !seen.has(g.photo) && seen.add(g.photo) ? [{ photo: g.photo, alt: g.alt, caption: g.caption }] : []));
+}
+
 /* ---------- pricing (shared by UI and backend) ---------- */
 
 export function bookingTotal(term: Pick<Term, "price">, people: number): number {
   return people * term.price;
 }
 
-/* ---------- client-side writes (mocked) ---------- */
+/* ---------- client-side writes ---------- */
 
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+/** The server's own message, safe to show next to the form. */
+export class ApiError extends Error {}
 
-export async function createBooking(req: BookingRequest, term: Term): Promise<BookingResult> {
-  await wait(600);
-  const total = bookingTotal(term, req.people);
-  const bookingId = `mock-${Date.now().toString(36)}`;
-  if (term.seatsLeft < req.people) return { bookingId, status: "waitlist", total };
-  const confirmed = req.payment === "online" || req.payment === "voucher";
-  return { bookingId, status: confirmed ? "confirmed" : "awaiting_payment", total };
+async function post<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(typeof data.error === "string" ? data.error : "Nie udało się wysłać formularza.");
+  return data as T;
 }
 
-export async function sendInquiry(_req: InquiryRequest): Promise<{ ok: true }> {
-  await wait(600);
-  return { ok: true };
+/** `website` is the hidden honeypot field; people leave it empty. */
+type WithHoneypot<T> = T & { website?: string };
+
+export function createBooking(req: WithHoneypot<BookingRequest>): Promise<BookingResult> {
+  return post("/api/rezerwacja", req);
 }
 
-export async function subscribeNewsletter(_email: string): Promise<{ ok: true }> {
-  await wait(400);
-  return { ok: true };
+export function registerInterest(req: WithHoneypot<InterestRequest>): Promise<{ terms: number }> {
+  return post("/api/zainteresowanie", req);
+}
+
+export function sendInquiry(req: WithHoneypot<InquiryRequest>): Promise<{ ok: true }> {
+  return post("/api/zapytanie", req);
+}
+
+export function subscribeNewsletter(email: string, website?: string): Promise<{ ok: true }> {
+  return post("/api/newsletter", { email, website });
 }

@@ -1,0 +1,10 @@
+# /etc/systemd/system/mikipierniki-cron.service
+# Sends queued e-mail and day-before reminders even when nobody visits after a restart.
+[Unit]
+Description=Miki Pierniki background tick
+After=mikipierniki.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/mikipierniki.env
+ExecStart=/usr/bin/curl -fsS -m 60 -H "x-cron-token: ${CRON_TOKEN}" http://127.0.0.1:4390/api/cron

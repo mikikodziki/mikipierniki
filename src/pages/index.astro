@@ -9,10 +9,15 @@ import Newsletter from "@/components/Newsletter.astro";
 import FaqList from "@/components/FaqList.astro";
 import TermsList from "@/components/workshops/TermsList.astro";
 import SignupDialog from "@/components/workshops/SignupDialog.astro";
-import { getFaq, getTerms } from "@/lib/api";
+import InterestDialog from "@/components/workshops/InterestDialog.astro";
+import { getFaq } from "@/lib/api";
 import { site } from "@/lib/site";
+import { publicTerms } from "@/server/terms";
 
-const upcoming = (await getTerms()).filter((t) => t.seatsLeft > 0).slice(0, 3);
+// Rendered per request: terms and seat counts come live from the database.
+export const prerender = false;
+
+const upcoming = publicTerms().filter((t) => t.status === "proposed" || t.seatsLeft > 0).slice(0, 3);
 const faq = (await getFaq()).slice(0, 5);
 
 const jsonLd = {
@@ -37,7 +42,7 @@ const jsonLd = {
       <SectionHead
         eyebrow="Najbliższe warsztaty"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead="Wszystkie warsztaty dekorowania pierników prowadzę w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, płacisz online, przelewem albo voucherem."
+        lead="Wszystkie warsztaty dekorowania pierników prowadzę w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, płacisz przelewem albo voucherem."
       />
       <TermsList terms={upcoming} filters={false} />
       <div class="more">
@@ -62,6 +67,7 @@ const jsonLd = {
   <Newsletter />
 
   <SignupDialog slot="end" terms={upcoming} />
+  <InterestDialog slot="end" terms={upcoming} />
 </Base>
 
 <style>

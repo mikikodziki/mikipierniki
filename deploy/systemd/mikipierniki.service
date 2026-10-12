@@ -1,0 +1,24 @@
+# /etc/systemd/system/mikipierniki.service
+[Unit]
+Description=Miki Pierniki (Astro server: terms, forms, panel)
+After=network.target
+
+[Service]
+User=mikipierniki
+Group=mikipierniki
+WorkingDirectory=/srv/mikipierniki/current
+EnvironmentFile=/etc/mikipierniki.env
+Environment=HOST=127.0.0.1 PORT=4390 NODE_ENV=production
+# path from `which node` (Node 24 or newer, for node:sqlite)
+ExecStart=/usr/bin/node dist/server/entry.mjs
+Restart=always
+RestartSec=3
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/mikipierniki
+
+[Install]
+WantedBy=multi-user.target

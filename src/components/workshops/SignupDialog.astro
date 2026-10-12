@@ -1,7 +1,7 @@
 ---
 /**
- * Booking dialog. Render once per page that lists terms; any element with
- * data-book="<termId>" opens it with that term preselected.
+ * Booking dialog for open terms. Render once per page that lists terms; any element with
+ * data-book="<termId>" (or ?termin=<termId> in the URL) opens it with that term preselected.
  */
 import type { Term } from "@/lib/types";
 import { shortDate, pln } from "@/lib/format";
@@ -10,10 +10,9 @@ import Cookie from "../Cookie.astro";
 interface Props {
   terms: Term[];
 }
-const { terms } = Astro.props;
-const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
+const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
 ---
-<dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
+{payload.length > 0 && <dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
   <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload).replace(/</g, "\\u003c")} />
   <form class="body" id="signup-form" novalidate>
     <div class="head">
@@ -56,19 +55,19 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       </label>
       <fieldset id="su-pay">
         <legend>Płatność</legend>
-        <label class="radio" for="su-pay-online"><input type="radio" name="payment" id="su-pay-online" value="online" checked />Online (BLIK, karta), miejsce potwierdzone od razu</label>
-        <label class="radio" for="su-pay-transfer"><input type="radio" name="payment" id="su-pay-transfer" value="przelew" />Przelew tradycyjny w ciągu 3 dni</label>
+        <label class="radio" for="su-pay-transfer"><input type="radio" name="payment" id="su-pay-transfer" value="przelew" checked />Przelew w ciągu 3 dni, dane do przelewu przyjdą mailem</label>
         <label class="radio" for="su-pay-voucher"><input type="radio" name="payment" id="su-pay-voucher" value="voucher" />Karta podarunkowa (voucher)</label>
         <label class="field" for="su-voucher" id="su-voucher-wrap" hidden>Numer vouchera
           <input class="input" type="text" id="su-voucher" name="voucherCode" autocomplete="off" />
         </label>
       </fieldset>
+      <div class="hp" aria-hidden="true"><label for="su-website">Strona www</label><input type="text" id="su-website" name="website" tabindex="-1" autocomplete="off" /></div>
       <label class="check" for="su-terms"><input type="checkbox" id="su-terms" name="acceptedTerms" required />
         <span>Akceptuję <a href="/regulamin" target="_blank">regulamin warsztatów</a> i <a href="/polityka-prywatnosci" target="_blank">politykę prywatności</a>.</span>
       </label>
       <p class="form-error" id="su-error" role="alert" hidden></p>
       <div class="summary"><span id="su-sum-label">Do zapłaty</span><b id="su-sum">{pln(payload[0]?.price ?? 0)}</b></div>
-      <button class="btn btn-primary" type="submit" id="su-submit">Rezerwuję i płacę</button>
+      <button class="btn btn-primary" type="submit" id="su-submit">Rezerwuję miejsce</button>
     </div>
 
     <div class="done" id="signup-done" hidden>
@@ -78,10 +77,10 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
     </div>
   </form>
-</dialog>
+</dialog>}
 
 <script>
-  import { bookingTotal, createBooking } from "@/lib/api";
+  import { ApiError, bookingTotal, createBooking } from "@/lib/api";
   import type { BookingRequest, PaymentMethod, Term } from "@/lib/types";
 
   type T = Term & { label: string };
@@ -97,7 +96,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
     const guardiansWrap = $("su-guardians-wrap");
     const err = $("su-error");
     const submit = $<HTMLButtonElement>("su-submit");
-    const pay = () => (form.querySelector<HTMLInputElement>('input[name="payment"]:checked')?.value ?? "online") as PaymentMethod;
+    const pay = () => (form.querySelector<HTMLInputElement>('input[name="payment"]:checked')?.value ?? "przelew") as PaymentMethod;
     const current = () => terms.find((t) => t.id === sel.value)!;
     const n = (el: HTMLInputElement) => Math.max(0, Math.floor(Number(el.value) || 0));
 
@@ -108,14 +107,14 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
       $("su-people-label").textContent = forKids ? "Liczba dzieci" : "Liczba osób";
       const waitlist = t.seatsLeft === 0;
       // the payment choice is hidden on the waitlist, so a voucher picked earlier must not linger
-      if (waitlist && pay() === "voucher") $<HTMLInputElement>("su-pay-online").checked = true;
+      if (waitlist && pay() === "voucher") $<HTMLInputElement>("su-pay-transfer").checked = true;
       $("su-voucher-wrap").hidden = pay() !== "voucher";
       $("su-pay").hidden = waitlist;
       $("su-eyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
       $("signup-title").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
       $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
       $("su-sum").textContent = `${bookingTotal(t, n(people))} zł`;
-      submit.textContent = waitlist ? "Dopisz mnie do listy" : pay() === "online" ? "Rezerwuję i płacę" : "Rezerwuję miejsce";
+      submit.textContent = waitlist ? "Dopisz mnie do listy" : "Rezerwuję miejsce";
     }
 
     function open(id: string) {
@@ -170,25 +169,24 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
         voucherCode: pay() === "voucher" ? $<HTMLInputElement>("su-voucher").value.trim() : undefined,
         acceptedTerms: true,
       };
+      const website = $<HTMLInputElement>("su-website").value;
       submit.disabled = true;
       const label = submit.textContent;
       submit.textContent = "Zapisuję…";
       try {
-        const res = await createBooking(req, t);
-        if (res.checkoutUrl) { location.href = res.checkoutUrl; return; }
+        const res = await createBooking({ ...req, website });
         const date = t.label.split(" · ")[0];
         $("su-done-title").textContent = res.status === "waitlist" ? "Jesteś na liście rezerwowej" : "Do zobaczenia przy lukrze!";
         $("su-done-text").textContent =
           res.status === "waitlist" ? `Gdy zwolni się miejsce na ${date}, napiszę do Ciebie jako pierwszej osoby z listy.`
-          : res.status === "awaiting_payment" ? `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) wysłałam na ${req.email}. Masz na wpłatę 3 dni.`
-          : req.payment === "voucher" ? `Voucher przyjęty. Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}.`
-          : `Potwierdzenie rezerwacji na ${date} i szczegóły dojazdu wysłałam na ${req.email}. Dzień przed warsztatami przypomnę się SMS-em.`;
+          : req.payment === "voucher" ? `Rezerwacja na ${date} zapisana. Sprawdzę voucher i potwierdzę ją mailem na ${req.email}, razem z adresem pracowni.`
+          : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) wysłałam na ${req.email}. Masz na wpłatę 3 dni, a po wpłacie dostaniesz potwierdzenie z adresem pracowni.`;
         $("signup-fields").hidden = true;
         $("signup-done").hidden = false;
         $("su-done-title").focus();
-      } catch {
+      } catch (e) {
         err.hidden = false;
-        err.textContent = "Nie udało się wysłać zapisu. Sprawdź połączenie z internetem i spróbuj ponownie.";
+        err.textContent = e instanceof ApiError ? e.message : "Nie udało się wysłać zapisu. Sprawdź połączenie z internetem i spróbuj ponownie.";
       } finally {
         submit.disabled = false;
         submit.textContent = label;
@@ -209,18 +207,7 @@ const payload = terms.map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${
 </script>
 
 <style>
-  .dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-dialog); }
-  .dlg::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
-  .body { display: grid; gap: 18px; padding: 28px; }
-  .head { display: flex; justify-content: space-between; gap: 16px; align-items: start; }
-  .head-text { display: grid; gap: 6px; }
-  .head h2, .done h2 { font-size: 1.7rem; }
-  .x { border: 0; background: var(--sunk); color: var(--ink); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; flex: none; }
+  /* dialog layout is shared with InterestDialog: .dlg in global.css */
   .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
   .summary b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; }
-  /* focused from script only, so screen readers land on the result; no ring */
-  #su-done-title:focus { outline: none; }
-  .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
-  .done :global(.done-cookie) { width: 90px; }
-  .done p { color: var(--ink-soft); max-width: 40ch; }
 </style>

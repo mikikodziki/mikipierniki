@@ -7,7 +7,9 @@ import { site } from "@/lib/site";
 /*
  * DRAFT: to be verified by a lawyer before launch.
  * Every [bracketed] fragment is a placeholder. Keep the "odbiorcy" list in sync
- * with the real providers (payments, hosting, e-mail, newsletter) once chosen.
+ * with the real providers. Today the site, database and e-mail all run on one VPS (seohost);
+ * add the payment operator here when online payments arrive.
+ * The retention periods in section 5 are enforced by src/server/tick.ts (cleanup).
  */
 ---
 <Base
@@ -30,9 +32,10 @@ import { site } from "@/lib/site";
 
         <h2 id="zakres">2. Jakie dane zbieram</h2>
         <ul>
+          <li><strong>Zgłoszenie na proponowany termin</strong> („pasuje mi ten termin”): imię i nazwisko, adres e-mail, opcjonalnie numer telefonu, liczba osób, wybrane terminy oraz uwagi.</li>
           <li><strong>Zapis na warsztaty:</strong> imię i nazwisko, adres e-mail, numer telefonu, liczba uczestników (dorosłych i dzieci), wybrana metoda płatności oraz uwagi, np. informacje o alergiach.</li>
           <li><strong>Zapytania i formularz kontaktowy</strong> (zamówienia, warsztaty dla firm, vouchery): imię i nazwisko, e-mail, opcjonalnie telefon, treść wiadomości i dodatkowe szczegóły, np. okazja, liczba sztuk, termin, wielkość grupy, załączone pliki.</li>
-          <li><strong>Newsletter:</strong> adres e-mail.</li>
+          <li><strong>Powiadomienia o nowych terminach (newsletter):</strong> adres e-mail oraz daty zapisu i potwierdzenia.</li>
           <li><strong>Faktury:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP).</li>
           <li><strong>Zdjęcia z warsztatów:</strong> wizerunek na zdjęciach, jeśli zgodzisz się na ich publikację.</li>
         </ul>
@@ -41,8 +44,10 @@ import { site } from "@/lib/site";
         <h2 id="cel">3. Cel i podstawa prawna</h2>
         <ul>
           <li>Obsługa rezerwacji i przeprowadzenie warsztatów, realizacja zamówień: wykonanie umowy lub działania przed jej zawarciem (art. 6 ust. 1 lit. b RODO).</li>
+          <li>Zgłoszenie na proponowany termin i wiadomość z linkiem do rezerwacji, gdy termin się potwierdzi: działania na Twoje żądanie przed zawarciem umowy (art. 6 ust. 1 lit. b RODO).</li>
+          <li>Przypomnienie e-mailem dzień przed warsztatami i informacje organizacyjne: wykonanie umowy (art. 6 ust. 1 lit. b RODO).</li>
           <li>Odpowiedź na zapytanie wysłane przez formularz lub e-mail: mój prawnie uzasadniony interes, czyli kontakt z osobą, która do mnie pisze (art. 6 ust. 1 lit. f RODO).</li>
-          <li>Wysyłka newslettera: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą możesz wycofać w każdej chwili.</li>
+          <li>Wysyłka powiadomień o nowych terminach: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą potwierdzasz, klikając link w pierwszym mailu, i którą możesz wycofać w każdej chwili jednym kliknięciem w linku „wypisz się”.</li>
           <li>Informacje o alergiach: Twoja wyraźna zgoda (art. 9 ust. 2 lit. a RODO).</li>
           <li>Publikacja zdjęć z warsztatów, na których widać Twój wizerunek: Twoja zgoda (art. 6 ust. 1 lit. a RODO), o którą pytam na miejscu.</li>
           <li>Wystawianie faktur i prowadzenie księgowości: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>
@@ -52,10 +57,7 @@ import { site } from "@/lib/site";
         <h2 id="odbiorcy">4. Komu przekazuję dane</h2>
         <p>Nie sprzedaję Twoich danych. Mogą je otrzymać wyłącznie firmy, które pomagają mi prowadzić działalność, i tylko w niezbędnym zakresie:</p>
         <ul>
-          <li>operator płatności online [nazwa, np. Stripe] – przy płatności BLIK lub kartą,</li>
-          <li>dostawca hostingu strony i bazy danych [nazwa dostawcy],</li>
-          <li>dostawca poczty e-mail i wysyłki wiadomości [nazwa dostawcy],</li>
-          <li>dostawca narzędzia do newslettera [nazwa dostawcy],</li>
+          <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: seohost.pl [pełna nazwa firmy i adres],</li>
           <li>biuro rachunkowe [nazwa] – w zakresie danych z faktur,</li>
           <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
         </ul>
@@ -64,9 +66,11 @@ import { site } from "@/lib/site";
         <h2 id="okres">5. Jak długo przechowuję dane</h2>
         <ul>
           <li>Dane z rezerwacji i zamówień: przez czas realizacji umowy, a potem do upływu terminu przedawnienia roszczeń [do weryfikacji: zwykle 3 lata, licząc od końca roku kalendarzowego].</li>
-          <li>Dane z zapytań, które nie zakończyły się zamówieniem: [12 miesięcy] od ostatniego kontaktu.</li>
-          <li>Adres e-mail w newsletterze: do czasu wypisania się lub wycofania zgody.</li>
-          <li>Informacje o alergiach: do [30 dni] po warsztatach.</li>
+          <li>Dane z zapytań, które nie zakończyły się zamówieniem: 12 miesięcy od wysłania formularza.</li>
+          <li>Zgłoszenia na proponowane terminy: do 30 dni po dacie terminu albo do wycofania zgłoszenia linkiem z maila.</li>
+          <li>Adres e-mail w powiadomieniach o terminach: do czasu wypisania się lub wycofania zgody. Adresy, których nikt nie potwierdził, usuwam po 30 dniach.</li>
+          <li>Informacje o alergiach: do 30 dni po warsztatach.</li>
+          <li>Kopie wysłanych wiadomości e-mail: 90 dni od wysłania.</li>
           <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
           <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>
         </ul>
@@ -89,7 +93,7 @@ import { site } from "@/lib/site";
         <h2 id="cookies">7. Pliki cookies i usługi zewnętrzne</h2>
         <p>Strona nie używa plików cookies reklamowych ani analitycznych. [Do aktualizacji, jeśli pojawi się analityka, np. statystyki odwiedzin.]</p>
         <p>Czcionki są wczytywane z tego samego serwera co strona, więc przy ich ładowaniu Twoja przeglądarka nie łączy się z Google ani innymi zewnętrznymi serwisami.</p>
-        <p>Płatności online obsługuje zewnętrzny operator. Na jego stronie mogą być używane niezbędne pliki cookies, zgodnie z jego polityką prywatności.</p>
+        <p>Formularze wysyłają dane prosto na mój serwer. Nie korzystam z zewnętrznych narzędzi do formularzy, newslettera ani płatności online.</p>
         <p>Link do mojego profilu na Instagramie ({site.instagramHandle}) prowadzi do serwisu zewnętrznego, który ma własne zasady prywatności. Nie korzystam z innych mediów społecznościowych.</p>
 
         <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>

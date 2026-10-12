@@ -1,0 +1,10 @@
+# /etc/systemd/system/mikipierniki-cron.timer
+[Unit]
+Description=Miki Pierniki background tick every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,33 @@
+---
+/**
+ * Unsubscribe. A GET only shows a button (mail scanners open links), the POST does it.
+ * Mail apps also POST "List-Unsubscribe=One-Click" here straight from the inbox (RFC 8058).
+ */
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import { subscriberByToken, unsubscribe } from "@/server/newsletter";
+
+export const prerender = false;
+
+const t = Astro.url.searchParams.get("t") ?? "";
+const sub = t ? subscriberByToken(t) : undefined;
+let done = sub?.status === "unsubscribed";
+
+if (Astro.request.method === "POST" && sub) {
+  unsubscribe(t);
+  const body = await Astro.request.text();
+  if (body.includes("List-Unsubscribe=One-Click")) return new Response("ok");
+  done = true;
+}
+---
+<Base title="Wypisz się z powiadomień" noindex mobileCta={false}>
+  {!sub ? (
+    <PageHead eyebrow="Powiadomienia" title="Ten link już nie działa" lead={`Jeśli chcesz się wypisać, odpisz na dowolną wiadomość ode mnie, a usunę Twój adres ręcznie.`} />
+  ) : done ? (
+    <PageHead eyebrow="Powiadomienia" title="Wypisano" lead={`Adres ${sub.email} nie dostanie już ode mnie wiadomości o terminach. Gdybyś zmienił(a) zdanie, zapiszesz się ponownie na stronie.`} />
+  ) : (
+    <PageHead eyebrow="Powiadomienia" title="Wypisać Cię z powiadomień?" lead={`Adres ${sub.email} przestanie dostawać wiadomości o nowych terminach.`}>
+      <form method="post"><button class="btn btn-primary" type="submit">Tak, wypisz mnie</button></form>
+    </PageHead>
+  )}
+</Base>
