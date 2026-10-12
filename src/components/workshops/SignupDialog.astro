@@ -40,7 +40,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
         </label>
       </div>
       <label class="field" for="su-name">Imię i nazwisko
-        <input class="input" type="text" id="su-name" name="name" autocomplete="name" required />
+        <input class="input" type="text" id="su-name" name="name" autocomplete="name" maxlength="120" required />
       </label>
       <div class="row2">
         <label class="field" for="su-email">E-mail
@@ -51,7 +51,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
         </label>
       </div>
       <label class="field" for="su-notes">Alergie i uwagi <span class="hint">opcjonalnie</span>
-        <textarea class="input" id="su-notes" name="notes" rows="2"></textarea>
+        <textarea class="input" id="su-notes" name="notes" rows="2" maxlength="2000"></textarea>
       </label>
       <fieldset id="su-pay">
         <legend>Płatność</legend>
@@ -81,6 +81,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
 
 <script>
   import { ApiError, bookingTotal, createBooking } from "@/lib/api";
+  import { plural, seatsWord } from "@/lib/format";
   import type { BookingRequest, PaymentMethod, Term } from "@/lib/types";
 
   type T = Term & { label: string };
@@ -140,7 +141,8 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
         if (!ok) bad.push(id);
       }
       if (count < 1) return t.type === "dzieci" ? "Wpisz co najmniej jedno dziecko." : "Dodaj co najmniej jedną osobę.";
-      if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin zostało ${t.seatsLeft} miejsc. Zmniejsz liczbę osób albo wybierz inny termin.`;
+      if (count > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
+      if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin ${plural(t.seatsLeft, "zostało", "zostały", "zostało")} ${t.seatsLeft} ${seatsWord(t.seatsLeft)}. Zmniejsz liczbę osób albo wybierz inny termin.`;
       if (bad.length) return "Uzupełnij imię i nazwisko, poprawny e-mail i numer telefonu.";
       if (pay() === "voucher" && !$<HTMLInputElement>("su-voucher").value.trim()) return "Wpisz numer vouchera albo wybierz inny sposób płatności.";
       if (!$<HTMLInputElement>("su-terms").checked) return "Zaznacz akceptację regulaminu, żeby zarezerwować miejsce.";

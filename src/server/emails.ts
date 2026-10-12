@@ -51,10 +51,19 @@ function render(blocks: Block[], opts: { signature?: boolean } = {}): { text: st
   return { text, html };
 }
 
-const firstName = (name: string) => name.trim().split(/\s+/)[0] || name;
-const hi = (name: string): Block => ({ p: `Cześć ${firstName(name)},` });
-/** "sobota, 14 listopada, 11:00–15:00" */
+/**
+ * Greeting with the first name only when it looks like a name. Forms accept any address,
+ * so nothing a stranger types (links, long text) may ride along in a mail to someone else.
+ */
+const firstName = (name: string) => {
+  const w = name.trim().split(/\s+/)[0] ?? "";
+  return /^[\p{L}'-]{1,30}$/u.test(w) ? w : "";
+};
+const hi = (name: string): Block => ({ p: firstName(name) ? `Cześć ${firstName(name)},` : "Cześć," });
+/** "sobota, 14 listopada, 11:00–15:00": for detail tables and lists */
 export const when = (t: Term) => `${weekday(t.startsAt)}, ${shortDate(t.startsAt)}, ${timeRange(t)}`;
+/** "14 listopada (sobota, 11:00–15:00)": reads right inside a sentence, whatever the case ("na …", "warsztatów …") */
+export const whenInText = (t: Term) => `${shortDate(t.startsAt)} (${weekday(t.startsAt)}, ${timeRange(t)})`;
 const termLine = (t: Term) => `${when(t)} · ${t.title} (${workshopTypeLabel[t.type].toLowerCase()})`;
 const url = (path: string) => `${config.siteUrl}${path}`;
 const people = (n: number, unit: Term["priceUnit"]) =>
@@ -112,7 +121,7 @@ export function termDropped(to: string, name: string, t: Term): Mail {
     subject: `Termin ${shortDate(t.startsAt)} nie dojdzie do skutku`,
     ...render([
       hi(name),
-      { p: `tym razem nie uda się zorganizować warsztatów ${when(t)} (${t.title}). Twoje zgłoszenie na ten termin usunęłam.` },
+      { p: `tym razem nie uda się zorganizować warsztatów „${t.title}” ${whenInText(t)}. Twoje zgłoszenie na ten termin usunęłam.` },
       { p: "Inne terminy znajdziesz na stronie. Jeśli żaden Ci nie pasuje, odpisz na tego maila, a dam znać o kolejnych." },
       { button: { label: "Zobacz terminy", url: url("/warsztaty#terminy") } },
     ]),
@@ -171,7 +180,7 @@ export function bookingWaitlist(b: BookingMailData, t: Term): Mail {
     subject: `Lista rezerwowa: ${shortDate(t.startsAt)}`,
     ...render([
       hi(b.name),
-      { p: `wszystkie miejsca na ${when(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}).` },
+      { p: `wszystkie miejsca na ${whenInText(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}).` },
       { p: "Gdy zwolni się miejsce, napiszę do Ciebie z danymi do wpłaty. Do tego czasu niczego nie płacisz." },
     ]),
   };
@@ -198,8 +207,8 @@ export function bookingCancelled(b: BookingMailData, t: Term, why: "term" | "sin
     ...render([
       hi(b.name),
       why === "term"
-        ? { p: `bardzo mi przykro, ale muszę odwołać warsztaty ${when(t)} (${t.title}). Jeśli wpłata już do mnie dotarła, zwrócę całą kwotę albo przeniosę Cię na inny termin. Odpisz na tego maila, co wybierasz.` }
-        : { p: `anulowałam rezerwację ${b.id} na ${when(t)}. Jeśli to pomyłka albo wpłata jest już w drodze, odpisz na tego maila, a wszystko wyjaśnimy.` },
+        ? { p: `bardzo mi przykro, ale muszę odwołać warsztaty „${t.title}” ${whenInText(t)}. Jeśli wpłata już do mnie dotarła, zwrócę całą kwotę albo przeniosę Cię na inny termin. Odpisz na tego maila, co wybierasz.` }
+        : { p: `anulowałam rezerwację ${b.id} na ${whenInText(t)}. Jeśli to pomyłka albo wpłata jest już w drodze, odpisz na tego maila, a wszystko wyjaśnimy.` },
       { button: { label: "Zobacz inne terminy", url: url("/warsztaty#terminy") } },
     ]),
   };
@@ -230,6 +239,18 @@ export function bookingNotify(b: BookingMailData, t: Term, status: string): Mail
         ...(b.guardians ? [["Rodzice", String(b.guardians)] as [string, string]] : []),
         ["Płatność", b.payment === "voucher" ? `voucher ${b.voucherCode ?? ""}` : "przelew"], ["Kwota", pln(b.total)], ["Uwagi", b.notes || "—"],
       ] },
+      { button: { label: "Otwórz w panelu", url: url(`/panel/termin/${t.id}`) } },
+    ], { signature: false }),
+  };
+}
+
+export function bookingOverdue(b: BookingMailData, t: Term): Mail {
+  return {
+    kind: "booking-overdue", to: config.mailNotify, replyTo: b.email,
+    subject: `Brak wpłaty: ${b.id}, ${b.name}, ${shortDate(t.startsAt)}`,
+    ...render([
+      { p: `Minęły 3 dni od rezerwacji ${b.id} (${b.name}, ${b.people} os., ${pln(b.total)}) na ${whenInText(t)}, a w panelu nie jest oznaczona jako opłacona.` },
+      { p: "Jeśli przelew dotarł, kliknij „Opłacone”. Jeśli nie, możesz napisać do tej osoby (odpowiedz na tego maila) albo anulować rezerwację i zwolnić miejsce." },
       { button: { label: "Otwórz w panelu", url: url(`/panel/termin/${t.id}`) } },
     ], { signature: false }),
   };
@@ -271,14 +292,15 @@ const inquiryLabel: Record<InquiryKind, string> = {
   kontakt: "Kontakt",
 };
 
-export function inquiryAutoreply(to: string, name: string, kind: InquiryKind, message: string): Mail {
+export function inquiryAutoreply(to: string, name: string, kind: InquiryKind): Mail {
   return {
     kind: "inquiry-autoreply", to,
     subject: `Dziękuję za wiadomość (${inquiryLabel[kind].toLowerCase()})`,
     ...render([
       hi(name),
       { p: "dziękuję za wiadomość! Odpiszę najpóźniej w ciągu 24 godzin, zwykle tego samego dnia." },
-      { small: `Twoja wiadomość:\n${message}` },
+      ...(kind === "zamowienie" ? [{ p: "Masz zdjęcie inspiracji albo logo? Odpowiedz na tego maila i dołącz je, na tej podstawie zrobię foremkę." }] : []),
+      { small: "Jeśli to nie Ty pisałaś(-eś) przez formularz na mikipierniki.pl, zignoruj tę wiadomość." },
     ]),
   };
 }

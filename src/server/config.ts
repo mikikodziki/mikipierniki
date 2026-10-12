@@ -3,7 +3,7 @@
  * locally: .env). Nothing here ends up in the browser.
  */
 import {
-  BANK_ACCOUNT, BANK_RECIPIENT, CRON_TOKEN, DATABASE_PATH, MAIL_FROM, MAIL_NOTIFY,
+  BANK_ACCOUNT, BANK_RECIPIENT, CRON_TOKEN, DATABASE_PATH, MAIL_FROM, MAIL_NOTIFY, MAIL_TO_FILES,
   PANEL_PASSWORD, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_USER, STUDIO_ADDRESS,
 } from "astro:env/server";
 
@@ -16,6 +16,8 @@ export const config = {
   smtp: clean(SMTP_HOST)
     ? { host: SMTP_HOST!, port: SMTP_PORT ?? 587, user: clean(SMTP_USER), pass: clean(SMTP_PASS) }
     : undefined,
+  /** Without SMTP, e-mails go to files only in development or when asked; in production they fail loudly */
+  mailToFiles: import.meta.env.DEV || MAIL_TO_FILES === "1",
   /** Sender of every e-mail; replies land in the same inbox */
   mailFrom: clean(MAIL_FROM) ?? "Miki Pierniki <warsztaty@mikipierniki.pl>",
   /** Where Dominika gets notified about new sign-ups and inquiries */

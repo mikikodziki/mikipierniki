@@ -27,7 +27,7 @@ const {
 <form class="inquiry form-grid" data-inquiry={kind} id={id} novalidate>
   <div class="row2">
     <label class="field" for={`${id}-name`}>Imię i nazwisko
-      <input class="input" type="text" id={`${id}-name`} name="name" autocomplete="name" required />
+      <input class="input" type="text" id={`${id}-name`} name="name" autocomplete="name" maxlength="120" required />
     </label>
     <label class="field" for={`${id}-email`}>E-mail
       <input class="input" type="email" id={`${id}-email`} name="email" autocomplete="email" required />
@@ -38,7 +38,7 @@ const {
   </label>
   <slot />
   <label class="field" for={`${id}-message`}>{messageLabel}
-    <textarea class="input" id={`${id}-message`} name="message" rows="4" placeholder={messagePlaceholder} required></textarea>
+    <textarea class="input" id={`${id}-message`} name="message" rows="4" maxlength="5000" placeholder={messagePlaceholder} required></textarea>
   </label>
   <label class="check" for={`${id}-consent`}><input type="checkbox" id={`${id}-consent`} name="consent" required />
     <span>Zgadzam się na kontakt w sprawie zapytania zgodnie z <a href="/polityka-prywatnosci" target="_blank">polityką prywatności</a>.</span>
@@ -77,8 +77,7 @@ const {
       const details: Record<string, string> = {};
       form.querySelectorAll<HTMLInputElement>("[data-detail]").forEach((el) => {
         if ((el.type === "radio" || el.type === "checkbox") && !el.checked) return;
-        if (el.type === "file") { if (el.files?.length) details[el.dataset.detail!] = [...el.files].map((f) => f.name).join(", "); }
-        else if (el.value.trim()) details[el.dataset.detail!] = el.value.trim();
+        if (el.value.trim()) details[el.dataset.detail!] = el.value.trim();
       });
       btn.disabled = true;
       try {

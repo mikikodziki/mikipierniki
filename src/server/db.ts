@@ -106,6 +106,10 @@ const migrations: string[] = [
   );
   CREATE INDEX outbox_pending ON outbox (status, send_after);
   `,
+  `
+  -- Dominika gets one e-mail when an unpaid transfer booking passes its deadline
+  ALTER TABLE bookings ADD COLUMN overdue_notified_at TEXT;
+  `,
 ];
 
 let db: DatabaseSync | undefined;

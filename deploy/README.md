@@ -53,9 +53,15 @@ sudo install -m 755 -o mikipierniki deploy/backup.sh /srv/mikipierniki/backup.sh
 sudo systemctl daemon-reload
 sudo systemctl enable mikipierniki mikipierniki-cron.timer mikipierniki-backup.timer
 
-# nginx + certyfikat (najpierw rekordy A w OVH, patrz niżej)
-sudo cp deploy/nginx/mikipierniki.pl.conf /etc/nginx/sites-available/ && sudo ln -s ../sites-available/mikipierniki.pl.conf /etc/nginx/sites-enabled/
-sudo mkdir -p /var/www/letsencrypt && sudo certbot certonly --webroot -w /var/www/letsencrypt -d mikipierniki.pl -d www.mikipierniki.pl
+# nginx + certyfikat (najpierw rekordy A w OVH, patrz niżej).
+# Pełna konfiguracja wymaga istniejącego certyfikatu, więc najpierw tymczasowa, tylko port 80:
+sudo mkdir -p /var/www/letsencrypt
+sudo cp deploy/nginx/acme-bootstrap.conf /etc/nginx/sites-available/mikipierniki.pl.conf
+sudo ln -s ../sites-available/mikipierniki.pl.conf /etc/nginx/sites-enabled/
+sudo nginx -t && sudo systemctl reload nginx
+sudo certbot certonly --webroot -w /var/www/letsencrypt -d mikipierniki.pl -d www.mikipierniki.pl
+# teraz właściwa konfiguracja (odnawianie certyfikatu działa dalej przez ten sam katalog)
+sudo cp deploy/nginx/mikipierniki.pl.conf /etc/nginx/sites-available/mikipierniki.pl.conf
 sudo nginx -t && sudo systemctl reload nginx
 ```
 

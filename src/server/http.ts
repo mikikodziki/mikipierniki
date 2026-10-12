@@ -36,11 +36,9 @@ export async function handleJson<S extends z.ZodType>(
     if (body && typeof body === "object" && "website" in body && (body as { website: unknown }).website) {
       throw new UserError("Nie udało się wysłać formularza.");
     }
-    const parsed = schema.safeParse(body);
-    if (!parsed.success) {
-      const first = parsed.error.issues[0];
-      throw new UserError(first?.message && !first.message.startsWith("Invalid") ? first.message : "Sprawdź pola formularza i spróbuj ponownie.");
-    }
+    // messages set in a schema take precedence; Zod's own (English) ones are replaced by this
+    const parsed = schema.safeParse(body, { error: () => "Sprawdź pola formularza i spróbuj ponownie." });
+    if (!parsed.success) throw new UserError(parsed.error.issues[0]?.message ?? "Sprawdź pola formularza i spróbuj ponownie.");
     return json(await fn(parsed.data));
   } catch (e) {
     if (e instanceof UserError) return json({ error: e.message }, e.status);

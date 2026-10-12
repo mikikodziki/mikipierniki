@@ -10,7 +10,7 @@ import SignupDialog from "@/components/workshops/SignupDialog.astro";
 import InterestDialog from "@/components/workshops/InterestDialog.astro";
 import VoucherCard from "@/components/VoucherCard.astro";
 import { getFaq, venueById } from "@/lib/api";
-import { pln } from "@/lib/format";
+import { plural, pln } from "@/lib/format";
 import { site, workshopDefaults } from "@/lib/site";
 import type { WorkshopType } from "@/lib/types";
 import { publicTerms } from "@/server/terms";
@@ -42,7 +42,7 @@ const jsonLd = terms.filter((t) => t.status === "open").map((t) => {
     "@context": "https://schema.org",
     "@type": "Event",
     name: `${t.title} · warsztaty dekorowania pierników`,
-    description: `Warsztaty dekorowania pierników lukrem w grupie od ${site.groupMin} do ${t.capacity} osób. Materiały w cenie, ${t.cookies} pierników zabierasz do domu.`,
+    description: `Warsztaty dekorowania pierników lukrem w grupie do ${t.capacity} ${plural(t.capacity, "osoby", "osób", "osób")}. Materiały w cenie, ${t.cookies} pierników zabierasz do domu.`,
     startDate: t.startsAt,
     endDate: t.endsAt,
     eventStatus: "https://schema.org/EventScheduled",
