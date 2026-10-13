@@ -10,6 +10,12 @@ import { enqueue } from "./mail";
 import { getTerm } from "./terms";
 import { normalizeEmail, token } from "./util";
 
+/**
+ * Adds the ticked dates for this address. The form has no login, so a row that already exists
+ * is never touched: a stranger can't overwrite someone's name or phone, re-add a date they
+ * withdrew from, or make the thank-you mail repeat. Only newly added dates are mailed, and the
+ * answer is the same either way, so the form doesn't reveal who is on the list.
+ */
 export function registerInterest(req: InterestRequest): { terms: number } {
   const ids = [...new Set(req.termIds)];
   const terms = ids.map(getTerm).filter((t): t is Term => !!t && t.status === "proposed" && new Date(t.startsAt).getTime() > Date.now());
@@ -21,15 +27,15 @@ export function registerInterest(req: InterestRequest): { terms: number } {
   const tok = token();
   const now = nowIso();
   tx(db, () => {
-    const upsert = db.prepare(`
+    const insert = db.prepare(`
       INSERT INTO interest (token, term_id, name, email, phone, people, notes, created_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT (term_id, email) DO UPDATE SET token = excluded.token, name = excluded.name, phone = excluded.phone,
-        people = excluded.people, notes = excluded.notes, withdrawn_at = NULL`);
-    for (const t of terms) upsert.run(tok, t.id, req.name, email, req.phone ?? null, req.people, req.notes ?? null, now);
+      ON CONFLICT (term_id, email) DO NOTHING`);
+    const added = terms.filter((t) => Number(insert.run(tok, t.id, req.name, email, req.phone ?? null, req.people, req.notes ?? null, now).changes) === 1);
+    if (added.length === 0) return;
     enqueue(
-      interestThanks(email, req.name, terms, tok),
-      interestNotify(req.name, email, req.phone, req.people, req.notes, terms),
+      interestThanks(email, req.name, added, tok),
+      interestNotify(req.name, email, req.phone, req.people, req.notes, added),
     );
   });
   return { terms: terms.length };
@@ -40,8 +46,12 @@ export function interestByToken(tok: string): { term: Term | undefined; withdraw
   return rows.map((r) => ({ term: getTerm(r.term_id), withdrawn: !!r.withdrawn_at }));
 }
 
+/**
+ * The row stays (without phone and notes) until the term's own cleanup, so the same address
+ * can't be signed up for that date again by someone else.
+ */
 export function withdrawInterest(tok: string): number {
-  const r = getDb().prepare("UPDATE interest SET withdrawn_at = ? WHERE token = ? AND withdrawn_at IS NULL").run(nowIso(), tok);
+  const r = getDb().prepare("UPDATE interest SET withdrawn_at = ?, phone = NULL, notes = NULL WHERE token = ? AND withdrawn_at IS NULL").run(nowIso(), tok);
   return Number(r.changes);
 }
 

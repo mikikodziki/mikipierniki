@@ -50,6 +50,10 @@ Paleta od Dominiki, siedem kolorów:
 - Terminy Dominika dodaje sama w panelu (`/panel`). Najpierw jako „propozycję terminu”:
   chętni zaznaczają, że im pasuje, a gdy zbierze się grupa, Dominika otwiera zapisy
   i jednym przyciskiem wysyła im link do rezerwacji.
+- Zgłoszenie na propozycję nie wymaga logowania, więc kolejne zgłoszenie z tym samym adresem
+  nie zmienia już zapisanego (imię, telefon, liczba osób zostają). Zmiany: mailem do Dominiki.
+  Wycofane zgłoszenie zostaje (bez telefonu i uwag) do 30 dni po terminie, żeby nikt nie zapisał
+  tej osoby ponownie.
 - Płatność: przelew w ciągu 3 dni albo voucher. Płatności online (BLIK, karta) będą później.
 - Rezygnacja: zwrot całej kwoty albo przeniesienie do 7 dni przed terminem, później można
   przekazać miejsce innej osobie (potwierdzone 12.10.2026).

@@ -19,7 +19,7 @@ const active = rows.filter((r) => !r.withdrawn && r.term);
   {rows.length === 0 ? (
     <PageHead eyebrow="Zgłoszenie" title="Ten link już nie działa" lead="Zgłoszenie mogło zostać już usunięte. W razie pytań odpisz na dowolną wiadomość ode mnie." />
   ) : active.length === 0 ? (
-    <PageHead eyebrow="Zgłoszenie" title="Zgłoszenie wycofane" lead="Nie będę już pisać w sprawie tych terminów. Jeśli zmienisz zdanie, zaznacz je ponownie na stronie.">
+    <PageHead eyebrow="Zgłoszenie" title="Zgłoszenie wycofane" lead="Nie będę już pisać w sprawie tych terminów. Jeśli zmienisz zdanie, zajrzyj na stronę: gdy zapisy na ten termin się otworzą, zarezerwujesz miejsce jak wszyscy.">
       <div><a class="btn btn-primary" href="/warsztaty">Zobacz warsztaty</a></div>
     </PageHead>
   ) : (

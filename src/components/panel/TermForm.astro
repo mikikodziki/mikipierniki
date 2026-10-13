@@ -1,5 +1,8 @@
 ---
-/** Add / edit a workshop term in the panel. Without `term` the fields start from the per-type defaults. */
+/**
+ * Add / edit a workshop term in the panel. Without `term` the fields start from the per-type defaults;
+ * `values` (the form as just sent) wins over both, so a rejected form comes back as it was typed.
+ */
 import { termPhotos } from "@/lib/api";
 import { workshopTypeLabel } from "@/lib/format";
 import { site, workshopDefaults } from "@/lib/site";
@@ -11,14 +14,20 @@ interface Props {
   submitLabel: string;
   /** Show the "save as draft / as proposal" choice (new terms only) */
   withStatus?: boolean;
+  /** Fields as sent, after the server rejected them */
+  values?: Record<string, string>;
+  /** Why the server rejected them; shown next to the button */
+  error?: string;
 }
-const { term, submitLabel, withStatus = false } = Astro.props;
-const type: WorkshopType = term?.type ?? "dorosli";
+const { term, submitLabel, withStatus = false, values = {}, error } = Astro.props;
+const types = Object.keys(workshopTypeLabel) as WorkshopType[];
+const type: WorkshopType = types.find((t) => t === values.type) ?? term?.type ?? "dorosli";
 const d = workshopDefaults[type];
 const start = term ? warsawParts(term.startsAt) : undefined;
 const end = term ? warsawParts(term.endsAt) : undefined;
 const photos = termPhotos();
-const types = Object.keys(workshopTypeLabel) as WorkshopType[];
+const photo = values.photo ?? term?.photo;
+const draft = values.status === "draft";
 ---
 <form method="post" class="form-grid term-form" data-defaults={JSON.stringify(workshopDefaults)}>
   <input type="hidden" name="action" value={term ? "save" : "create"} />
@@ -29,43 +38,44 @@ const types = Object.keys(workshopTypeLabel) as WorkshopType[];
       </select>
     </label>
     <label class="field" for="tf-title">Tytuł
-      <input class="input" id="tf-title" name="title" required value={term?.title ?? ""} placeholder="Np. Świąteczne klasyki" />
+      <input class="input" id="tf-title" name="title" required value={values.title ?? term?.title ?? ""} placeholder="Np. Świąteczne klasyki" />
     </label>
   </div>
   <div class="grid3">
     <label class="field" for="tf-date">Data
-      <input class="input" type="date" id="tf-date" name="date" required value={start?.date ?? ""} />
+      <input class="input" type="date" id="tf-date" name="date" required value={values.date ?? start?.date ?? ""} />
     </label>
     <label class="field" for="tf-start">Początek
-      <input class="input" type="time" id="tf-start" name="start" required value={start?.time ?? d.start} />
+      <input class="input" type="time" id="tf-start" name="start" required value={values.start ?? start?.time ?? d.start} />
     </label>
     <label class="field" for="tf-end">Koniec
-      <input class="input" type="time" id="tf-end" name="end" required value={end?.time ?? d.end} />
+      <input class="input" type="time" id="tf-end" name="end" required value={values.end ?? end?.time ?? d.end} />
     </label>
   </div>
   <div class="grid3">
     <label class="field" for="tf-capacity">Miejsc
-      <input class="input" type="number" id="tf-capacity" name="capacity" min="1" max="30" required value={term?.capacity ?? site.groupMax} />
+      <input class="input" type="number" id="tf-capacity" name="capacity" min="1" max="30" required value={values.capacity ?? term?.capacity ?? site.groupMax} />
     </label>
-    <label class="field" for="tf-price">Cena (zł) <span class="hint" id="tf-unit">{(term?.priceUnit ?? d.priceUnit) === "dziecko" ? "za dziecko" : "za osobę"}</span>
-      <input class="input" type="number" id="tf-price" name="price" min="0" max="5000" required value={term?.price ?? d.price} />
+    <label class="field" for="tf-price">Cena (zł) <span class="hint" id="tf-unit">{(values.type ? d.priceUnit : term?.priceUnit ?? d.priceUnit) === "dziecko" ? "za dziecko" : "za osobę"}</span>
+      <input class="input" type="number" id="tf-price" name="price" min="0" max="5000" required value={values.price ?? term?.price ?? d.price} />
     </label>
     <label class="field" for="tf-cookies">Pierników na osobę
-      <input class="input" id="tf-cookies" name="cookies" value={term?.cookies ?? d.cookies} />
+      <input class="input" id="tf-cookies" name="cookies" value={values.cookies ?? term?.cookies ?? d.cookies} />
     </label>
   </div>
   <label class="field" for="tf-photo">Zdjęcie na karcie
     <select class="input" id="tf-photo" name="photo">
-      {photos.map((p) => <option value={p.photo} selected={p.photo === term?.photo}>{p.caption}</option>)}
+      {photos.map((p) => <option value={p.photo} selected={p.photo === photo}>{p.caption}</option>)}
     </select>
   </label>
   {withStatus && (
     <fieldset>
       <legend>Jak opublikować</legend>
-      <label class="radio" for="tf-st-proposed"><input type="radio" name="status" id="tf-st-proposed" value="proposed" checked />Propozycja: chętni zaznaczają, że im pasuje (bez płatności)</label>
-      <label class="radio" for="tf-st-draft"><input type="radio" name="status" id="tf-st-draft" value="draft" />Szkic: widoczny tylko w panelu</label>
+      <label class="radio" for="tf-st-proposed"><input type="radio" name="status" id="tf-st-proposed" value="proposed" checked={!draft} />Propozycja: chętni zaznaczają, że im pasuje (bez płatności)</label>
+      <label class="radio" for="tf-st-draft"><input type="radio" name="status" id="tf-st-draft" value="draft" checked={draft} />Szkic: widoczny tylko w panelu</label>
     </fieldset>
   )}
+  {error && <p class="flash flash--err form-err" role="alert">{error}</p>}
   <div><button class="btn btn-primary" type="submit">{submitLabel}</button></div>
 </form>
 
@@ -75,6 +85,8 @@ const types = Object.keys(workshopTypeLabel) as WorkshopType[];
     const defaults = JSON.parse(form.dataset.defaults || "{}");
     const isNew = (form.elements.namedItem("action") as HTMLInputElement).value === "create";
     const type = form.elements.namedItem("type") as HTMLSelectElement;
+    // a rejected form comes back at the top of a long page; bring it and its message into view
+    form.querySelector(".form-err")?.scrollIntoView({ block: "center" });
     type.addEventListener("change", () => {
       const d = defaults[type.value];
       if (!d) return;

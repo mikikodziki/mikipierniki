@@ -95,6 +95,11 @@ export function csv(rows: (string | number | null | undefined)[][]): string {
   return "﻿" + rows.map((r) => r.map(cell).join(";")).join("\r\n") + "\r\n";
 }
 
+/** A sent form as plain strings, to fill it in again after the server rejected it. */
+export function formStrings(f: FormData): Record<string, string> {
+  return Object.fromEntries([...f].filter((e): e is [string, string] => typeof e[1] === "string"));
+}
+
 /** Redirect after a POST, carrying a one-line message for the next page. */
 export function back(path: string, msg: { ok?: string; err?: string }): Response {
   const u = new URL(path, "http://x");

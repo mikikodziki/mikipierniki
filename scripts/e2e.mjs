@@ -73,7 +73,7 @@ try {
   const day = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
   const create = async (form) => {
     const res = await panel("/panel", { type: "dorosli", title: "Test", start: "11:00", end: "15:00", capacity: "10", price: "450", cookies: "6–8", photo: "swieta-stol", status: "proposed", ...form });
-    return { status: res.status, loc: res.headers.get("location") ?? "" };
+    return { status: res.status, loc: res.headers.get("location") ?? "", html: await res.text() };
   };
   let c = await create({ title: "Świąteczne klasyki", date: day(30) });
   check("panel creates proposed term (303)", c.status === 303 && c.loc.startsWith("/panel/termin/t-"), JSON.stringify(c));
@@ -83,8 +83,15 @@ try {
   c = await create({ title: "Szkic", date: day(32), status: "draft" });
   const tDraft = c.loc.split("/").pop().split("?")[0];
   c = await create({ title: "", date: day(33) });
-  check("panel rejects term without title", c.loc.includes("err="), c.loc);
+  check("panel rejects term without title", c.status === 422 && c.html.includes("Wpisz tytuł"), String(c.status));
+  c = await create({ title: "Pierniki od tyłu", date: day(33), start: "15:00", end: "11:00", price: "321", status: "draft" });
+  check("rejected new term keeps what was typed", c.status === 422 && c.html.includes("Koniec musi być po początku")
+    && c.html.includes('value="Pierniki od tyłu"') && c.html.includes('value="321"') && /value="draft"[^>]*checked/.test(c.html), String(c.status));
   check("cross-site panel POST → 403", (await fetch(BASE + "/panel", { method: "POST", headers: { authorization: auth, origin: "https://evil.example", "content-type": "application/x-www-form-urlencoded" }, body: "title=x" })).status === 403);
+  r = await panel(`/panel/termin/${t1}`, { action: "save", type: "dorosli", title: "Literówka w tytule", date: day(30), start: "15:00", end: "11:00", capacity: "10", price: "450", cookies: "6–8", photo: "swieta-stol" });
+  html = await r.text();
+  check("rejected edit keeps what was typed, term unchanged", r.status === 422 && html.includes('value="Literówka w tytule"') && html.includes("Koniec musi być po początku")
+    && db().prepare("SELECT title FROM terms WHERE id = ?").get(t1).title === "Świąteczne klasyki", String(r.status));
   const row = db().prepare("SELECT * FROM terms WHERE id = ?").get(t1);
   check("term stored with Warsaw offset", /T11:00:00\+0[12]:00$/.test(row.starts_at), row.starts_at);
 
@@ -105,6 +112,14 @@ try {
   check("two mails after interest (thanks + notify)", mails().length === before + 2);
   check("thanks mail lists both terms and a withdraw link", m.some((x) => x.includes("To: anna@example.com") && x.includes("Świąteczne klasyki") && x.includes("Zawieszki") && x.includes("/zapis/wypisz?t=")));
   check("notify mail goes to warsztaty@ with Reply-To", m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Reply-To: anna@example.com")));
+  const annaRow = () => db().prepare("SELECT name, phone, people, token FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t1);
+  const annaBefore = annaRow();
+  const beforeRepeat = mails().length;
+  r = await api("/api/zainteresowanie", { termIds: [t1, t2], people: 9, name: "Ktoś Inny", email: "anna@example.com", phone: "999 999 999", consent: true });
+  await settle();
+  check("repeat sign-up answers the same", r.status === 200);
+  check("repeat sign-up doesn't overwrite name, phone, people or token", JSON.stringify(annaRow()) === JSON.stringify(annaBefore), JSON.stringify(annaRow()));
+  check("repeat sign-up sends no mail", mails().length === beforeRepeat, `${mails().length - beforeRepeat}`);
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 3, name: "Bartek Nowak", email: "bartek@example.com", consent: true });
   check("second interest accepted", r.status === 200);
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "Bot", email: "bot@example.com", consent: true, website: "http://spam" });
@@ -238,6 +253,11 @@ try {
   r = await fetch(`${BASE}/zapis/wypisz?t=${wtoken}`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: "" });
   html = await r.text();
   check("withdraw POST works", html.includes("Zgłoszenie wycofane") && db().prepare("SELECT COUNT(*) n FROM interest WHERE token = ? AND withdrawn_at IS NULL").get(wtoken).n === 0);
+  const beforeAgain = mails().length;
+  r = await api("/api/zainteresowanie", { termIds: [t2], people: 1, name: "Anna Kowalska", email: "anna@example.com", phone: "500 600 700", consent: true });
+  await settle();
+  const again = db().prepare("SELECT withdrawn_at, phone FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t2);
+  check("signing up again after withdrawing doesn't bring the date back", r.status === 200 && !!again.withdrawn_at && again.phone === null && mails().length === beforeAgain, JSON.stringify(again));
 
   // ---------- cancelling a proposed term ----------
   await api("/api/zainteresowanie", { termIds: [t2], people: 1, name: "Hania Druga", email: "hania@example.com", consent: true });
