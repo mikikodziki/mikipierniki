@@ -18,6 +18,28 @@ export const site = {
   groupMax: 10,
 };
 
+/**
+ * Business data for the regulamin and the privacy policy, in one place. Values in [brackets] are
+ * still placeholders; `npm run check:launch` lists them with everything else missing before launch.
+ * Before filling `address`: if the registered business address is the studio, ask Dominika first,
+ * because the studio street address is otherwise never published (only sent in confirmations).
+ */
+export const legal = {
+  /** Until a lawyer has read both documents: shows the "Wersja robocza" note on them */
+  draft: true,
+  owner: "[imię i nazwisko]",
+  business: "[nazwa działalności]",
+  address: "[adres siedziby]",
+  nip: "[NIP]",
+  regon: "[REGON]",
+  hosting: "seohost.pl [pełna nazwa firmy i adres]",
+  accounting: "[nazwa biura rachunkowego]",
+  /** Latest notice, in days, when a term is cancelled for too few people */
+  lowTurnoutNoticeDays: "[liczba]",
+  regulaminFrom: "[data]",
+  privacyFrom: "[data]",
+};
+
 /** Prices and usual hours per workshop type (docs/dane.md); the panel fills new terms with these. */
 export const workshopDefaults: Record<WorkshopType, Pick<Term, "price" | "priceUnit" | "cookies"> & { start: string; end: string }> = {
   dorosli: { price: 450, priceUnit: "osoba", cookies: "6–8", start: "11:00", end: "15:00" },

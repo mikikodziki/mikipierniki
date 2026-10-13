@@ -54,7 +54,8 @@ Paleta od Dominiki, siedem kolorów:
   nie zmienia już zapisanego (imię, telefon, liczba osób zostają). Zmiany: mailem do Dominiki.
   Wycofane zgłoszenie zostaje (bez telefonu i uwag) do 30 dni po terminie, żeby nikt nie zapisał
   tej osoby ponownie.
-- Płatność: przelew w ciągu 3 dni albo voucher. Płatności online (BLIK, karta) będą później.
+- Płatność: przelew w ciągu 3 dni albo voucher. Płatności online (BLIK, karta) będą później
+  (plan: `docs/platnosci-online.md`).
 - Rezygnacja: zwrot całej kwoty albo przeniesienie do 7 dni przed terminem, później można
   przekazać miejsce innej osobie (potwierdzone 12.10.2026).
 - E-maile do uczestników wychodzą z warsztaty@mikipierniki.pl i tam wracają odpowiedzi.
@@ -102,8 +103,14 @@ na stronie głównej. Nadal brak zdjęć z warsztatów, więc galeria nie ma kat
 „Z warsztatów”.
 
 ## Czeka na dane
+Pełną, aktualną listę braków w treści (z plikami i liniami) wypisuje `npm run check:launch`.
 - Prawdziwe terminy (Dominika dodaje je w panelu).
-- Numer konta i odbiorca przelewu do maili z danymi do przelewu (bez nich panel nie pozwala otworzyć zapisów).
-- Prawdziwe opinie uczestników (obecne są przykładowe).
+- Numer konta, odbiorca przelewu i adres pracowni: ustawienia na serwerze (`deploy/env.example`);
+  bez nich panel nie pozwala otworzyć zapisów.
+- Prawdziwe opinie uczestników. Obecne są przykładowe i **nie mogą trafić na stronę** jako
+  prawdziwe; pusta lista w `src/lib/mock-data.ts` ukrywa sekcję opinii.
+- Dane działalności do regulaminu i polityki prywatności: `legal` w `src/lib/site.ts`.
+  Pytanie do Dominiki: czy adres siedziby działalności to adres pracowni? Jeśli tak, trafi
+  do regulaminu i polityki, choć poza nimi adresu pracowni nie publikujemy.
+- Przeczytanie regulaminu i polityki przez prawnika (potem `legal.draft = false`).
 - Zdjęcia z warsztatów.
-- Dane działalności do regulaminu i polityki prywatności (nazwa, NIP, adres, numer konta).

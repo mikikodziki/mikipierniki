@@ -44,7 +44,7 @@ export interface Venue {
   city: string;
 }
 
-/** Online payment (Stripe / Przelewy24) comes later; until then a transfer or a gift card. */
+/** Online payment comes later (plan: docs/platnosci-online.md); until then a transfer or a gift card. */
 export type PaymentMethod = "przelew" | "voucher";
 
 export interface BookingRequest {

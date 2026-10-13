@@ -12,6 +12,7 @@ npm run dev      # http://localhost:4321
 npm run build    # astro check + build do dist/ (client/ statyczne, server/ Node)
 MAIL_TO_FILES=1 node dist/server/entry.mjs   # zbudowana wersja, jak na serwerze (HOST, PORT z env)
 npm run test:e2e # po buildzie: zapisy, maile, newsletter i panel na tymczasowej bazie
+npm run check:launch # czego jeszcze brakuje w treści przed startem (opinie, dane firmy, prawnik)
 ```
 
 Ustawienia serwera są w `.env` (wzór: `deploy/env.example`); lokalnie wszystkie są opcjonalne.

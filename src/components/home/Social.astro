@@ -30,6 +30,7 @@ const testimonials = await getTestimonials();
   </div>
 </section>
 
+{testimonials.length > 0 && (
 <section class="section section--sunk">
   <div class="wrap">
     <SectionHead eyebrow="Opinie uczestników" title="Co mówią po warsztatach" />
@@ -44,6 +45,7 @@ const testimonials = await getTestimonials();
     </div>
   </div>
 </section>
+)}
 
 <section class="section section--warm">
   <div class="wrap">
