@@ -23,8 +23,7 @@ export function cleanup(now = Date.now()): void {
     // allergy notes: 30 days after the workshop
     db.prepare("UPDATE bookings SET notes = NULL WHERE term_id = ? AND notes IS NOT NULL").run(id);
   }
-  // withdrawn interest and unsubscribed addresses: gone within a day (the confirmation pages still work meanwhile)
-  db.prepare("DELETE FROM interest WHERE withdrawn_at IS NOT NULL AND withdrawn_at < ?").run(ago(1));
+  // withdrawn interest stays with its term (see withdrawInterest); unsubscribed addresses go within a day
   db.prepare("DELETE FROM subscribers WHERE status = 'unsubscribed' AND unsubscribed_at < ?").run(ago(1));
   db.prepare("DELETE FROM subscribers WHERE status = 'pending' AND created_at < ?").run(ago(30));
   db.prepare("DELETE FROM inquiries WHERE created_at < ?").run(ago(365));

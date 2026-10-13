@@ -8,7 +8,7 @@ import { bookingBlockers } from "@/server/config";
 import { UserError } from "@/server/http";
 import { interestForTerm, notifyInterested } from "@/server/interest";
 import { flushOutbox } from "@/server/mail";
-import { back, cancelTerm, changeStatus, statusLabel, termFromForm } from "@/server/panel";
+import { back, cancelTerm, changeStatus, formStrings, statusLabel, termFromForm } from "@/server/panel";
 import { deleteTerm, getTerm, updateTerm } from "@/server/terms";
 
 export const prerender = false;
@@ -16,6 +16,9 @@ export const prerender = false;
 const id = Astro.params.id!;
 const here = `/panel/termin/${id}`;
 
+// a rejected edit is rendered again in this response, with what was typed, instead of redirecting
+let formError: string | undefined;
+let formValues: Record<string, string> | undefined;
 if (Astro.request.method === "POST") {
   const f = await Astro.request.formData();
   const action = String(f.get("action"));
@@ -70,8 +73,11 @@ if (Astro.request.method === "POST") {
     void flushOutbox();
     return back(here, { ok });
   } catch (e) {
-    if (e instanceof UserError) return back(here, { err: e.message });
-    throw e;
+    if (!(e instanceof UserError)) throw e;
+    if (action !== "save") return back(here, { err: e.message });
+    formError = e.message;
+    formValues = formStrings(f);
+    Astro.response.status = 422;
   }
 }
 
@@ -202,7 +208,7 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
     <section class="box">
       <h2>Edytuj termin</h2>
       {term.status === "open" && taken > 0 && <p class="note">Ten termin ma rezerwacje. Jeśli zmieniasz datę albo godzinę, napisz do uczestników, bo zmiana nie wysyła maili sama.</p>}
-      <TermForm term={term} submitLabel="Zapisz zmiany" />
+      <TermForm term={term} submitLabel="Zapisz zmiany" values={formValues} error={formError} />
     </section>
 
     <section class="box">

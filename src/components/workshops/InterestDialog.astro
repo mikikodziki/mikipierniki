@@ -138,7 +138,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
           consent: true,
           website: $<HTMLInputElement>("in-website").value,
         });
-        $("in-done-text").textContent = `Gdy zbierze się grupa, napiszę na ${email} z linkiem do rezerwacji. Potwierdzenie zgłoszenia już do Ciebie leci.`;
+        $("in-done-text").textContent = `Gdy zbierze się grupa, napiszę na ${email} z linkiem do rezerwacji. Jeśli to Twoje pierwsze zgłoszenie na te terminy, potwierdzenie już do Ciebie leci.`;
         sent = true;
         $("in-fields").hidden = true;
         $("in-done").hidden = false;
