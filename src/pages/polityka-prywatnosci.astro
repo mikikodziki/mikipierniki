@@ -2,11 +2,12 @@
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import DraftNote from "@/components/pages/DraftNote.astro";
-import { site } from "@/lib/site";
+import { legal, site } from "@/lib/site";
 
 /*
  * DRAFT: to be verified by a lawyer before launch.
- * Every [bracketed] fragment is a placeholder. Keep the "odbiorcy" list in sync
+ * Company data comes from `legal` in src/lib/site.ts; [bracketed] notes left in the text are for
+ * the lawyer. Keep the "odbiorcy" list in sync
  * with the real providers. Today the site, database and e-mail all run on one VPS (seohost);
  * add the payment operator here when online payments arrive.
  * The retention periods in section 5 are enforced by src/server/tick.ts (cleanup).
@@ -17,7 +18,7 @@ import { site } from "@/lib/site";
   description="Jak Miki Pierniki przetwarza dane osobowe z formularzy zapisu, zapytań i newslettera oraz jakie masz prawa zgodnie z RODO."
 >
   <PageHead eyebrow="Dokumenty" title="Polityka prywatności">
-    <DraftNote updated="[data]" />
+    <DraftNote updated={legal.privacyFrom} />
   </PageHead>
 
   <section class="section legal">
@@ -26,7 +27,7 @@ import { site } from "@/lib/site";
         <p>Dbam o Twoje dane tak samo starannie jak o lukier na piernikach. Poniżej wyjaśniam, jakie dane zbieram, po co i jak długo je przechowuję, oraz jakie masz prawa zgodnie z RODO (rozporządzenie Parlamentu Europejskiego i Rady (UE) 2016/679).</p>
 
         <h2 id="administrator">1. Administrator danych</h2>
-        <p>Administratorką Twoich danych osobowych jest [imię i nazwisko], prowadząca działalność gospodarczą pod firmą [nazwa działalności], [adres siedziby], NIP [NIP], REGON [REGON].</p>
+        <p>Administratorką Twoich danych osobowych jest {legal.owner}, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}.</p>
         <p>Pracownia, w której prowadzę warsztaty, mieści się we Wrocławiu.</p>
         <p>We wszystkich sprawach dotyczących danych osobowych możesz napisać na <a href={`mailto:${site.email}`}>{site.email}</a> lub zadzwonić: <a href={site.phoneHref}>{site.phone}</a>.</p>
 
@@ -57,8 +58,8 @@ import { site } from "@/lib/site";
         <h2 id="odbiorcy">4. Komu przekazuję dane</h2>
         <p>Nie sprzedaję Twoich danych. Mogą je otrzymać wyłącznie firmy, które pomagają mi prowadzić działalność, i tylko w niezbędnym zakresie:</p>
         <ul>
-          <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: seohost.pl [pełna nazwa firmy i adres],</li>
-          <li>biuro rachunkowe [nazwa] – w zakresie danych z faktur,</li>
+          <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: {legal.hosting},</li>
+          <li>biuro rachunkowe {legal.accounting} – w zakresie danych z faktur,</li>
           <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
         </ul>
         <p>[Do weryfikacji: jeśli któryś z dostawców przetwarza dane poza Europejskim Obszarem Gospodarczym, należy wskazać podstawę przekazania, np. standardowe klauzule umowne.]</p>
@@ -101,7 +102,7 @@ import { site } from "@/lib/site";
         <p>Zgodę możesz wycofać w każdej chwili, pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>. Wtedy usunę zdjęcie ze strony i z Instagrama.</p>
 
         <h2 id="zmiany">9. Zmiany polityki</h2>
-        <p>Jeśli zmienię zasady przetwarzania danych, zaktualizuję ten dokument i datę na górze strony. Polityka obowiązuje od [data].</p>
+        <p>Jeśli zmienię zasady przetwarzania danych, zaktualizuję ten dokument i datę na górze strony. Polityka obowiązuje od {legal.privacyFrom}.</p>
       </div>
     </div>
   </section>

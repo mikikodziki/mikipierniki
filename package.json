@@ -8,7 +8,8 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test:e2e": "node scripts/e2e.mjs"
+    "test:e2e": "node scripts/e2e.mjs",
+    "check:launch": "node scripts/przed-startem.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^11.1.7",

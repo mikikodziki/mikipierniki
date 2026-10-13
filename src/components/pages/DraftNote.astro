@@ -1,18 +1,21 @@
 ---
-// Visible "draft" banner for legal pages (regulamin, polityka prywatności).
-// Remove once a lawyer has verified the text.
+// "Last updated" line for the legal pages, with a visible "draft" banner while legal.draft is true
+// (src/lib/site.ts); set it to false once a lawyer has verified the text.
+import { legal } from "@/lib/site";
+
 interface Props {
   updated: string;
 }
 const { updated } = Astro.props;
 ---
-<aside class="draft" role="note">
-  <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją. Fragmenty w nawiasach kwadratowych, np. [nazwa działalności, NIP, numer rachunku], czekają na dane działalności i zostaną uzupełnione.</p>
+<aside class:list={["draft", { "draft--done": !legal.draft }]} role="note">
+  {legal.draft && <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją. Fragmenty w nawiasach kwadratowych, np. [nazwa działalności, NIP, numer rachunku], czekają na dane działalności i zostaną uzupełnione.</p>}
   <p class="updated">Ostatnia aktualizacja: {updated}</p>
 </aside>
 
 <style>
   .draft { display: grid; gap: 6px; max-width: 68ch; padding: 16px 20px; border-radius: var(--radius); background: color-mix(in srgb, var(--berry) 12%, transparent); color: var(--ink); }
   .draft strong { color: var(--berry); }
+  .draft--done { padding: 0; background: none; }
   .updated { font-size: .88rem; color: var(--ink-soft); }
 </style>

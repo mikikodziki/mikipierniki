@@ -30,6 +30,7 @@ const testimonials = await getTestimonials();
   </div>
 </section>
 
+{testimonials.length > 0 && (
 <section class="section section--sunk" id="opinie" aria-labelledby="opinions-title">
   <div class="wrap">
     <SectionHead id="opinions-title" eyebrow="Opinie uczestników" title="Co mówią po warsztatach" lead="Po warsztatach wyszły piękne pierniki — każdy udekorowany po swojemu." />
@@ -58,6 +59,7 @@ const testimonials = await getTestimonials();
     </div>
   </div>
 </section>
+)}
 
 <section class="section section--warm">
   <div class="wrap">
