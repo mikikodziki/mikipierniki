@@ -30,10 +30,14 @@ Kształty i detale:
   Wcześniej było 34 px i pigułki.
 - Przerywnik między sekcjami: cienka kreska z małym rombem pośrodku
   (wcześniej falista linia lukru).
-- Każdy panel ma cienką ramkę odsuniętą 16 px od krawędzi (9 px na telefonie),
-  jak linia na karcie menu. Pierwsza sekcja ma ramkę podwójną.
-  Ramki są WYŁĄCZNIE na panelach sekcji — nigdy na kartach w środku,
-  żeby nie powstała ramka w ramce.
+- Panele sekcji: cienka ramka odsunięta 16 px od krawędzi (9 px na telefonie).
+  Pierwsza sekcja ma ramkę podwójną.
+- Pudełka w środku sekcji („Co jest w cenie", cennik, wszystkie formularze):
+  odręczna falowana ramka z kokardą na górze, prosto z kartki świątecznej
+  z inspiracji. Pliki: `public/ramka-wino.svg`, `public/ramka-krem.svg`
+  (wersja na ciemne tło, klasa `.ornate--light`) i `public/kokarda.svg`.
+  Fala powtarza się przez `border-image`, więc ma ten sam rozmiar na szerokim
+  i wąskim pudełku. Kokarda jest maską, więc bierze kolor tekstu pudełka.
 - Panele mają dodatkowo miękki, niski cień.
 - Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
 

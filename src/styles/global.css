@@ -151,30 +151,27 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: 2px; cursor: pointer; }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
-.form-box, .form-grid--boxed { background: var(--panel-deep); border-radius: var(--radius-lg); padding: clamp(26px, 4vw, 38px); }
+.form-box, .form-grid--boxed { background: var(--panel-deep); padding: clamp(12px, 1.8vw, 20px); }
 
-/* The ornate box: a double rule with a diamond on every corner, after the
-   invitation and menu cards on Dominika's board. The rules take their colour
-   from the text, so the same class works on a light box and on a dark one. */
-.ornate, .form-box, .form-grid--boxed { position: relative; border: 1px solid color-mix(in srgb, currentColor 34%, transparent); }
-.ornate::before, .form-box::before, .form-grid--boxed::before {
-  content: ""; position: absolute; inset: 6px; pointer-events: none;
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+/* The ornate box: a hand-drawn wavy frame with a bow at the top, after the
+   Christmas card on Dominika's board. border-image repeats the wave along
+   each edge, so the frame stays the same size on a wide box and a narrow one.
+   The bow is masked, so it takes the box's own text colour. */
+.ornate, .form-box, .form-grid--boxed {
+  position: relative;
+  border: var(--frame-w) solid transparent;
+  border-image: var(--frame-art) 34 / var(--frame-w) round;
+  border-radius: 0;
 }
 .ornate::after, .form-box::after, .form-grid--boxed::after {
-  content: ""; position: absolute; inset: -5px; pointer-events: none;
-  background: currentColor; opacity: .55;
-  -webkit-mask:
-    var(--diamond) left top / 10px 10px no-repeat,
-    var(--diamond) right top / 10px 10px no-repeat,
-    var(--diamond) left bottom / 10px 10px no-repeat,
-    var(--diamond) right bottom / 10px 10px no-repeat;
-  mask:
-    var(--diamond) left top / 10px 10px no-repeat,
-    var(--diamond) right top / 10px 10px no-repeat,
-    var(--diamond) left bottom / 10px 10px no-repeat,
-    var(--diamond) right bottom / 10px 10px no-repeat;
+  content: ""; position: absolute; left: 0; right: 0;
+  top: calc(var(--frame-w) * -1 + 2px); height: 32px; pointer-events: none;
+  background: currentColor;
+  -webkit-mask: url("/kokarda.svg") top center / 60px 32px no-repeat;
+  mask: url("/kokarda.svg") top center / 60px 32px no-repeat;
 }
+/* on a dark box the line has to be the light one */
+.ornate--light { --frame-art: url("/ramka-krem.svg"); }
 
 .radio:has(input:checked) { background: color-mix(in srgb, var(--rose) 22%, var(--field)); }
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }

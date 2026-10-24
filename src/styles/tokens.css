@@ -61,6 +61,9 @@
   --radius: 3px;
   --radius-lg: 4px;
   --radius-panel: 6px;
+  /* the hand-drawn wavy frame on the ornate boxes */
+  --frame-art: url("/ramka-wino.svg");
+  --frame-w: 34px;
   /* the corner ornament on the ornate boxes */
   --diamond: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M5 0 10 5 5 10 0 5Z' fill='%23000'/%3E%3C/svg%3E");
   /* how far the hairline frame sits in from the panel edge */
