@@ -61,6 +61,8 @@
   --radius: 3px;
   --radius-lg: 4px;
   --radius-panel: 6px;
+  /* how far the hairline frame sits in from the panel edge */
+  --frame-inset: 16px;
   --panel-max: 1280px;
   --panel-gap: clamp(12px, 2.4vw, 34px);
   --display: "Bodoni Moda", Didot, "Playfair Display", Georgia, serif;

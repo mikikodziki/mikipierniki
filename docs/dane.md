@@ -30,7 +30,11 @@ Kształty i detale:
   Wcześniej było 34 px i pigułki.
 - Przerywnik między sekcjami: cienka kreska z małym rombem pośrodku
   (wcześniej falista linia lukru).
-- Panele mają miękki, niski cień zamiast obramowań.
+- Każdy panel ma cienką ramkę odsuniętą 16 px od krawędzi (9 px na telefonie),
+  jak linia na karcie menu. Pierwsza sekcja ma ramkę podwójną.
+  Ramki są WYŁĄCZNIE na panelach sekcji — nigdy na kartach w środku,
+  żeby nie powstała ramka w ramce.
+- Panele mają dodatkowo miękki, niski cień.
 - Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
 
 ## Kontakt i miejsce
