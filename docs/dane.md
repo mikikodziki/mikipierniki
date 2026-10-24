@@ -37,9 +37,13 @@ Kształty i detale:
   rozdzielony na dwa pliki: `public/ramka-fala.svg` (dwie linie, kolor
   #843F42 z jej rysunku), `public/ramka-fala-krem.svg` (ta sama ramka na
   ciemne tło, klasa `.ornate--light`) i `public/kokarda.svg`.
-  Ramka działa przez `border-image` ze slice 130 i szerokością 48 px: rogi
-  z jej falą mają stały rozmiar, rozciągają się tylko proste odcinki między
-  nimi. Kokarda jest maską o stałym rozmiarze, więc nigdy się nie spłaszcza
+  Ramka działa przez `border-image` ze slice `130 fill` i szerokością 48 px:
+  rogi z jej falą mają stały rozmiar, rozciągają się tylko proste odcinki
+  między nimi. Słowo `fill` sprawia, że rysunek wypełnia też wnętrze, więc
+  tło pudełka kończy się dokładnie na fali — pudełka NIE mają własnego
+  prostokątnego tła. Kolor wypełnienia jest w pliku SVG: blady róż #F7E7E3
+  na jasnych pudełkach, wino #6E2433 na ciemnym.
+  Kokarda jest maską o stałym rozmiarze, więc nigdy się nie spłaszcza
   i bierze kolor tekstu pudełka.
 - Panele mają dodatkowo miękki, niski cień.
 - Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.

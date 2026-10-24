@@ -151,7 +151,8 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: 2px; cursor: pointer; }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
-.form-box, .form-grid--boxed { background: var(--panel-deep); }
+/* the fill comes from the frame drawing now, not from a rectangle */
+.form-box, .form-grid--boxed { background: transparent; }
 
 /* The ornate box: Dominika's own drawing — a wavy double line with a bow.
    border-image keeps her corner wobble at a fixed size and stretches only the
@@ -160,7 +161,9 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .ornate, .form-box, .form-grid--boxed {
   position: relative;
   border: 48px solid transparent;
-  border-image: var(--frame-art) 130 / 48px round;
+  /* `fill` paints the drawing's interior too, so the box colour stops at the wave */
+  border-image: var(--frame-art) 130 fill / 48px round;
+  background: transparent;
   border-radius: 0;
   /* extra room at the top so the bow's tails clear the first line */
   padding: clamp(16px, 2vw, 26px) clamp(6px, 1.4vw, 16px) clamp(6px, 1.4vw, 16px);
