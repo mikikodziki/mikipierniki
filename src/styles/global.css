@@ -151,7 +151,31 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: 2px; cursor: pointer; }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
-.form-box, .form-grid--boxed { background: var(--panel-deep); border-radius: var(--radius-lg); padding: clamp(20px, 4vw, 32px); }
+.form-box, .form-grid--boxed { background: var(--panel-deep); border-radius: var(--radius-lg); padding: clamp(26px, 4vw, 38px); }
+
+/* The ornate box: a double rule with a diamond on every corner, after the
+   invitation and menu cards on Dominika's board. The rules take their colour
+   from the text, so the same class works on a light box and on a dark one. */
+.ornate, .form-box, .form-grid--boxed { position: relative; border: 1px solid color-mix(in srgb, currentColor 34%, transparent); }
+.ornate::before, .form-box::before, .form-grid--boxed::before {
+  content: ""; position: absolute; inset: 6px; pointer-events: none;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+.ornate::after, .form-box::after, .form-grid--boxed::after {
+  content: ""; position: absolute; inset: -5px; pointer-events: none;
+  background: currentColor; opacity: .55;
+  -webkit-mask:
+    var(--diamond) left top / 10px 10px no-repeat,
+    var(--diamond) right top / 10px 10px no-repeat,
+    var(--diamond) left bottom / 10px 10px no-repeat,
+    var(--diamond) right bottom / 10px 10px no-repeat;
+  mask:
+    var(--diamond) left top / 10px 10px no-repeat,
+    var(--diamond) right top / 10px 10px no-repeat,
+    var(--diamond) left bottom / 10px 10px no-repeat,
+    var(--diamond) right bottom / 10px 10px no-repeat;
+}
+
 .radio:has(input:checked) { background: color-mix(in srgb, var(--rose) 22%, var(--field)); }
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }
 .check input, .radio input { accent-color: var(--rose); width: 18px; height: 18px; margin: 2px 0 0; flex: none; }
