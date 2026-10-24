@@ -151,27 +151,30 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: 2px; cursor: pointer; }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
-.form-box, .form-grid--boxed { background: var(--panel-deep); padding: clamp(12px, 1.8vw, 20px); }
+.form-box, .form-grid--boxed { background: var(--panel-deep); }
 
-/* The ornate box: a hand-drawn wavy frame with a bow at the top, after the
-   Christmas card on Dominika's board. border-image repeats the wave along
-   each edge, so the frame stays the same size on a wide box and a narrow one.
-   The bow is masked, so it takes the box's own text colour. */
+/* The ornate box: Dominika's own drawing — a wavy double line with a bow.
+   border-image keeps her corner wobble at a fixed size and stretches only the
+   straight runs between them, so a tall box does not push the line inwards.
+   The bow is a mask at a fixed size, so it takes the box's own text colour. */
 .ornate, .form-box, .form-grid--boxed {
   position: relative;
-  border: var(--frame-w) solid transparent;
-  border-image: var(--frame-art) 34 / var(--frame-w) round;
+  border: 48px solid transparent;
+  border-image: var(--frame-art) 130 / 48px round;
   border-radius: 0;
+  /* extra room at the top so the bow's tails clear the first line */
+  padding: clamp(16px, 2vw, 26px) clamp(6px, 1.4vw, 16px) clamp(6px, 1.4vw, 16px);
 }
+/* the bow hangs on the top line, as she drew it */
 .ornate::after, .form-box::after, .form-grid--boxed::after {
-  content: ""; position: absolute; left: 0; right: 0;
-  top: calc(var(--frame-w) * -1 + 2px); height: 32px; pointer-events: none;
-  background: currentColor;
-  -webkit-mask: url("/kokarda.svg") top center / 60px 32px no-repeat;
-  mask: url("/kokarda.svg") top center / 60px 32px no-repeat;
+  content: ""; position: absolute; left: 50%; top: -30px;
+  width: 104px; height: 45px; transform: translateX(-50%);
+  pointer-events: none; background: currentColor;
+  -webkit-mask: url("/kokarda.svg") center / contain no-repeat;
+  mask: url("/kokarda.svg") center / contain no-repeat;
 }
-/* on a dark box the line has to be the light one */
-.ornate--light { --frame-art: url("/ramka-krem.svg"); }
+/* on a dark box the lines have to be the light ones */
+.ornate--light { --frame-art: url("/ramka-fala-krem.svg"); }
 
 .radio:has(input:checked) { background: color-mix(in srgb, var(--rose) 22%, var(--field)); }
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }

@@ -33,11 +33,14 @@ Kształty i detale:
 - Panele sekcji: cienka ramka odsunięta 16 px od krawędzi (9 px na telefonie).
   Pierwsza sekcja ma ramkę podwójną.
 - Pudełka w środku sekcji („Co jest w cenie", cennik, wszystkie formularze):
-  odręczna falowana ramka z kokardą na górze, prosto z kartki świątecznej
-  z inspiracji. Pliki: `public/ramka-wino.svg`, `public/ramka-krem.svg`
-  (wersja na ciemne tło, klasa `.ornate--light`) i `public/kokarda.svg`.
-  Fala powtarza się przez `border-image`, więc ma ten sam rozmiar na szerokim
-  i wąskim pudełku. Kokarda jest maską, więc bierze kolor tekstu pudełka.
+  falowana ramka z kokardą — RYSUNEK DOMINIKI (`ramka-z-kokardka.svg`),
+  rozdzielony na dwa pliki: `public/ramka-fala.svg` (dwie linie, kolor
+  #843F42 z jej rysunku), `public/ramka-fala-krem.svg` (ta sama ramka na
+  ciemne tło, klasa `.ornate--light`) i `public/kokarda.svg`.
+  Ramka działa przez `border-image` ze slice 130 i szerokością 48 px: rogi
+  z jej falą mają stały rozmiar, rozciągają się tylko proste odcinki między
+  nimi. Kokarda jest maską o stałym rozmiarze, więc nigdy się nie spłaszcza
+  i bierze kolor tekstu pudełka.
 - Panele mają dodatkowo miękki, niski cień.
 - Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
 
