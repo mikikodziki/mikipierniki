@@ -1,17 +1,23 @@
 ---
-// A piped line of royal icing: the site's signature divider.
-// Drawn as a masked wave so the colour still comes from a token.
+// A hairline with a small diamond at its centre: the quiet divider the
+// board uses between blocks of a menu.
 ---
-<div class="piping-row" aria-hidden="true"><div class="piping"></div></div>
+<div class="rule-row" aria-hidden="true">
+  <span class="rule"></span>
+  <span class="mark"></span>
+  <span class="rule"></span>
+</div>
 
 <style>
-  .piping-row { max-width: var(--panel-max); width: 100%; margin-inline: auto; padding: 10px clamp(20px, 3vw, 40px); }
-  .piping {
-    height: 12px;
-    background: var(--ink-soft);
-    opacity: .55;
-    --wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 12' fill='none' stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M0 6C5 1 15 1 20 6s15 5 20 0'/%3E%3C/svg%3E");
-    -webkit-mask: var(--wave) repeat-x center / 40px 12px;
-    mask: var(--wave) repeat-x center / 40px 12px;
+  .rule-row {
+    max-width: var(--panel-max); width: 100%; margin-inline: auto;
+    padding: 14px clamp(20px, 3vw, 40px);
+    display: flex; align-items: center; gap: 16px;
+  }
+  .rule { flex: 1; height: 1px; background: color-mix(in srgb, var(--dark) 32%, transparent); }
+  .mark {
+    width: 7px; height: 7px; flex: none;
+    background: color-mix(in srgb, var(--dark) 55%, transparent);
+    transform: rotate(45deg);
   }
 </style>

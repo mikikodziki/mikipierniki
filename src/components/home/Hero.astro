@@ -55,11 +55,12 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   .hero { padding-block: clamp(40px, 7vw, 84px) clamp(48px, 7vw, 88px); }
   .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
   .copy { display: grid; gap: 22px; }
-  .badge { justify-self: start; display: inline-flex; align-items: center; gap: 8px; background: var(--sand); color: var(--accent); font-weight: 600; font-size: 0.88rem; padding: 7px 14px; border-radius: 999px; }
-  .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  /* a letterspaced line over a short rule, the way the board opens a page */
+  .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
+  .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
   h1 em { font-style: normal; color: inherit; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-  .note { font-size: 0.9rem; color: var(--on-dark-soft); }
-  .tray { max-width: 100%; border-radius: var(--radius-lg); overflow: hidden; }
+  .note { font-size: 0.72rem; letter-spacing: .06em; color: var(--on-dark-soft); }
+  .tray { max-width: 100%; border-radius: var(--radius-panel); overflow: hidden; }
   @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
 </style>

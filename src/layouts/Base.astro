@@ -45,10 +45,10 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     {canonical && <meta property="og:url" content={canonical} />}
-    <meta name="theme-color" content="#F6EEDB" />
+    <meta name="theme-color" content="#EFDAD7" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,800,100,1&family=Figtree:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Jost:wght@300;400;500;600&display=swap" />
     <script is:inline define:vars={{ ranges }}>
       // Pick the season from the visitor's date (or ?sezon=) before first paint.
       (function () {
@@ -199,6 +199,6 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     position: fixed; top: calc(env(safe-area-inset-top, 0px) + 12px); left: 16px;
     width: auto; height: auto; clip-path: none; z-index: 60;
     background: var(--ink); color: var(--ground);
-    padding: 12px 18px; border-radius: 12px; text-decoration: none; font-weight: 600;
+    padding: 12px 18px; border-radius: 2px; text-decoration: none; font-weight: 600;
   }
 </style>

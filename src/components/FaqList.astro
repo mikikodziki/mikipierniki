@@ -53,11 +53,11 @@ const { items, openFirst = true } = Astro.props;
 
 <style>
   details { border-bottom: 1px solid var(--line); }
-  summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 18px; font-weight: 600; font-size: 1.02rem; }
+  summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 20px; font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
   summary::-webkit-details-marker { display: none; }
   summary::after {
     content: "+"; font-family: var(--display); font-weight: var(--display-weight);
-    font-size: 1.4rem; line-height: 1; color: var(--blue);
+    font-size: 1.5rem; line-height: 1; color: var(--accent);
     transition: transform .3s cubic-bezier(.2,.7,.3,1);
   }
   details[open] summary::after { transform: rotate(45deg); }

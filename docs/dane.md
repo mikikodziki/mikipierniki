@@ -3,30 +3,35 @@
 Jedyne źródło prawdy dla treści na stronie. Wszystko poniżej jest potwierdzone przez Dominikę,
 chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
-## Kolory i logo
-Paleta od Dominiki, siedem kolorów:
-- #FFFBF1 prawie biały — panele sekcji, napisy na ciemnym tle, pola formularzy.
-- #F6EEDB neutralny beż — tło całej strony (jednolite, bez gradientu).
-- #FFF2D9 ciepły krem — co druga sekcja, ramki formularzy, plakietki
-  i etykiety na kartach terminów.
-- #764B31 brąz — drugoplanowe napisy, gwiazdki przy opiniach, okruszki na 404.
-- #4A2C24 ciemny brąz — przyciski w stanie spoczynku, ciemne bloki
-  (zapisy na powiadomienia, galeria).
-- #36150D prawie czarny brąz — wszystkie napisy na jasnym tle, logo i ikona strony.
-- #500208 wiśnia — pasek nagłówka, pierwsza sekcja na stronie głównej,
-  voucher i karty terminów,
-  nadtytuły sekcji w sezonie świątecznym, komunikaty błędów.
-- #98BEDF błękit — przyciski po najechaniu, plusy w FAQ, paski wolnych miejsc,
-  obramowanie zaznaczenia. Napisy na błękicie są w #36150D.
-- Przyciski na ciemnych blokach (nagłówek, zapisy, karty terminów) są kremowe,
-  bo czekoladowy zlałby się z tłem. Po najechaniu i one robią się błękitne.
-- Kolor sezonowy: wiśnia #500208 (święta), brąz #764B31 (Wielkanoc),
-  ciemny brąz #4A2C24 (reszta roku).
-- Każdy panel ma miękki cień, bo trzy jasne tony leżą blisko siebie.
-- Przerywnik między sekcjami: falista linia lukru w brązie, nie kropki.
-- Logo: wordmark „Miki Pierniki” w nagłówku, grafika „przytulenie” w stopce
-  i jako ikona strony.
-- Krój nagłówków: Fraunces 800 z miękkimi zakończeniami i „krzywymi” literami.
+## Marka i oprawa wizualna
+Kierunek „butikowa cukiernia”, zbudowany na tablicy Pinteresta „strona miki pierniki”:
+przykurzony róż, kość słoniowa i głębokie wino, elegancka antykwa i małe, rozstrzelone
+wersaliki. Dwa kolory używane odważnie, dużo powietrza, ostre krawędzie.
+
+- #EFDAD7 przykurzony róż — tło całej strony.
+- #FBF4EA kość słoniowa — panele sekcji, napisy na ciemnym tle.
+- #F7E7E3 blady róż — co druga sekcja, ramki formularzy, etykiety.
+- #6E2433 wino — pasek nagłówka, ciemne bloki, przyciski w stanie spoczynku.
+- #5A1B28 ciemne wino — pierwsza sekcja, voucher, karty terminów.
+- #3A1018 niemal czarne wino — wszystkie napisy na jasnym tle, logo, ikona strony.
+- #E3B5B1 jasny róż — przyciski po najechaniu, paski wolnych miejsc.
+- Ostrzeżenia: #A8321F.
+- Kolor sezonowy nie zmienia się — paleta jest dwubarwna, sezon widać w treści.
+
+Typografia:
+- Nagłówki: Bodoni Moda (antykwa o dużym kontraście grubości kresek, jak na menu
+  z inspiracji). Zastąpiła Fraunces.
+- Tekst i etykiety: Jost (geometryczny bezszeryfowy). Zastąpił Figtree.
+- Wszystkie etykiety, przyciski, nadtytuły i nawigacja: WERSALIKI z odstępem
+  między literami 0,14 em.
+
+Kształty i detale:
+- Zaokrąglenia prawie zniknęły: panele 6 px, karty 3 px, przyciski 2 px.
+  Wcześniej było 34 px i pigułki.
+- Przerywnik między sekcjami: cienka kreska z małym rombem pośrodku
+  (wcześniej falista linia lukru).
+- Panele mają miękki, niski cień zamiast obramowań.
+- Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
 
 ## Kontakt i miejsce
 - Pracownia: Wrocław. Tu odbywają się wszystkie warsztaty otwarte.

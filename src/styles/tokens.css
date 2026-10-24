@@ -1,74 +1,75 @@
 /*
  * Design tokens. Every colour in components comes from here.
- * Dominika's palette, seven colours:
- *   #FFFBF1 near-white · the section panels, text on dark, form fields
- *   #F6EEDB beige  · the page sheet
- *   #FFF2D9 warm cream · the deeper panels, form boxes, badges and tags
- *   #764B31 brown   · secondary text, hairlines, gingerbread crumbs
- *   #4A2C24 dark brown · header bar and every dark block
- *   #36150D near-black brown · all text on light, the logo
- *   #500208 cherry  · the voucher, the season accent, errors
- *   #98BEDF blue    · button hover, FAQ markers, progress bars, focus
+ * Brand "boutique patisserie", after Dominika's Pinterest board:
+ * a dusty-rose page, ivory panels, deep wine for everything that carries
+ * weight, and soft rose as the one highlight. Two colours, used with nerve.
+ *   #EFDAD7 dusty rose · the page sheet
+ *   #FBF4EA ivory      · the section panels
+ *   #F7E7E3 pale rose  · the deeper panels, form boxes, tags
+ *   #6E2433 wine       · header, dark blocks, buttons at rest
+ *   #5A1B28 deep wine  · the hero, the voucher, the term cards
+ *   #3A1018 near-black wine · all text on light, the logo
+ *   #E3B5B1 soft rose  · button hover, markers, bars
+ * Type is a high-contrast didone over a geometric sans, the pairing the
+ * board keeps returning to on menus and packaging.
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
  */
 :root {
   color-scheme: light;
-  /* inherited by everything; ignored by fonts without these axes */
-  font-variation-settings: "SOFT" 100, "WONK" 1;
 
-  /* page: the neutral beige; every panel sits lighter on it */
-  --sheet: #F6EEDB;
-  /* the three light tones are close, so the shadow does the cutting out */
-  --panel-shadow: 0 1px 2px rgba(54, 21, 13, .08), 0 12px 30px rgba(54, 21, 13, .15);
-  /* dark blocks: header bar, newsletter, gallery, term cards */
-  --dark: #4A2C24;
-  --on-dark: #FFFBF1;
-  --on-dark-soft: color-mix(in srgb, #FFFBF1 68%, #764B31);
-  /* the voucher ticket, kept apart from the other dark blocks */
-  --cherry: #500208;
-  /* the warm cream on its own, for pieces that must not follow the season */
-  --sand: #FFF2D9;
-  --ground: #FFFBF1;
-  --surface: #FFFBF1;
-  /* cards: plain white, slightly see-through over the cream panel */
-  --card: rgba(255, 255, 255, .55);
+  /* page: dusty rose; every panel sits lighter on it */
+  --sheet: #EFDAD7;
+  /* the panels lift off the rose with a soft, low shadow */
+  --panel-shadow: 0 1px 2px rgba(58, 16, 24, .06), 0 16px 36px rgba(58, 16, 24, .10);
+  /* dark blocks: header bar, newsletter, gallery */
+  --dark: #6E2433;
+  --on-dark: #FBF4EA;
+  --on-dark-soft: color-mix(in srgb, #FBF4EA 66%, #6E2433);
+  /* the deeper wine: hero, voucher ticket, term cards */
+  --cherry: #5A1B28;
+  /* the pale rose on its own, for pieces that must not follow the season */
+  --sand: #F7E7E3;
+  --ground: #FBF4EA;
+  --surface: #FFFCF6;
+  --card: rgba(255, 255, 255, .5);
   /* form fields: filled, never outlined */
-  --field: #FFFBF1;
+  --field: #FFFCF6;
   --field-strong: #FFFFFF;
-  --sunk: #FFF2D9;
-  --panel-deep: #FFF2D9;
-  --ink: #36150D;
-  --ink-soft: #764B31;
-  --line: color-mix(in srgb, #764B31 20%, #FFFBF1);
-  /* highlights, and the hover state of every primary button */
-  --blue: #98BEDF;
-  /* the blue is light, so labels on it carry the darkest brown */
-  --on-blue: #36150D;
-  --ginger: #764B31;
-  --ginger-text: #764B31;
-  --berry: #500208;
-  --accent: #500208;
-  --shadow-cookie: rgba(54, 21, 13, .25);
+  --sunk: #F7E7E3;
+  --panel-deep: #F7E7E3;
+  --ink: #3A1018;
+  --ink-soft: #7E4B54;
+  --line: color-mix(in srgb, #6E2433 22%, #FBF4EA);
+  /* the one highlight: button hover, FAQ markers, progress bars */
+  --rose: #E3B5B1;
+  --on-rose: #3A1018;
+  --ginger: #7E4B54;
+  --ginger-text: #7E4B54;
+  --berry: #A8321F;
+  --accent: #6E2433;
+  --shadow-cookie: rgba(58, 16, 24, .22);
 
   /* backing colours for gallery tiles, picked per photo in the data */
-  --tile-1: #FFF2D9;
-  --tile-2: #98BEDF;
-  --tile-3: #FFFBF1;
-  --tile-4: color-mix(in srgb, #FFF2D9 82%, #764B31);
+  --tile-1: #F7E7E3;
+  --tile-2: #EFDAD7;
+  --tile-3: #FBF4EA;
+  --tile-4: color-mix(in srgb, #EFDAD7 82%, #6E2433);
 
-  --radius: 14px;
-  --radius-lg: 28px;
-  --radius-panel: 34px;
+  /* squared off: the board's menus and cards barely round their corners */
+  --radius: 3px;
+  --radius-lg: 4px;
+  --radius-panel: 6px;
   --panel-max: 1280px;
   --panel-gap: clamp(12px, 2.4vw, 34px);
-  --display: "Fraunces", "Cooper Black", "Georgia", serif;
-  /* Fraunces axes: soft terminals, quirky letterforms — closest to the logo lettering */
-  --display-weight: 800;
-  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --display: "Bodoni Moda", Didot, "Playfair Display", Georgia, serif;
+  --display-weight: 500;
+  --body: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* small letterspaced caps carry every label on the board */
+  --caps: .14em;
   --wrap: 1160px;
 }
-/* the palette has one cherry, so the other seasons lean on the browns */
-:root[data-season="wielkanoc"] { --accent: #764B31; }
-:root[data-season="rok"] { --accent: #4A2C24; }
+/* the palette is two colours, so the season shows in the words, not the hue */
+:root[data-season="wielkanoc"] { --accent: #6E2433; }
+:root[data-season="rok"] { --accent: #6E2433; }

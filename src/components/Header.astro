@@ -47,37 +47,38 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .bar {
     max-width: var(--panel-max);
     margin-inline: auto;
-    height: 64px;
-    padding: 0 14px 0 26px;
+    height: 72px;
+    padding: 0 18px 0 30px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     background: var(--cherry);
     color: var(--on-dark);
-    border-radius: 999px;
-    box-shadow: 0 10px 24px rgba(54, 21, 13, .28);
+    border-radius: var(--radius-panel);
+    box-shadow: 0 10px 28px rgba(58, 16, 24, .22);
   }
 
   .brand {
     font-family: var(--display);
     font-weight: var(--display-weight);
-    font-size: 1.3rem;
+    font-size: 1.35rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
     line-height: 1;
     color: var(--on-dark);
     text-decoration: none;
     white-space: nowrap;
   }
 
-  .main { display: flex; gap: 26px; font-weight: 500; font-size: 0.95rem; }
+  .main { display: flex; gap: 30px; font-weight: 400; font-size: 0.72rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .main a { text-decoration: none; color: color-mix(in srgb, var(--on-dark) 78%, transparent); }
   .main a:hover { color: var(--on-dark); }
   /* the page you are on is marked by colour, not by a rule under the word */
-  .main a[aria-current="page"] { color: var(--blue); }
+  .main a[aria-current="page"] { color: var(--rose); }
 
   .actions { display: flex; align-items: center; gap: 10px; }
-  /* the pill curves away at its ends, so the CTA keeps an even inset */
-  .cta { padding: 11px 20px; }
+  .cta { padding: 13px 20px; }
   .menu-btn {
     display: none; width: 44px; height: 44px; border-radius: 999px;
     border: 0; background: color-mix(in srgb, var(--on-dark) 14%, transparent);
@@ -97,17 +98,17 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     display: grid;
     background: var(--cherry);
     color: var(--on-dark);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-panel);
   }
   .mobile-menu a { text-decoration: none; color: var(--on-dark); padding-block: 12px; font-size: 1.05rem; font-weight: 500; border-bottom: 1px solid color-mix(in srgb, var(--on-dark) 18%, transparent); }
   .mobile-menu a:last-child { border-bottom: 0; }
-  .mobile-menu a[aria-current="page"] { color: var(--blue); }
+  .mobile-menu a[aria-current="page"] { color: var(--rose); }
 
   @media (max-width: 900px) {
     .main, .cta { display: none; }
     .menu-btn { display: grid; }
-    .bar { height: 60px; padding: 0 10px 0 20px; }
-    .brand { font-size: 1.15rem; }
+    .bar { height: 64px; padding: 0 12px 0 20px; }
+    .brand { font-size: 1.05rem; letter-spacing: .08em; }
   }
   @media (min-width: 901px) { .mobile-menu { display: none !important; } }
 </style>
