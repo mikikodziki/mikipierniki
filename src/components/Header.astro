@@ -62,9 +62,8 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .brand {
     font-family: var(--display);
     font-weight: var(--display-weight);
-    font-size: 1.35rem;
-    letter-spacing: .1em;
-    text-transform: uppercase;
+    font-size: 1.6rem;
+    letter-spacing: .01em;
     line-height: 1;
     color: var(--on-dark);
     text-decoration: none;
@@ -108,7 +107,7 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     .main, .cta { display: none; }
     .menu-btn { display: grid; }
     .bar { height: 64px; padding: 0 12px 0 20px; }
-    .brand { font-size: 1.05rem; letter-spacing: .08em; }
+    .brand { font-size: 1.25rem; }
   }
   @media (min-width: 901px) { .mobile-menu { display: none !important; } }
 </style>
