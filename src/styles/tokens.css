@@ -10,8 +10,7 @@
  *   #5A1B28 deep wine  · the hero, the voucher, the term cards
  *   #3A1018 near-black wine · all text on light, the logo
  *   #E3B5B1 soft rose  · button hover, markers, bars
- * Type is a high-contrast didone over a geometric sans, the pairing the
- * board keeps returning to on menus and packaging.
+ * Type is a heavy, round-terminalled display serif over a geometric sans.
  * The site is deliberately single-theme (light): it keeps the brand colours
  * on every device, also when the system is set to dark mode.
  * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
@@ -71,8 +70,9 @@
   --frame-inset: 16px;
   --panel-max: 1280px;
   --panel-gap: clamp(12px, 2.4vw, 34px);
-  --display: "Bodoni Moda", Didot, "Playfair Display", Georgia, serif;
-  --display-weight: 500;
+  --display: "DM Serif Display", Georgia, serif;
+  /* DM Serif ships one weight; the heft is in the face itself */
+  --display-weight: 400;
   --body: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
   /* small letterspaced caps carry every label on the board */
   --caps: .14em;

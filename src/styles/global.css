@@ -18,10 +18,10 @@ a { color: inherit; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
 h1, h2, h3, h4 { margin: 0; text-wrap: balance; }
-h1, h2, h3 { font-family: var(--display); font-weight: var(--display-weight); line-height: 1.08; letter-spacing: -0.012em; }
-h1 { font-size: clamp(2.5rem, 6vw, 4.2rem); }
-h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); }
-h3 { font-family: var(--display); font-weight: 600; font-size: 1.28rem; letter-spacing: -0.005em; }
+h1, h2, h3 { font-family: var(--display); font-weight: var(--display-weight); line-height: 1.12; letter-spacing: -0.005em; }
+h1 { font-size: clamp(2.4rem, 5.6vw, 3.9rem); }
+h2 { font-size: clamp(1.8rem, 3.6vw, 2.6rem); }
+h3 { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.2rem; letter-spacing: -0.005em; }
 p { margin: 0; }
 
 /* Season-specific content: render all variants, hide the non-matching ones.

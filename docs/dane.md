@@ -19,8 +19,9 @@ wersaliki. Dwa kolory używane odważnie, dużo powietrza, ostre krawędzie.
 - Kolor sezonowy nie zmienia się — paleta jest dwubarwna, sezon widać w treści.
 
 Typografia:
-- Nagłówki: Bodoni Moda (antykwa o dużym kontraście grubości kresek, jak na menu
-  z inspiracji). Zastąpiła Fraunces.
+- Nagłówki: DM Serif Display — grubsza antykwa z miękkimi, zaokrąglonymi
+  zakończeniami. Zastąpiła Bodoni Moda (za cienka) i wcześniej Fraunces.
+  Ma jedną grubość, więc `--display-weight` to 400 i nie należy go podnosić.
 - Tekst i etykiety: Jost (geometryczny bezszeryfowy). Zastąpił Figtree.
 - Wszystkie etykiety, przyciski, nadtytuły i nawigacja: WERSALIKI z odstępem
   między literami 0,14 em.
