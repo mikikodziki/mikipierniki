@@ -43,8 +43,15 @@ Kształty i detale:
   tło pudełka kończy się dokładnie na fali — pudełka NIE mają własnego
   prostokątnego tła. Kolor wypełnienia jest w pliku SVG: blady róż #F7E7E3
   na jasnych pudełkach, wino #6E2433 na ciemnym.
-  Kokarda jest maską o stałym rozmiarze, więc nigdy się nie spłaszcza
-  i bierze kolor tekstu pudełka.
+  Trzy zmiany wobec oryginalnego rysunku, wymuszone przez to, że pudełka
+  na stronie mają różne proporcje: górna linia jest DOMKNIĘTA (w rysunku
+  urywa się tam, gdzie wpisana jest kokarda — na stronie ta przerwa nigdy
+  nie trafiłaby w kokardę), druga linia jest odsunięta do środka o ~6
+  jednostek (w oryginale biegną 4–5 jednostek od siebie i przy tej skali
+  zlewają się w jedną), a kreski są o 35% grubsze.
+  Kokarda jest maską szeroką na 28% pudełka, więc trzyma proporcję także
+  na wąskich pudełkach, a jej kolor to `--frame-ink` (kolor linii),
+  nie kolor tekstu.
 - Panele mają dodatkowo miękki, niski cień.
 - Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
 

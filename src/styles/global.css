@@ -162,7 +162,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
   position: relative;
   border: 48px solid transparent;
   /* `fill` paints the drawing's interior too, so the box colour stops at the wave */
-  border-image: var(--frame-art) 130 fill / 48px round;
+  border-image: var(--frame-art) 130 fill / 48px stretch;
   background: transparent;
   border-radius: 0;
   /* extra room at the top so the bow's tails clear the first line */
@@ -170,14 +170,16 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 }
 /* the bow hangs on the top line, as she drew it */
 .ornate::after, .form-box::after, .form-grid--boxed::after {
-  content: ""; position: absolute; left: 50%; top: -30px;
-  width: 104px; height: 45px; transform: translateX(-50%);
-  pointer-events: none; background: currentColor;
+  /* sized against the box, so it stays in proportion on a narrow one;
+     its centre is pinned 24px down, which is where the top line runs */
+  content: ""; position: absolute; left: 50%; top: -24px;
+  width: 28%; aspect-ratio: 212 / 95; transform: translate(-50%, -50%);
+  pointer-events: none; background: var(--frame-ink);
   -webkit-mask: url("/kokarda.svg") center / contain no-repeat;
   mask: url("/kokarda.svg") center / contain no-repeat;
 }
 /* on a dark box the lines have to be the light ones */
-.ornate--light { --frame-art: url("/ramka-fala-krem.svg"); }
+.ornate--light { --frame-art: url("/ramka-fala-krem.svg"); --frame-ink: #FBF4EA; }
 
 .radio:has(input:checked) { background: color-mix(in srgb, var(--rose) 22%, var(--field)); }
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }
