@@ -35,8 +35,15 @@ Kształty i detale:
 - Pierwsza sekcja to JEDYNE miejsce na stronie, gdzie coś się rusza.
   Zdjęcie wypełnia cały panel, a cztery zdjęcia danego sezonu powoli
   przenikają jedno w drugie (32 s na pełny obieg) i delikatnie się przybliżają.
-  Pod tekstem NIE ma płaskiej plamy: to samo zdjęcie leży tam drugi raz,
-  mocno rozmyte i przyciemnione, i rozpływa się w ostre zdjęcie po prawej.
+  Lewa strona wygląda jak zamarznięta szyba: pod tekstem leży to samo
+  zdjęcie drugi raz, rozmyte i przyciemnione, a na nim szron — paprocie lodu
+  gęste przy lewej krawędzi i igiełki wychodzące na ostre zdjęcie po prawej.
+  Szron stoi w miejscu, zdjęcia zmieniają się „za szybą". Za tekstem szron
+  jest celowo rzadszy, żeby napisy dało się czytać na każdym zdjęciu.
+  Rysunek szronu (`public/szron.svg`) generuje skrypt `scripts/szron.mjs`
+  (`node scripts/szron.mjs`); inny wzór = inna wartość SEED w skrypcie.
+  Szron jest tylko na szerszych ekranach — na telefonie zdjęcie stoi pod
+  tekstem i szronu nie ma.
   Zdjęcia są kadrowane `object-position: 28% 50%`, żeby pierniki wychodziły
   bardziej na prawo, tam gdzie nic ich nie zasłania. Liczba zdjęć musi być
   równa CZTERY — klatki animacji są pocięte na ćwiartki.

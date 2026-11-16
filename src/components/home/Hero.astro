@@ -67,6 +67,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     </div>
   ))}
   <div class="scrim" aria-hidden="true"></div>
+  <div class="frost" aria-hidden="true"></div>
 
   <div class="wrap inner">
     {variants.map((v) => (
@@ -113,10 +114,10 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     100% { transform: scale(1); }
   }
 
-  /* the same picture, blurred and dimmed, running under the copy and dissolving
-     into the sharp one — the photo becomes the background instead of being
-     covered by a flat panel. Scaled up so the blur has pixels to chew at the
-     edges instead of smearing into transparency. */
+  /* the frozen pane: the same picture, blurred and dimmed the way frost
+     scatters it, running under the copy and clearing into the sharp photo on
+     the right. Scaled up so the blur has pixels to chew at the edges instead
+     of smearing into transparency. */
   .stage--soft {
     z-index: 1;
     transform: scale(1.08);
@@ -133,7 +134,21 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
         color-mix(in srgb, var(--umber) 42%, transparent) 52%,
         transparent 70%);
   }
-  .inner { position: relative; z-index: 3; }
+  /* the ice itself, drawn by scripts/szron.mjs: ferns thick at the left
+     edge, fir-like crystals reaching out over the photo. It stays still while
+     the photos change behind it, like looking out through a frozen window.
+     Only on wide screens: on phones the photo is a band under the copy, and
+     the file is never downloaded there. */
+  .frost {
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    /* thinner where the words are, so they read over it */
+    -webkit-mask-image: radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%);
+    mask-image: radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%);
+  }
+  @media (min-width: 861px) {
+    .frost { background: url(/szron.svg) left center / cover no-repeat; }
+  }
+  .inner { position: relative; z-index: 4; }
   .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
 
   .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
@@ -154,11 +169,13 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
       0 6px 16px rgba(26, 20, 14, .45);
   }
   h1 em { font-style: normal; color: inherit; }
-  /* a shade brighter than the usual muted text: this one sits on a photo,
-     and it has to clear 4.5:1 on the brightest frame of the fade too */
-  .copy .lead { color: color-mix(in srgb, var(--on-dark) 82%, var(--umber)); }
+  /* a shade brighter than the usual muted text: this sits on the photo and
+     the ice, and has to clear 4.5:1 on the brightest frame of the fade too */
+  .copy .lead, .copy .note { color: color-mix(in srgb, var(--on-dark) 82%, var(--umber)); }
+  /* a soft dark halo lifts the small type off the ice */
+  .copy .lead, .badge, .note { text-shadow: 0 0 3px rgba(26, 20, 14, .8), 0 1px 2px rgba(26, 20, 14, .7), 0 0 16px rgba(26, 20, 14, .6); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-  .note { font-size: 0.72rem; letter-spacing: .06em; color: var(--on-dark-soft); }
+  .note { font-size: 0.72rem; letter-spacing: .06em; }
 
   /* narrow screens: the picture becomes a band under the copy */
   @media (max-width: 860px) {
