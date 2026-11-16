@@ -23,6 +23,12 @@ Typografia:
   zakończeniami. Zastąpiła Bodoni Moda (za cienka) i wcześniej Fraunces.
   Ma jedną grubość, więc `--display-weight` to 400 i nie należy go podnosić.
 - Tekst i etykiety: Jost (geometryczny bezszeryfowy). Zastąpił Figtree.
+- Nagłówek pierwszej sekcji (TYLKO on): Dancing Script 700 — ciągłe pismo
+  o jednej grubości kreski, jak lukier wyciskany z rękawa. Do tego cień
+  i delikatny połysk, żeby napis wyglądał jak wałek lukru leżący na pierniku.
+  Wzór: zdjęcie piernika z napisem „Warsztaty dekorowania pierników".
+  Reszta nagłówków na stronie zostaje w DM Serif Display — pismo odręczne
+  w długich tytułach podstron byłoby męczące do czytania.
 - Wszystkie etykiety, przyciski, nadtytuły i nawigacja: WERSALIKI z odstępem
   między literami 0,14 em.
 

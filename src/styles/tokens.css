@@ -73,6 +73,9 @@
   --display: "DM Serif Display", Georgia, serif;
   /* DM Serif ships one weight; the heft is in the face itself */
   --display-weight: 400;
+  /* the hero headline only: a monoline joined script, the way royal icing
+     comes out of a piping bag — one even thickness, round ends, big loops */
+  --script: "Dancing Script", "Brush Script MT", cursive;
   --body: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
   /* small letterspaced caps carry every label on the board */
   --caps: .14em;

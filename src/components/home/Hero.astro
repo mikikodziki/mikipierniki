@@ -6,7 +6,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   {
     season: "swieta",
     badge: "Zapisy na sezon świąteczny 2026 otwarte",
-    title: "Udekoruj swoje ", em: "pierwsze", after: " świąteczne pierniki",
+    title: "Warsztaty dekorowania ", em: "pierników", after: "",
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
     photo: "swieta-stol", photoAlt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole",
     shapes: ["man", "star", "tree", "heart"],
@@ -58,6 +58,20 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   /* a letterspaced line over a short rule, the way the board opens a page */
   .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
+  /* piped icing: one even stroke, a sheen along the top and the shadow the
+     bead casts on the gingerbread under it */
+  h1 {
+    font-family: var(--script);
+    font-weight: 700;
+    font-size: clamp(3rem, 7.4vw, 5.2rem);
+    line-height: 1.16;
+    letter-spacing: 0;
+    color: #FFF7EC;
+    text-shadow:
+      0 -1px 0 rgba(255, 255, 255, .6),
+      0 2px 2px rgba(40, 8, 14, .5),
+      0 5px 13px rgba(40, 8, 14, .34);
+  }
   h1 em { font-style: normal; color: inherit; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .note { font-size: 0.72rem; letter-spacing: .06em; color: var(--on-dark-soft); }
