@@ -26,9 +26,9 @@ const orders: { photo: string; photoAlt: string; title: string; text: string; de
   { photo: "kamieniczki", photoAlt: "Piernikowe kamieniczki zrobione na zamówienie", title: "Okazje i firmy", text: "Urodziny, walentynki, Halloween, śluby, a dla firm pierniki w kształcie Twojego logo: robię foremkę pod projekt.", deadline: "2 tygodni przed odbiorem", href: "/zamowienia#okazje" },
 ];
 ---
-<section class="section">
+<section class="section section--dark facts-section" id="jak-wygladaja-warsztaty" aria-labelledby="facts-title">
   <div class="wrap">
-    <SectionHead eyebrow="Jak wyglądają warsztaty" title="Przychodzisz z pustymi rękami, wychodzisz z pudełkiem pierników" />
+    <SectionHead id="facts-title" eyebrow="Jak wyglądają warsztaty" title="Przychodzisz z pustymi rękami, wychodzisz z pudełkiem pierników" />
     <div class="facts">
       {facts.map((f) => (
         <div class="fact"><span class="num">{f.num}</span><h3>{f.title}</h3><p>{f.text}</p></div>
@@ -76,11 +76,25 @@ const orders: { photo: string; photoAlt: string; title: string; text: string; de
 </section>
 
 <style>
-  .facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-  .fact { display: grid; gap: 10px; align-content: start; background: var(--card); border-radius: var(--radius-lg); padding: clamp(24px, 3vw, 34px); }
-  .num { font-family: var(--display); font-weight: var(--display-weight); font-size: clamp(2.6rem, 4vw, 3.4rem); color: var(--ginger); line-height: 1; }
-  .fact h3 { font: 700 1.2rem/1.3 var(--body); }
-  .fact p { color: var(--ink-soft); font-size: 1rem; line-height: 1.65; max-width: 34ch; }
+  .facts-section { position: relative; isolation: isolate; }
+  .facts-section::before {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: -1; pointer-events: none;
+    background: url("/zdjecia/szron-voucher.webp") right center / auto 100% no-repeat;
+    opacity: .25;
+    -webkit-mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+  }
+  .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 3vw, 40px); }
+  .fact {
+    display: grid; gap: 12px; align-content: start; padding-top: 24px;
+    border-top: 1px solid color-mix(in srgb, var(--on-dark) 32%, transparent);
+  }
+  .num { font-family: var(--display); font-weight: var(--display-weight); font-size: clamp(3rem, 5vw, 4.2rem); color: var(--on-dark); line-height: 1; }
+  .fact h3 { font: 600 1.1rem/1.3 var(--body); }
+  .fact p { color: var(--on-dark-soft); font-size: .95rem; line-height: 1.65; max-width: 34ch; }
+  @media (min-width: 1000px) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 
   .aud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
   .aud a { display: grid; grid-template-rows: auto 1fr; align-content: start; text-decoration: none; overflow: hidden; transition: transform .15s ease, background-color .15s ease; }

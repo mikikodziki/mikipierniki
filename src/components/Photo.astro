@@ -10,19 +10,21 @@ interface Props {
   ratio?: string;
   /** Rendered width hint for the browser */
   sizes?: string;
+  /** Available file widths; keep the largest within the source image's resolution. */
+  widths?: [number, number, number];
   class?: string;
   /** First screenful images skip lazy loading */
   eager?: boolean;
   /** Crop focus, e.g. "50% 20%" to keep a face in frame */
   position?: string;
 }
-const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", class: className, eager = false, position } = Astro.props;
+const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", widths = [600, 1000, 1600], class: className, eager = false, position } = Astro.props;
 const base = `/zdjecia/${name}`;
 ---
 <img
   class:list={["photo", className]}
-  src={`${base}-1000.webp`}
-  srcset={`${base}-600.webp 600w, ${base}-1000.webp 1000w, ${base}-1600.webp 1600w`}
+  src={`${base}-${widths[1]}.webp`}
+  srcset={widths.map((width) => `${base}-${width}.webp ${width}w`).join(", ")}
   sizes={sizes}
   alt={alt}
   loading={eager ? "eager" : "lazy"}

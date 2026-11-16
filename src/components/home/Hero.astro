@@ -7,7 +7,7 @@ import type { Season } from "@/lib/types";
  * and slowly cross-fades while the picture drifts closer. Four photos per
  * season — the fade keyframes are cut into quarters, so four is the number.
  */
-interface Shot { name: string; alt: string }
+interface Shot { name: string; alt: string; position?: string }
 const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shots: [Shot, Shot, Shot, Shot] }[] = [
   {
     season: "swieta",
@@ -16,9 +16,9 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
     shots: [
       { name: "swieta-stol", alt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole" },
-      { name: "kamieniczki", alt: "Trzy piernikowe kamieniczki zdobione lukrem i złotymi detalami" },
-      { name: "mis-mikolaj", alt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja" },
-      { name: "sniezynka-zlota", alt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem" },
+      { name: "hero-swieta-mis-choinka", alt: "Piernikowy biały miś w zielonym szaliku i choinka na tle igliwia", position: "75% 50%" },
+      { name: "hero-swieta-mikolaj-domek", alt: "Piernikowy Mikołaj i domek z czerwonym sercem na tle igliwia", position: "75% 50%" },
+      { name: "hero-swieta-igliwie", alt: "Piernikowa śnieżynka ze złotym wzorem i kamieniczka na tle igliwia", position: "75% 50%" },
     ],
   },
   {
@@ -52,7 +52,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     <div class="stage" data-for-season={v.season}>
       {v.shots.map((s, i) => (
         <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} position="28% 50%" />
+          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} position={s.position ?? "28% 50%"} />
         </div>
       ))}
     </div>
@@ -61,7 +61,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     <div class="stage stage--soft" data-for-season={v.season} aria-hidden="true">
       {v.shots.map((s, i) => (
         <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt="" sizes="100vw" position="28% 50%" />
+          <Photo name={s.name} alt="" sizes="100vw" position={s.position ?? "28% 50%"} />
         </div>
       ))}
     </div>
@@ -92,6 +92,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     align-items: center;
     min-height: clamp(560px, 80vh, 840px);
     padding-block: clamp(48px, 6vw, 88px);
+    background: var(--hero-shade);
   }
   .stage { position: absolute; inset: 0; z-index: 0; }
   .shot {
@@ -114,25 +115,26 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     100% { transform: scale(1); }
   }
 
-  /* the frozen pane: the same picture, blurred and dimmed the way frost
+  /* the frozen pane: the same picture, blurred and softened the way frost
      scatters it, running under the copy and clearing into the sharp photo on
      the right. Scaled up so the blur has pixels to chew at the edges instead
      of smearing into transparency. */
   .stage--soft {
     z-index: 1;
     transform: scale(1.08);
-    filter: blur(26px) brightness(.38) saturate(.7);
-    -webkit-mask-image: linear-gradient(96deg, #000 0 40%, rgba(0, 0, 0, .72) 54%, transparent 72%);
-    mask-image: linear-gradient(96deg, #000 0 40%, rgba(0, 0, 0, .72) 54%, transparent 72%);
+    filter: blur(26px) brightness(.5) saturate(.65);
+    -webkit-mask-image: linear-gradient(96deg, #000 0 34%, rgba(0, 0, 0, .6) 44%, transparent 56%);
+    mask-image: linear-gradient(96deg, #000 0 34%, rgba(0, 0, 0, .6) 44%, transparent 56%);
   }
-  /* a last wash of brown, just enough to hold the type */
+  /* dark pine behind the copy, fading into the unshaded photo on the right */
   .scrim {
     position: absolute; inset: 0; z-index: 2;
     background:
       linear-gradient(96deg,
-        color-mix(in srgb, var(--umber) 72%, transparent) 0 34%,
-        color-mix(in srgb, var(--umber) 42%, transparent) 52%,
-        transparent 70%);
+        color-mix(in srgb, var(--hero-shade) 94%, transparent) 0 30%,
+        color-mix(in srgb, var(--hero-shade) 88%, transparent) 40%,
+        color-mix(in srgb, var(--hero-shade) 40%, transparent) 48%,
+        transparent 60%);
   }
   /* the ice itself, drawn by scripts/szron.mjs: ferns thick at the left
      edge, fir-like crystals reaching out over the photo. It stays still while
@@ -141,9 +143,16 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
      the file is never downloaded there. */
   .frost {
     position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    opacity: 1;
     /* thinner where the words are, so they read over it */
-    -webkit-mask-image: radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%);
-    mask-image: radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%);
+    -webkit-mask-image:
+      radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%),
+      linear-gradient(90deg, #000 0 37%, transparent 58%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%),
+      linear-gradient(90deg, #000 0 37%, transparent 58%);
+    mask-composite: intersect;
   }
   @media (min-width: 861px) {
     .frost { background: url(/szron.svg) left center / cover no-repeat; }
@@ -151,29 +160,22 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   .inner { position: relative; z-index: 4; }
   .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
 
-  .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
+  .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 500; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
 
-  /* piped icing: one even stroke, a sheen along the top and the shadow the
-     bead casts on the gingerbread under it */
+  /* a clear editorial serif replaces the joined handwriting */
   h1 {
-    font-family: var(--script);
-    font-weight: 700;
-    font-size: clamp(3.2rem, 8vw, 5.8rem);
-    line-height: 1.12;
-    letter-spacing: 0;
-    color: #FFF9F0;
-    text-shadow:
-      0 -1px 0 rgba(255, 255, 255, .6),
-      0 2px 3px rgba(26, 20, 14, .6),
-      0 6px 16px rgba(26, 20, 14, .45);
+    font-family: var(--display);
+    font-weight: var(--display-weight);
+    font-size: clamp(2.55rem, 5.2vw, 4.4rem);
+    line-height: 1.08;
+    letter-spacing: -.025em;
+    color: var(--on-dark);
+    text-shadow: var(--hero-text-shadow);
   }
-  h1 em { font-style: normal; color: inherit; }
-  /* a shade brighter than the usual muted text: this sits on the photo and
-     the ice, and has to clear 4.5:1 on the brightest frame of the fade too */
-  .copy .lead, .copy .note { color: color-mix(in srgb, var(--on-dark) 82%, var(--umber)); }
-  /* a soft dark halo lifts the small type off the ice */
-  .copy .lead, .badge, .note { text-shadow: 0 0 3px rgba(26, 20, 14, .8), 0 1px 2px rgba(26, 20, 14, .7), 0 0 16px rgba(26, 20, 14, .6); }
+  h1 em { font-style: italic; color: inherit; }
+  .copy .lead, .copy .note { color: var(--on-dark); }
+  .copy .lead, .copy .note, .badge { text-shadow: var(--hero-text-shadow); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .note { font-size: 0.72rem; letter-spacing: .06em; }
 

@@ -29,11 +29,13 @@ export interface Term {
   season: Season;
 }
 
-/** Only the city is published; the street address is given at booking. */
+/** Workshop location shown on the contact page. */
 export interface Venue {
   id: string;
   name: string;
   city: string;
+  address?: string;
+  coordinates?: { lat: number; lng: number };
 }
 
 export type PaymentMethod = "online" | "przelew" | "voucher";
@@ -80,6 +82,8 @@ export interface Testimonial {
   author: string;
   context: string;
   text: string;
+  photo?: string;
+  photoAlt?: string;
 }
 
 export interface FaqItem {
@@ -93,9 +97,11 @@ export type CookieShape = "star" | "heart" | "man" | "tree" | "egg" | "pumpkin";
 export interface GalleryItem {
   shape: CookieShape;
   caption: string;
-  category: "warsztaty" | "swieta" | "wielkanoc" | "okazje";
+  category: "warsztaty" | "swieta" | "wielkanoc" | "halloween" | "okazje";
   tile: 1 | 2 | 3 | 4;
   /** File stem in /public/zdjecia (without size suffix), when a real photo exists */
   photo?: string;
+  /** Crop focus for square gallery tiles (CSS object-position). */
+  position?: string;
   alt: string;
 }

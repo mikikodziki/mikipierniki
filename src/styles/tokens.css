@@ -1,59 +1,48 @@
 /*
  * Design tokens. Every colour in components comes from here.
- * Palette "piernik i papier": neutral beiges and browns, nothing else.
- * No frames, no ornament — the page is read, not decorated.
- *   #FAF7F1 paper   · the section panels, text on dark
- *   #EDE6DA beige   · the page sheet
- *   #F2EBE0 sand    · the deeper panels, form boxes, tags
- *   #CBB79A tan     · button hover, markers, bars
- *   #6E5436 bronze  · eyebrows, links, secondary accents
- *   #473A2C brown   · header, dark blocks, buttons at rest
- *   #3B3025 deep brown · the hero, the voucher, the term cards
- *   #2B2219 near-black brown · all text on light, the logo
- * The site is deliberately single-theme (light): it keeps the brand colours
- * on every device, also when the system is set to dark mode.
- * Season accent is switched by data-season on <html>: swieta | wielkanoc | rok.
+ * Palette "krem i szałwia": warm ivory, pale sage and leaf-green accents.
+ * Ivory panels alternate with stronger sage; the hero uses a dark pine backdrop.
+ * The legacy --umber, --tan and --ginger names follow this green palette.
+ * The site has one light theme on every device, including in system dark mode.
+ * Seasonal content is switched by data-season: swieta | wielkanoc | rok.
  */
 :root {
   color-scheme: light;
 
-  /* page: warm neutral beige; every panel sits lighter on it */
-  --sheet: #EDE6DA;
-  /* panels are told apart by tone and a whisper of shadow, never by a border */
-  --panel-shadow: 0 1px 2px rgba(43, 34, 25, .04), 0 10px 26px rgba(43, 34, 25, .06);
-  /* dark blocks: header bar, newsletter, gallery */
-  --dark: #473A2C;
-  --on-dark: #FAF7F1;
-  --on-dark-soft: color-mix(in srgb, #FAF7F1 66%, #473A2C);
-  /* the deeper brown: hero, voucher ticket, term cards */
-  --umber: #3B3025;
-  /* the sand tone on its own, for pieces that must not follow the season */
-  --sand: #F2EBE0;
-  --ground: #FAF7F1;
-  --surface: #FFFDF9;
-  --card: rgba(255, 255, 255, .55);
-  /* form fields: filled, never outlined */
-  --field: #FFFDF9;
+  --sheet: #E4E7DD;
+  --panel-shadow: 0 1px 2px rgba(41, 61, 50, .025), 0 10px 26px rgba(41, 61, 50, .035);
+  --dark: #3C5948;
+  --on-dark: #FFFCF4;
+  --on-dark-soft: color-mix(in srgb, var(--on-dark) 82%, var(--dark));
+  --umber: #2D4B3B;
+  --sand: #F2EEE2;
+  --sage: #C9D6BE;
+  --hero-shade: #152E2A;
+  --hero-text-shadow: 0 2px 12px rgba(7, 19, 16, .55);
+  --brand-deep: #101E1A;
+  --ground: #FCFAF4;
+  --surface: #FFFEFA;
+  --card: rgba(255, 255, 255, .78);
+  --field: #FFFEFA;
   --field-strong: #FFFFFF;
-  --sunk: #F2EBE0;
-  --panel-deep: #F2EBE0;
-  --ink: #2B2219;
-  --ink-soft: #776957;
-  --line: color-mix(in srgb, #473A2C 16%, #FAF7F1);
-  /* the one highlight: button hover, FAQ markers, progress bars */
-  --tan: #CBB79A;
-  --on-tan: #2B2219;
-  --ginger: #6E5436;
-  --ginger-text: #6E5436;
-  --berry: #9C4A2F;
-  --accent: #6E5436;
-  --shadow-cookie: rgba(43, 34, 25, .2);
+  --sunk: #DDE4D4;
+  --panel-deep: #D4DEC9;
+  --ink: #21362D;
+  --ink-soft: #455947;
+  --line: color-mix(in srgb, var(--dark) 26%, var(--ground));
+  --tan: #BDCFA9;
+  --on-tan: #21362D;
+  --ginger: #3F5F49;
+  --ginger-text: #3F5F49;
+  --berry: #883D48;
+  --accent: #3F5F49;
+  --nav-hover: #5D7C47;
+  --shadow-cookie: rgba(41, 61, 50, .16);
 
-  /* backing colours for gallery tiles, picked per photo in the data */
-  --tile-1: #F2EBE0;
-  --tile-2: #EDE6DA;
-  --tile-3: #FAF7F1;
-  --tile-4: color-mix(in srgb, #EDE6DA 84%, #473A2C);
+  --tile-1: var(--sand);
+  --tile-2: var(--sage);
+  --tile-3: var(--ground);
+  --tile-4: color-mix(in srgb, var(--sage) 84%, var(--dark));
 
   --radius: 4px;
   --radius-lg: 6px;
@@ -63,14 +52,10 @@
   --display: "DM Serif Display", Georgia, serif;
   /* DM Serif ships one weight; the heft is in the face itself */
   --display-weight: 400;
-  /* the hero headline only: a monoline joined script, the way royal icing
-     comes out of a piping bag — one even thickness, round ends, big loops */
-  --script: "Dancing Script", "Brush Script MT", cursive;
+  --voucher-script: "Pinyon Script", "Bickham Script Pro", cursive;
   --body: "Jost", system-ui, -apple-system, "Segoe UI", sans-serif;
   /* small letterspaced caps carry the labels */
   --caps: .12em;
   --wrap: 1160px;
 }
-/* the palette is one family, so the season shows in the words, not the hue */
-:root[data-season="wielkanoc"] { --accent: #6E5436; }
-:root[data-season="rok"] { --accent: #6E5436; }
+/* All seasons share the light palette; content and photos carry the season. */

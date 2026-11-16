@@ -30,7 +30,7 @@ p { margin: 0; }
 :root[data-season="wielkanoc"] [data-for-season]:not([data-for-season~="wielkanoc"]),
 :root[data-season="rok"] [data-for-season]:not([data-for-season~="rok"]) { display: none !important; }
 
-/* Layout: every section is a paper panel laid on the beige sheet */
+/* Layout: ivory and sage panels on a light sheet */
 .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: clamp(34px, 4vw, 58px); }
 main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); padding-bottom: var(--panel-gap); }
 .section, .page-head, .hero {
@@ -45,7 +45,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .section { padding-block: clamp(52px, 6.4vw, 88px); }
 .section--sunk { background: var(--sunk); }
 .section--warm { background: var(--panel-deep); }
-/* panels that carry light type: brown for photo sections, deeper brown for the hero */
+.section--sage { background: var(--sage); }
+/* Strong green is reserved for compact contrasting details. */
 .section--dark { background: var(--dark); }
 .panel--deep { background: var(--umber); }
 .section--dark, .panel--deep { color: var(--on-dark); }
@@ -76,6 +77,34 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .page-head .wrap { display: grid; gap: 14px; }
 .page-head h1 { font-size: clamp(2rem, 4.8vw, 3.2rem); max-width: 18ch; }
 
+/* Subpage openings share the supplied evergreen-and-fairy-lights photograph. */
+.evergreen-head {
+  --head-photo: url("/zdjecia/igliwie-lampki-hq.webp");
+  background-color: var(--hero-shade);
+  background-image:
+    linear-gradient(var(--head-shade-angle, 90deg),
+      color-mix(in srgb, var(--brand-deep) 52%, transparent) 0%,
+      color-mix(in srgb, var(--brand-deep) 34%, transparent) 50%,
+      color-mix(in srgb, var(--brand-deep) var(--head-shade-end, 8%), transparent) 100%),
+    var(--head-photo);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.evergreen-head--right { --head-shade-angle: 270deg; }
+@media (max-width: 760px) {
+  .evergreen-head {
+    --head-shade-end: 44%;
+    --head-photo: url("/zdjecia/igliwie-lampki-mobile.webp");
+  }
+}
+.evergreen-head .eyebrow, .evergreen-head .lead { color: var(--on-dark); }
+.evergreen-head h1, .evergreen-head .lead { text-shadow: var(--hero-text-shadow); }
+.evergreen-head .chip { background: color-mix(in srgb, var(--on-dark) 16%, transparent); color: var(--on-dark); }
+.evergreen-head .chip:hover { background: color-mix(in srgb, var(--on-dark) 30%, transparent); }
+.evergreen-head :focus-visible { outline-color: var(--on-dark); }
+.page-head.evergreen-head .draft { background: var(--surface); }
+
 /* Buttons */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
@@ -84,15 +113,15 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
   border: 0; cursor: pointer; text-decoration: none;
   transition: background-color .18s ease, color .18s ease;
 }
-/* brown at rest, tan on hover */
+/* leaf green at rest, pale sage on hover */
 .btn-primary { background: var(--dark); color: var(--on-dark); }
 .btn-primary:hover { background: var(--tan); color: var(--on-tan); }
-/* the deeper brown: the voucher and the two "all the dates" buttons */
+/* deeper green for the voucher and "all the dates" buttons */
 .btn-deep { background: var(--umber); color: var(--on-dark); }
 .btn-deep:hover { background: var(--tan); color: var(--on-tan); }
-/* on a dark block the brown would vanish, so there the button inverts */
-.section--dark .btn-primary, .panel--deep .btn-primary, .top .btn-primary, .term .btn-primary { background: var(--on-dark); color: var(--ink); }
-.section--dark .btn-primary:hover, .panel--deep .btn-primary:hover, .top .btn-primary:hover, .term .btn-primary:hover { background: var(--tan); color: var(--on-tan); }
+/* primary buttons invert on contrasting green panels */
+.section--dark .btn-primary, .panel--deep .btn-primary, .term .btn-primary { background: var(--on-dark); color: var(--ink); }
+.section--dark .btn-primary:hover, .panel--deep .btn-primary:hover, .term .btn-primary:hover { background: var(--tan); color: var(--on-tan); }
 .btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .btn-small { padding: 12px 18px; font-size: 0.68rem; }
@@ -125,7 +154,7 @@ select.input {
 input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
 .input::placeholder { color: color-mix(in srgb, var(--ink) 45%, transparent); }
 .input:hover { background: var(--field-strong); }
-.input:focus { outline: 2px solid var(--tan); outline-offset: 0; background: var(--field-strong); }
+.input:focus { outline: 2px solid var(--accent); outline-offset: 0; background: var(--field-strong); }
 .input[aria-invalid="true"] { outline: 2px solid var(--berry); }
 .form-grid { display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -142,7 +171,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 
 .radio:has(input:checked) { background: color-mix(in srgb, var(--tan) 22%, var(--field)); }
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }
-.check input, .radio input { accent-color: var(--tan); width: 18px; height: 18px; margin: 2px 0 0; flex: none; }
+.check input, .radio input { accent-color: var(--accent); width: 18px; height: 18px; margin: 2px 0 0; flex: none; }
 fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
 legend { font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-transform: uppercase; margin-bottom: 8px; padding: 0; }
 .form-error { color: var(--berry); font-size: .9rem; }
@@ -179,7 +208,7 @@ legend { font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-
 }
 .sel[aria-expanded="true"]::after { transform: rotate(180deg); }
 .sel:hover { background: var(--field-strong); }
-.sel:focus-visible { outline: 2px solid var(--tan); outline-offset: 0; }
+.sel:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
 .sel-list {
   position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + 6px);
   margin: 0; padding: 6px; list-style: none;

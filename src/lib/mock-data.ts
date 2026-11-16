@@ -5,7 +5,7 @@
 import type { FaqItem, GalleryItem, Term, Testimonial, Venue } from "./types";
 
 export const venues: Venue[] = [
-  { id: "pracownia", name: "Pracownia Miki", city: "Wrocław" },
+  { id: "pracownia", name: "Pracownia Miki", city: "Wrocław", address: "ul. Długa 55J", coordinates: { lat: 51.123959, lng: 17.013382 } },
 ];
 
 const adult = { type: "dorosli", price: 450, priceUnit: "osoba", capacity: 10, cookies: "6–8", venueId: "pracownia", season: "swieta" } as const;
@@ -26,16 +26,16 @@ export const terms: Term[] = [
 
 // PRZYKŁADOWE opinie — Dominika prześle prawdziwe.
 export const testimonials: Testimonial[] = [
-  { author: "Kasia", context: "warsztaty świąteczne", text: "Byłam pewna, że nic mi nie wyjdzie, a wyszłam z pudełkiem pierników, których szkoda było zjeść. Dominika tłumaczy wszystko spokojnie i z humorem." },
-  { author: "Marek", context: "warsztaty firmowe", text: "Najlepsza przedświąteczna integracja, jaką mieliśmy. Cały zespół wciągnął się tak, że przedłużyliśmy o godzinę." },
-  { author: "Agnieszka", context: "warsztaty dla dzieci", text: "Byłyśmy z córką na warsztatach dla dzieci. Ona do dziś opowiada o swoim pierniczkowym reniferze." },
+  { author: "Kasia", context: "warsztaty świąteczne", text: "Byłam pewna, że nic mi nie wyjdzie, a wyszłam z pudełkiem pierników, których szkoda było zjeść. Dominika tłumaczy wszystko spokojnie i z humorem.", photo: "opinie-piernikowe-kamieniczki", photoAlt: "Kolorowe piernikowe kamieniczki, bombki, misie i Mikołaje udekorowane po warsztatach" },
+  { author: "Marek", context: "warsztaty firmowe", text: "Najlepsza przedświąteczna integracja, jaką mieliśmy. Cały zespół wciągnął się tak, że przedłużyliśmy o godzinę.", photo: "opinie-pierniki-na-talerzu", photoAlt: "Piernikowe kamieniczki w żółtym lukrze, śnieżynka, renifer i miś na szklanym talerzu" },
+  { author: "Agnieszka", context: "warsztaty dla dzieci", text: "Byłyśmy z córką na warsztatach dla dzieci. Ona do dziś opowiada o swoim pierniczkowym reniferze.", photo: "opinie-sniezynka-i-konik", photoAlt: "Piernikowa śnieżynka, miś, konik na biegunach i kamieniczka na serwetce w żółtą kratkę" },
 ];
 
 export const faq: FaqItem[] = [
   { topic: "warsztaty", q: "Czy muszę mieć jakieś doświadczenie?", a: "Nie. Warsztaty prowadzę od podstaw, a większość uczestników pierwszy raz trzyma w ręku rękaw cukierniczy." },
   { topic: "warsztaty", q: "Ile pierników zrobię i czy zabieram je do domu?", a: "W czasie warsztatów dekorujesz 6–8 pierników i zabierasz do domu wszystkie, w pudełku. Możesz też wziąć ze sobą lukier, który Ci zostanie." },
   { topic: "warsztaty", q: "Ile trwają warsztaty?", a: "Warsztaty dla dorosłych i wieczorne trwają od 3 do 4 godzin. Warsztaty dla dzieci trwają 2 godziny." },
-  { topic: "warsztaty", q: "Co jest w cenie?", a: "Upieczone przeze mnie pierniki, lukry, rękawy cukiernicze, fartuch, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo lampka grzanego wina." },
+  { topic: "warsztaty", q: "Co jest w cenie?", a: "Upieczone przeze mnie pierniki, lukry, rękawy cukiernicze, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo lampka grzanego wina." },
   { topic: "warsztaty", q: "Od ilu lat dzieci mogą wziąć udział?", a: "Warsztaty dla dzieci są dla grupy 6–12 lat i dziecko przychodzi z rodzicem. Starsze dzieci radzą sobie same i mogą przyjść bez opiekuna." },
   { topic: "warsztaty", q: "Ile osób jest w grupie?", a: "Od 4 do 10 osób. Przy mniejszej liczbie chętnych termin może zostać odwołany, a wtedy przenoszę zapis na inny termin albo zwracam całą wpłatę." },
   { topic: "warsztaty", q: "Czy na warsztatach wieczornych jest alkohol?", a: "Tak, lampka grzanego wina jest w cenie, więc te warsztaty są dla osób pełnoletnich. Kto nie pije, dostaje to samo w wersji bezalkoholowej." },
@@ -67,4 +67,14 @@ export const gallery: GalleryItem[] = [
   { photo: "wielkanoc-kurczaczki", shape: "egg", caption: "Kurczaczki na zamówienie", category: "wielkanoc", tile: 4, alt: "Dwanaście piernikowych kurczaczków w żółtych i zielonych odcieniach lukru" },
   { photo: "wielkanoc", shape: "egg", caption: "Wielkanocny zestaw", category: "wielkanoc", tile: 1, alt: "Piernikowe zajączki, kurczaczki i kury w pastelowych kolorach" },
   { photo: "wielkanoc-zajaczek", shape: "egg", caption: "Zajączek z bliska", category: "wielkanoc", tile: 2, alt: "Piernikowy zajączek w beżowym lukrze z różowymi uszami i niebieską muszką" },
+  { photo: "halloween-duchy-w-kapeluszach", shape: "pumpkin", caption: "Duszki w kapeluszach", category: "halloween", tile: 1, position: "75% 50%", alt: "Białe piernikowe duszki w kapeluszach czarownic, z kotkami i dyniowymi koszyczkami, obok pomarańczowych dyń" },
+  { photo: "halloween-duszek-ze-szkieletem", shape: "pumpkin", caption: "Duszek w towarzystwie szkieletu", category: "halloween", tile: 2, alt: "Piernikowy duszek w okularach i kapeluszu, ustawiony przy dekoracyjnym szkielecie wśród dyń i świec" },
+  { photo: "halloween-nietoperze-na-dyni", shape: "pumpkin", caption: "Nietoperze na białej dyni", category: "halloween", tile: 3, alt: "Trzy piernikowe nietoperze w czarnym lukrze, ułożone na białej dyni obok pomarańczowych dyń" },
+  { photo: "halloween-nietoperze-i-dynie", shape: "pumpkin", caption: "Nietoperze wśród dyń", category: "halloween", tile: 4, alt: "Czarne piernikowe nietoperze z dużymi oczami w kompozycji z białymi i pomarańczowymi dyniami" },
+  { photo: "halloween-zestaw-z-dynia", shape: "pumpkin", caption: "Dyniowy zestaw Halloween", category: "halloween", tile: 1, alt: "Piernikowa pomarańczowa dynia, nietoperz i dwa białe duszki w kapeluszach na czarnej koronce" },
+  { photo: "halloween-duchy-dynia-nietoperz", shape: "pumpkin", caption: "Duszki, dynia i nietoperz", category: "halloween", tile: 2, alt: "Zestaw ręcznie dekorowanych pierników na Halloween: uśmiechnięta dynia, czarny nietoperz i dwa duszki" },
+  { photo: "halloween-duszek-z-koszyczkiem", shape: "pumpkin", caption: "Duszek z dyniowym koszyczkiem", category: "halloween", tile: 3, alt: "Biały piernikowy duszek w czarnym kapeluszu z pomarańczowymi kwiatkami i dyniowym koszyczkiem" },
+  { photo: "halloween-duszek-w-okularach", shape: "pumpkin", caption: "Duszek w okularach", category: "halloween", tile: 4, alt: "Piernikowy duszek w okrągłych okularach i kapeluszu czarownicy, z małą dynią w dłoniach" },
+  { photo: "halloween-dynia", shape: "pumpkin", caption: "Uśmiechnięta dynia", category: "halloween", tile: 1, alt: "Piernikowa dynia w pomarańczowym lukrze, z uśmiechniętą buzią i zielonym ogonkiem" },
+  { photo: "halloween-duchy-i-nietoperze", shape: "pumpkin", caption: "Duszki i nietoperze", category: "halloween", tile: 2, alt: "Dwa piernikowe duszki w kapeluszach i trzy czarne nietoperze ułożone na czarnej koronce" },
 ];

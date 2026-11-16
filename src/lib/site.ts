@@ -9,7 +9,6 @@ export const site = {
   phoneHref: "tel:+48880122269",
   instagram: "https://instagram.com/mikipierniki",
   instagramHandle: "@mikipierniki",
-  /** The street address is deliberately not published; only the city is */
   city: "Wrocław",
   /** Gift card price in PLN */
   voucherPrice: 500,

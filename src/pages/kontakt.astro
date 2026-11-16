@@ -7,6 +7,10 @@ import { site } from "@/lib/site";
 
 const venues = await getVenues();
 const home = venues[0];
+const homeAddress = home?.address ? `${home.address}, ${home.city}` : undefined;
+// Pin the municipal address point: Google resolves the text "55J" to number 55.
+const mapDestination = home?.coordinates ? `${home.coordinates.lat},${home.coordinates.lng}` : homeAddress;
+const mapQuery = mapDestination ? encodeURIComponent(mapDestination) : "";
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
@@ -22,6 +26,7 @@ const jsonLd = {
   ...(home && {
     address: {
       "@type": "PostalAddress",
+      ...(home.address && { streetAddress: home.address }),
       addressLocality: home.city,
       addressCountry: "PL",
     },
@@ -54,7 +59,7 @@ const jsonLd = {
           {home && (
             <div>
               <dt>Miejsce warsztatów</dt>
-              <dd>{home.city}</dd>
+              <dd>{home.address && <>{home.address}<br /></>}{home.city}</dd>
             </div>
           )}
           <div>
@@ -87,13 +92,26 @@ const jsonLd = {
     </div>
   </section>
 
-  <section class="section section--sunk" aria-labelledby="venues-title">
-    <div class="wrap">
-      <div class="section-head">
+  <section class="section section--sunk" id="dojazd" aria-labelledby="venues-title">
+    <div class="wrap venue-layout">
+      <div class="venue-copy">
         <span class="eyebrow">Gdzie się spotykamy</span>
         <h2 id="venues-title">Warsztaty we Wrocławiu</h2>
-        <p class="lead">Wszystkie warsztaty otwarte prowadzę we Wrocławiu. Dokładny adres podaję w potwierdzeniu zapisu, razem z godziną i wskazówkami dojazdu. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
+        <p class="lead">Wszystkie warsztaty otwarte prowadzę w mojej pracowni we Wrocławiu. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
       </div>
+      {homeAddress && (
+        <div class="venue-map">
+          <iframe
+            title={`Mapa dojazdu do Miki Pierniki — ${homeAddress}`}
+            src={`https://maps.google.com/maps?q=${mapQuery}&z=17&output=embed&hl=pl`}
+            width="380"
+            height="300"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+            allowfullscreen
+          ></iframe>
+        </div>
+      )}
     </div>
   </section>
 </Base>
@@ -114,4 +132,14 @@ const jsonLd = {
   .form-box { display: grid; gap: 20px; min-width: 0; align-content: start; }
   .form-title { font-size: clamp(1.5rem, 3vw, 1.9rem); }
 
+  #dojazd { scroll-margin-top: 88px; }
+  .venue-layout { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; }
+  .venue-copy { display: grid; gap: 20px; min-width: 0; }
+  .venue-map { min-width: 0; width: 100%; max-width: 380px; height: 280px; justify-self: center; overflow: hidden; border-radius: var(--radius-panel); border: 1px solid var(--line); background: var(--surface); }
+  .venue-map iframe { display: block; width: 100%; height: 100%; border: 0; }
+  @media (min-width: 900px) {
+    .venue-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
+    .venue-map { height: 300px; justify-self: end; }
+  }
+  @media (max-width: 480px) { .venue-map { height: 240px; } }
 </style>

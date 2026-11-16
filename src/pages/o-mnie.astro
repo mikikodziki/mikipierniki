@@ -1,6 +1,5 @@
 ---
 import Base from "@/layouts/Base.astro";
-import Cookie from "@/components/Cookie.astro";
 import Photo from "@/components/Photo.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Piping from "@/components/Piping.astro";
@@ -8,22 +7,18 @@ import { site } from "@/lib/site";
 
 const values = [
   {
-    shape: "man" as const,
     title: "Małe grupy",
     text: "Przy stole siada od 4 do 10 osób. Dzięki temu mam czas podejść do każdego, poprawić chwyt rękawa i pokazać ruch jeszcze raz.",
   },
   {
-    shape: "heart" as const,
     title: "Bez pośpiechu",
     text: "Lukier nie lubi pośpiechu. Nikt u mnie nie musi skończyć pierwszy, a krzywa kreska to po prostu kolejna okazja, żeby spróbować jeszcze raz.",
   },
   {
-    shape: "star" as const,
     title: "Czternaście lat praktyki",
     text: "Wszystkiego nauczyłam się sama, piernik po pierniku. Dlatego wiem, gdzie początkujący się gubi, i umiem to pokazać prostymi słowami.",
   },
   {
-    shape: "tree" as const,
     title: "Wszystko robię sama",
     text: "Od ciasta i wykrawania po ostatnią kropkę lukru. Przy zamówieniach robię nawet foremki, żeby piernik miał dokładnie taki kształt, jaki ma mieć.",
   },
@@ -33,11 +28,12 @@ const values = [
   title="O mnie"
   description="Cześć, jestem Dominika. Od czternastu lat piekę i dekoruję pierniki, a we wrocławskiej pracowni uczę, że lukier nie gryzie."
 >
-  <section class="section intro">
+  <section class="section intro evergreen-head evergreen-head--right panel--deep">
     <div class="wrap about">
       <div class="portrait">
         <Photo
-          name="portret"
+          name="portret-dominika"
+          widths={[600, 1000, 1254]}
           alt="Dominika, autorka Miki Pierniki"
           ratio="4 / 5"
           sizes="(max-width: 760px) 100vw, 35vw"
@@ -69,13 +65,12 @@ const values = [
     </div>
   </section>
 
-  <section class="section section--sunk">
+  <section class="section section--dark values-section" id="tak-pracuje" aria-labelledby="values-title">
     <div class="wrap">
-      <SectionHead eyebrow="Co jest dla mnie ważne" title="Tak pracuję" lead="Kilka zasad, których trzymam się przy każdym warsztacie i każdym zamówieniu." />
+      <SectionHead id="values-title" eyebrow="Co jest dla mnie ważne" title="Tak pracuję" lead="Kilka zasad, których trzymam się przy każdym warsztacie i każdym zamówieniu." />
       <ul class="values">
         {values.map((v) => (
           <li>
-            <Cookie shape={v.shape} class="value-cookie" />
             <h3>{v.title}</h3>
             <p>{v.text}</p>
           </li>
@@ -84,14 +79,26 @@ const values = [
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <SectionHead eyebrow="Czym się wyróżniam" title="Co znajdziesz u mnie, a niekoniecznie gdzie indziej" />
-      <div class="prose">
+  <section class="section" id="czym-sie-wyrozniam" aria-labelledby="difference-title">
+    <div class="wrap difference">
+      <div class="difference-copy">
+        <SectionHead id="difference-title" eyebrow="Czym się wyróżniam" title="Co znajdziesz u mnie, a niekoniecznie gdzie indziej" />
+        <div class="prose">
         <p>Prowadzę warsztaty sama i sama piekę wszystko, co na nich dekorujemy. Nie ma tu gotowych mieszanek ani ustawionej taśmy: każdy piernik, który dostajesz do ręki, przeszedł wcześniej przez moje.</p>
         <p>Nie wypuszczam nikogo z jednym pierniczkiem na pamiątkę. Dekorujesz 6–8 pierników, zabierasz wszystkie do domu w pudełku, a lukier, który Ci zostanie, też możesz wziąć ze sobą i poćwiczyć u siebie.</p>
         <p>A jeśli zamawiasz pierniki, kształt nie musi być ze sklepowej półki. Robię własne foremki, więc piernik może mieć kształt Twojego logo, budynku firmy albo ulubionej maskotki.</p>
+        </div>
       </div>
+      <figure class="difference-photo">
+        <img
+          src="/zdjecia/dominika-stoisko-swiateczne.webp"
+          alt="Dominika przy świątecznym stoisku z ręcznie dekorowanymi piernikami"
+          width="615"
+          height="643"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
     </div>
   </section>
 
@@ -101,7 +108,7 @@ const values = [
     <div class="wrap cta">
       <div class="cta-copy">
         <h2>Usiądź ze mną przy stole</h2>
-        <p class="lead">Nie musisz umieć rysować ani mieć wprawy. Wystarczy, że przyjdziesz. Resztę, łącznie z piernikami, lukrem i fartuchem, biorę na siebie.</p>
+        <p class="lead">Nie musisz umieć rysować ani mieć wprawy. Wystarczy, że przyjdziesz. Resztę, łącznie z piernikami i lukrem, biorę na siebie.</p>
       </div>
       <div class="cta-actions">
         <a class="btn btn-primary" href="/warsztaty">Zobacz terminy warsztatów</a>
@@ -115,23 +122,53 @@ const values = [
   .about { display: grid; gap: clamp(28px, 5vw, 64px); align-items: center; }
   @media (min-width: 760px) { .about { grid-template-columns: 0.8fr 1.2fr; } }
 
-  .portrait { aspect-ratio: 4 / 5; width: 100%; max-width: 340px; border-radius: 200px 200px 24px 24px; overflow: hidden; background: var(--sunk); }
+  .portrait {
+    aspect-ratio: 4 / 5; width: 100%; max-width: 340px;
+    border-radius: var(--radius-panel);
+    overflow: hidden;
+  }
   @media (min-width: 760px) { .portrait { max-width: none; } }
 
   .about-copy { display: grid; gap: 18px; }
   .about-copy h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); }
   .about-copy p { max-width: 60ch; }
-  .signature { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.6rem; color: var(--ginger-text); }
+  .signature { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.6rem; color: var(--on-dark); }
 
   .story { display: grid; gap: 8px; }
   @media (min-width: 900px) { .story { grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: start; } }
 
+  .values-section { position: relative; isolation: isolate; }
+  .values-section::before {
+    content: "";
+    position: absolute; inset: 0;
+    z-index: -1; pointer-events: none;
+    background: url("/zdjecia/szron-voucher.webp") right center / auto 100% no-repeat;
+    opacity: .25;
+    -webkit-mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+  }
   .values { list-style: none; margin: 0; padding: 0; display: grid; gap: 32px; }
   @media (min-width: 640px) { .values { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (min-width: 1000px) { .values { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .values li { display: grid; gap: 10px; align-content: start; }
-  .values :global(.value-cookie) { width: 56px; height: 56px; }
-  .values p { color: var(--ink-soft); }
+  .values li {
+    display: grid; gap: 12px; align-content: start;
+    padding-top: 20px;
+    border-top: 1px solid color-mix(in srgb, var(--on-dark) 32%, transparent);
+  }
+  .values p { color: var(--on-dark-soft); }
+
+  .difference { display: grid; gap: clamp(28px, 4vw, 56px); align-items: center; }
+  .difference-copy { min-width: 0; }
+  .difference-photo {
+    margin: 0; aspect-ratio: 1;
+    border-radius: var(--radius-panel); overflow: hidden;
+    background: var(--sunk);
+  }
+  .difference-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%; }
+  @media (min-width: 861px) {
+    .difference { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+    .difference-photo { aspect-ratio: 4 / 5; }
+  }
 
   .cta { display: grid; gap: 24px; align-items: center; }
   .cta-copy { display: grid; gap: 12px; }

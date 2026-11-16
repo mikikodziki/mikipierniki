@@ -55,10 +55,17 @@ Kształty i detale:
 
 ## Kontakt i miejsce
 - Pracownia: Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
-- Adresu pracowni NIE publikujemy nigdzie na stronie — ani w treści, ani w danych
-  strukturalnych. Podajemy wyłącznie miasto; dokładny adres dostaje uczestnik
-  w potwierdzeniu zapisu. Z tego samego powodu zniknęła druga lokalizacja
-  („Pracownia 2”) i sekcja z mapami na stronie Kontakt.
+- Adres pracowni: ul. Długa 55J, Wrocław. Na życzenie Dominiki adres jest publiczny:
+  sekcja „Gdzie się spotykamy” na stronie Kontakt zawiera mapę Google z pinezką
+  przy tym adresie. Mapa ma maksymalnie 380 px szerokości, bez osobnego bloku
+  adresu i przycisku do trasy pod tekstem sekcji. Adres jest przy danych kontaktowych
+  i w danych strukturalnych strony Kontakt. Poprzednia zasada ukrywania adresu
+  już nie obowiązuje. Drugiej lokalizacji („Pracownia 2”) nie ma.
+- Pinezka korzysta ze współrzędnych punktu adresowego 55J:
+  `51.123959, 17.013382`. Źródło: [SIP Wrocławia — Długa 55J](https://geoportal.wroclaw.pl/poi/pt/118745/ul.D%C5%82uga/55J).
+  Wyszukiwanie samej nazwy adresu w Google wskazuje numer 55, dlatego nie należy
+  zastępować współrzędnych zapytaniem tekstowym. Punkt z miejskiego układu
+  EPSG:2177 przeliczono na WGS84 (EPSG:4326).
 - Telefon: 880 122 269. E-mail: dominika.saczynska@gmail.com.
 - Social media: tylko Instagram @mikipierniki. Brak Facebooka i TikToka.
 - Domeny NIE publikujemy nigdzie w treści (adres strony jeszcze nie jest ustalony).
@@ -71,8 +78,12 @@ Kształty i detale:
 - Grupa: minimum 4 osoby, maksimum 10.
 - Każdy dekoruje 6–8 pierników i zabiera wszystkie do domu.
 - W cenie: gotowe pierniki, lukry (resztę lukru można zabrać do domu), rękawy cukiernicze,
-  fartuchy, napoje, pudełko na pierniki.
+  napoje, pudełko na pierniki.
 - Terminy w `src/lib/mock-data.ts` są nadal PRZYKŁADOWE — czekamy na prawdziwy grafik.
+- Przebieg warsztatu w ośmiu krokach: powitanie; konsystencje lukrów; trzymanie
+  rękawa i prowadzenie linii; kontury i kolejność lukrowania; wypełnianie lukrem
+  rzadkim; mokre na mokrym i detale; pakowanie; pytania i barwienie lukrów.
+  Tempo dopasowane do grupy, bez osobnych czasów dla poszczególnych etapów.
 
 ## Warsztaty firmowe i zamknięte
 - Wycena indywidualna, zależna od liczby osób i czasu.
@@ -111,14 +122,36 @@ Pierniki zawierają gluten, jajka, soję i laktozę, mogą zawierać śladowe il
 Dominika zawsze pyta uczestników o zgodę przed publikacją.
 
 ## Zdjęcia
-Dominika przekazała 10 zdjęć pierników (świąteczne i wielkanocne), są w `public/zdjecia`.
-Portret Dominiki jest (`portret-*.webp`) i stoi na „O mnie” oraz w sekcji o niej
-na stronie głównej. Nadal brak zdjęć z warsztatów, więc galeria nie ma kategorii
+Galeria zawiera 26 zdjęć pierników: świątecznych, wielkanocnych, na okazje oraz Halloween.
+Pliki są w `public/zdjecia`, w wersjach WebP o szerokościach 600, 1000 i 1600 px.
+Do kategorii Halloween należy 10 zdjęć duszków, nietoperzy i dyń, przekazanych w HEIC.
+Aktualny portret Dominiki (`portret-dominika-*.webp`) stoi na „O mnie” oraz w sekcji
+o niej na stronie głównej. Źródło: `Portret kobiety w granatowej marynarce.png`
+(1254 × 1254 px), warianty WebP 600, 1000 i 1254 px, bez powiększania oryginału.
+Nadal brak zdjęć z przebiegu warsztatów, więc galeria nie ma kategorii
 „Z warsztatów”.
+
+W sekcji „Czym się wyróżniam” na „O mnie” jest zdjęcie Dominiki przy stoisku
+świątecznym (`dominika-stoisko-swiateczne.webp`, 615 × 643 px). Źródło:
+przekazany plik `2904243_b.jpg`. Zastępuje w tej sekcji zdjęcie kamieniczek.
+
+Cztery zdjęcia gotowych prac uczestników (`IMG_3813.HEIC`, `IMG_3824.HEIC`,
+`IMG_3849.heic`, `IMG_3924.HEIC`) są w kafelkach sekcji opinii na stronie głównej,
+jako `opinie-*.webp`. Nie należą do galerii. Trzy towarzyszą istniejącym opiniom,
+a czwarte pokazuje efekty warsztatów bez przypisywania dodatkowej opinii uczestnikowi.
+
+Trzy szerokie zdjęcia `hero-swieta-mis-choinka`, `hero-swieta-mikolaj-domek`
+i `hero-swieta-igliwie` są przeznaczone wyłącznie do świątecznego hero.
+W rotacji towarzyszy im dotychczasowe `swieta-stol`. Nie dodawaj nowych zdjęć do galerii.
+
+Tło hero podstron to `igliwie-lampki-hq.webp` (2200 × 3300 px), z lżejszym
+`igliwie-lampki-mobile.webp` (900 × 1350 px) na telefony. Źródłem jest przekazany
+plik `artur-stanulevich-drX8CsOCaks-unsplash.jpg` (4160 × 6240 px).
+Zdjęcie jest używane wyłącznie jako tło nagłówków, bez dodawania do galerii.
 
 ## Czeka na dane
 - Prawdziwe terminy, liczba wolnych miejsc.
 - Prawdziwe opinie uczestników (obecne są przykładowe).
-- Zdjęcia z warsztatów.
+- Zdjęcia z przebiegu warsztatów (zdjęcia gotowych prac są już w sekcji opinii).
 - Dane działalności do regulaminu i polityki prywatności (nazwa, NIP, adres, numer konta).
 - Zasady rezygnacji: na stronie jest zwrot do 7 dni przed terminem — DO POTWIERDZENIA.

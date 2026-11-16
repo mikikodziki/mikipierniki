@@ -14,20 +14,21 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
   { value: "all", label: "Wszystkie" },
   { value: "swieta", label: "Święta" },
   { value: "wielkanoc", label: "Wielkanoc" },
+  { value: "halloween", label: "Halloween" },
   { value: "okazje", label: "Okazje" },
 ];
 ---
 <Base
   title="Galeria pierników"
-  description="Pierniki z warsztatów i na zamówienie: święta, Wielkanoc, walentynki, okazje i upominki firmowe. Zobacz, co powstaje w pracowni Miki Pierniki we Wrocławiu."
+  description="Pierniki z warsztatów i na zamówienie: święta, Wielkanoc, Halloween, okazje i upominki firmowe. Zobacz, co powstaje w pracowni Miki Pierniki we Wrocławiu."
 >
   <PageHead
     eyebrow="Galeria"
     title="Prosto z mojej pracowni"
-    lead="Pierniki, które wychodzą z mojej pracowni: świąteczne, wielkanocne i te robione pod konkretny pomysł. Każdy jest dekorowany ręcznie, więc każdy jest trochę inny."
+    lead="Pierniki, które wychodzą z mojej pracowni: świąteczne, wielkanocne, na Halloween i te robione pod konkretny pomysł. Każdy jest dekorowany ręcznie, więc każdy jest trochę inny."
   />
 
-  <section class="section section--dark gal-section" aria-labelledby="gal-title">
+  <section class="section section--sage gal-section" aria-labelledby="gal-title">
     <div class="wrap">
       <h2 id="gal-title" class="visually-hidden">Zdjęcia pierników</h2>
       <div class="chips" role="group" aria-label="Filtruj galerię">
@@ -42,7 +43,24 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
           <li data-category={item.category}>
             <figure class="tile" style={`--tile: var(--tile-${item.tile})`}>
               {item.photo ? (
-                <Photo name={item.photo} alt={item.alt} sizes="(max-width: 700px) 50vw, 25vw" />
+                <button
+                  class="photo-open"
+                  type="button"
+                  data-gallery-photo
+                  data-full={`/zdjecia/${item.photo}-1600.webp`}
+                  data-caption={item.caption}
+                  data-alt={item.alt}
+                  aria-label={`Powiększ zdjęcie: ${item.caption}`}
+                  aria-haspopup="dialog"
+                  aria-controls="gallery-lightbox"
+                >
+                  <Photo name={item.photo} alt={item.alt} position={item.position} sizes="(max-width: 700px) 50vw, 25vw" />
+                  <span class="zoom-hint" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7" />
+                    </svg>
+                  </span>
+                </button>
               ) : (
                 <div class="tile-ph" role="img" aria-label={item.alt}>
                   <Cookie shape={item.shape} />
@@ -57,6 +75,24 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
       <p class="consent">Zdjęcia z warsztatów publikuję na Instagramie i tylko za zgodą uczestników — zawsze pytam o nią na miejscu.</p>
     </div>
   </section>
+
+  <dialog class="lightbox" id="gallery-lightbox" aria-labelledby="lightbox-caption">
+    <div class="lightbox-content">
+      <div class="lightbox-toolbar">
+        <p id="lightbox-counter" role="status" aria-live="polite"></p>
+        <button class="lightbox-button" id="lightbox-close" type="button" aria-label="Zamknij podgląd zdjęcia" autofocus>×</button>
+      </div>
+      <div class="lightbox-stage">
+        <button class="lightbox-button lightbox-prev" id="lightbox-prev" type="button" aria-label="Poprzednie zdjęcie">‹</button>
+        <figure class="lightbox-figure">
+          <img class="lightbox-image" id="lightbox-image" alt="" decoding="async" />
+          <figcaption id="lightbox-caption"></figcaption>
+        </figure>
+        <button class="lightbox-button lightbox-next" id="lightbox-next" type="button" aria-label="Następne zdjęcie">›</button>
+        <p class="lightbox-loading" id="lightbox-loading" role="status" hidden>Wczytywanie zdjęcia…</p>
+      </div>
+    </div>
+  </dialog>
 
   <Piping />
 
@@ -94,6 +130,83 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
       status.textContent = `Widoczne zdjęcia: ${shown}`;
     });
   });
+
+  const photoButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-gallery-photo]"));
+  const lightbox = document.getElementById("gallery-lightbox") as HTMLDialogElement;
+  const image = document.getElementById("lightbox-image") as HTMLImageElement;
+  const caption = document.getElementById("lightbox-caption")!;
+  const counter = document.getElementById("lightbox-counter")!;
+  const loading = document.getElementById("lightbox-loading")!;
+  const previous = document.getElementById("lightbox-prev") as HTMLButtonElement;
+  const next = document.getElementById("lightbox-next") as HTMLButtonElement;
+  const close = document.getElementById("lightbox-close") as HTMLButtonElement;
+  let activePhotos: HTMLButtonElement[] = [];
+  let activeIndex = 0;
+  let opener: HTMLButtonElement | undefined;
+  let previousOverflow = "";
+
+  function showPhoto() {
+    const photo = activePhotos[activeIndex];
+    loading.textContent = "Wczytywanie zdjęcia…";
+    loading.hidden = false;
+    image.style.opacity = "0";
+    image.alt = photo.dataset.alt ?? "";
+    image.src = photo.dataset.full!;
+    caption.textContent = photo.dataset.caption ?? "";
+    counter.textContent = `Zdjęcie ${activeIndex + 1} z ${activePhotos.length}`;
+    previous.hidden = next.hidden = activePhotos.length < 2;
+  }
+
+  function movePhoto(direction: number) {
+    if (!activePhotos.length) return;
+    activeIndex = (activeIndex + direction + activePhotos.length) % activePhotos.length;
+    showPhoto();
+  }
+
+  photoButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (lightbox.open) return;
+      activePhotos = photoButtons.filter((photo) => !photo.closest("li")?.hidden);
+      activeIndex = activePhotos.indexOf(button);
+      if (activeIndex < 0) return;
+      opener = button;
+      showPhoto();
+      previousOverflow = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = "hidden";
+      lightbox.showModal();
+      lightbox.scrollTop = 0;
+    });
+  });
+
+  image.addEventListener("load", () => {
+    loading.hidden = true;
+    image.style.opacity = "1";
+  });
+  image.addEventListener("error", () => {
+    if (!lightbox.open) return;
+    loading.textContent = "Nie udało się wczytać zdjęcia. Spróbuj wybrać następne.";
+    loading.hidden = false;
+  });
+  previous.addEventListener("click", () => movePhoto(-1));
+  next.addEventListener("click", () => movePhoto(1));
+  close.addEventListener("click", () => lightbox.close());
+  lightbox.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      event.preventDefault();
+      movePhoto(event.key === "ArrowLeft" ? -1 : 1);
+    }
+  });
+  lightbox.addEventListener("click", (event) => {
+    if (event.target !== lightbox) return;
+    const bounds = lightbox.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) lightbox.close();
+  });
+  lightbox.addEventListener("close", () => {
+    document.documentElement.style.overflow = previousOverflow;
+    image.removeAttribute("src");
+    opener?.focus({ preventScroll: true });
+    activePhotos = [];
+  });
 </script>
 
 <style>
@@ -105,12 +218,40 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
 
   .tile { margin: 0; aspect-ratio: 1; border-radius: 12px; position: relative; overflow: hidden; background: var(--tile); }
   .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-open { display: block; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; cursor: zoom-in; }
+  .photo-open:focus-visible { outline: 3px solid var(--on-dark); outline-offset: -5px; box-shadow: inset 0 0 0 7px var(--brand-deep); }
+  .zoom-hint { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius); background: var(--surface); color: var(--ink); opacity: 0; transition: opacity .16s ease; }
+  .photo-open:hover .zoom-hint, .photo-open:focus-visible .zoom-hint { opacity: 1; }
+  @media (hover: none) { .zoom-hint { opacity: 1; } }
   .tile-ph { width: 100%; height: 100%; display: grid; place-items: center; }
   .tile-ph :global(.cookie) { width: 52%; }
-  .tile figcaption { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font-size: .75rem; background: var(--surface); color: var(--ink-soft); padding: 3px 10px; border-radius: 999px; }
+  .tile figcaption { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font-size: .75rem; background: var(--surface); color: var(--ink-soft); padding: 3px 10px; border-radius: 999px; pointer-events: none; }
 
-  .empty { color: var(--on-dark-soft); margin-top: 8px; }
-  .consent { color: var(--on-dark-soft); font-size: .92rem; margin-top: 16px; max-width: 62ch; }
+  .lightbox { width: min(1200px, calc(100vw - 24px)); max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 16px; border: 0; border-radius: var(--radius-panel); background: var(--brand-deep); color: var(--on-dark); }
+  .lightbox::backdrop { background: color-mix(in srgb, var(--brand-deep) 88%, transparent); backdrop-filter: blur(5px); }
+  .lightbox :focus-visible { outline-color: var(--on-dark); }
+  .lightbox-content { display: grid; gap: 12px; }
+  .lightbox-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: .9rem; }
+  .lightbox-stage { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 12px; }
+  .lightbox-figure { grid-column: 2; grid-row: 1; margin: 0; min-width: 0; }
+  .lightbox-image { display: block; width: 100%; height: min(76dvh, calc(100dvh - 160px)); object-fit: contain; }
+  .lightbox-figure figcaption { margin-top: 12px; text-align: center; font-size: .95rem; }
+  .lightbox-button { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius); background: color-mix(in srgb, var(--on-dark) 14%, transparent); color: var(--on-dark); font: 400 2rem/1 var(--body); cursor: pointer; }
+  .lightbox-button:hover { background: color-mix(in srgb, var(--on-dark) 28%, transparent); }
+  .lightbox-prev { grid-column: 1; grid-row: 1; }
+  .lightbox-next { grid-column: 3; grid-row: 1; }
+  .lightbox-loading { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; }
+  @media (max-width: 600px) {
+    .lightbox { padding: 12px; }
+    .lightbox-stage { grid-template-columns: 1fr 1fr; }
+    .lightbox-figure { grid-column: 1 / -1; }
+    .lightbox-image { height: auto; max-height: min(70dvh, calc(100dvh - 220px)); }
+    .lightbox-prev { grid-column: 1; grid-row: 2; justify-self: end; }
+    .lightbox-next { grid-column: 2; grid-row: 2; justify-self: start; }
+  }
+
+  .empty { color: var(--ink-soft); margin-top: 8px; }
+  .consent { color: var(--ink-soft); font-size: .92rem; margin-top: 16px; max-width: 62ch; }
 
   .cta { display: grid; gap: 24px; align-items: center; }
   .cta-copy { display: grid; gap: 12px; }
