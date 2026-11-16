@@ -184,7 +184,7 @@ const occasions = [
         title="Ile kosztują pierniki na zamówienie"
         lead="Cena zależy od wielkości piernika i od tego, jak pracochłonne jest zdobienie. Dokładną wycenę przygotuję, gdy poznam projekt i liczbę sztuk."
       />
-      <div class="price-box card ornate">
+      <div class="price-box card">
         <ul class="prices">
           {priceList.map((p) => (
             <li>
@@ -332,12 +332,12 @@ const occasions = [
   }
   .shapes { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
   .shapes li { font-size: .85rem; padding: 5px 12px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
-  .persona-price { font-size: .95rem; max-width: 56ch; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--rose); }
+  .persona-price { font-size: .95rem; max-width: 56ch; padding: 14px 16px; border-radius: 12px; border: 1.5px solid var(--tan); }
   .persona-price b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.15rem; }
 
   /* Cennik */
   .price-grid { display: grid; gap: 8px; }
-  .price-box { display: grid; gap: 18px; align-self: start; min-width: 0; }
+  .price-box { display: grid; gap: 18px; padding: clamp(22px, 3.4vw, 34px); align-self: start; min-width: 0; }
   .prices { list-style: none; margin: 0; padding: 0; }
   .prices li { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding-block: 12px; border-bottom: 1px solid var(--line); }
   .prices .name { display: grid; min-width: 0; }

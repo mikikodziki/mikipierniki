@@ -1,23 +1,12 @@
 ---
-// A hairline with a small diamond at its centre: the quiet divider the
-// board uses between blocks of a menu.
+// A hairline between sections. Nothing more.
 ---
-<div class="rule-row" aria-hidden="true">
-  <span class="rule"></span>
-  <span class="mark"></span>
-  <span class="rule"></span>
-</div>
+<div class="rule-row" aria-hidden="true"><span class="rule"></span></div>
 
 <style>
   .rule-row {
     max-width: var(--panel-max); width: 100%; margin-inline: auto;
-    padding: 14px clamp(20px, 3vw, 40px);
-    display: flex; align-items: center; gap: 16px;
+    padding: 10px clamp(20px, 3vw, 40px);
   }
-  .rule { flex: 1; height: 1px; background: color-mix(in srgb, var(--dark) 32%, transparent); }
-  .mark {
-    width: 7px; height: 7px; flex: none;
-    background: color-mix(in srgb, var(--dark) 55%, transparent);
-    transform: rotate(45deg);
-  }
+  .rule { display: block; height: 1px; background: var(--line); }
 </style>

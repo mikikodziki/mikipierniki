@@ -4,63 +4,38 @@ Jedyne źródło prawdy dla treści na stronie. Wszystko poniżej jest potwierdz
 chyba że zaznaczono „DO UZUPEŁNIENIA”.
 
 ## Marka i oprawa wizualna
-Kierunek „butikowa cukiernia”, zbudowany na tablicy Pinteresta „strona miki pierniki”:
-przykurzony róż, kość słoniowa i głębokie wino, elegancka antykwa i małe, rozstrzelone
-wersaliki. Dwa kolory używane odważnie, dużo powietrza, ostre krawędzie.
+Kierunek „piernik i papier": neutralne beże i brązy, proste układy, zero ozdobników.
+Strona ma być przejrzysta — czyta się ją, a nie ogląda ramki.
+Poprzednia wersja („butikowa cukiernia": róż, wino, falowane ramki z kokardą)
+jest zachowana pod znacznikiem `wersja-1` w gicie.
 
-- #EFDAD7 przykurzony róż — tło całej strony.
-- #FBF4EA kość słoniowa — panele sekcji, napisy na ciemnym tle.
-- #F7E7E3 blady róż — co druga sekcja, ramki formularzy, etykiety.
-- #6E2433 wino — pasek nagłówka, ciemne bloki, przyciski w stanie spoczynku.
-- #5A1B28 ciemne wino — pierwsza sekcja, voucher, karty terminów.
-- #3A1018 niemal czarne wino — wszystkie napisy na jasnym tle, logo, ikona strony.
-- #E3B5B1 jasny róż — przyciski po najechaniu, paski wolnych miejsc.
-- Ostrzeżenia: #A8321F.
-- Kolor sezonowy nie zmienia się — paleta jest dwubarwna, sezon widać w treści.
+- #EDE6DA beż — tło całej strony.
+- #FAF7F1 papier — panele sekcji, napisy na ciemnym tle.
+- #F2EBE0 piaskowy — co druga sekcja, ramki formularzy, etykiety.
+- #CBB79A jasny brąz — przyciski po najechaniu, plusy w FAQ, paski wolnych miejsc.
+- #6E5436 brąz — nadtytuły sekcji, linki, gwiazdki przy opiniach.
+- #473A2C ciemny brąz — pasek nagłówka, ciemne bloki, przyciski w spoczynku.
+- #3B3025 najciemniejszy brąz — pierwsza sekcja, voucher, karty terminów.
+- #2B2219 — wszystkie napisy na jasnym tle, logo, ikona strony.
+- Ostrzeżenia: #9C4A2F.
+- Kolor sezonowy się nie zmienia — paleta jest jednorodna, sezon widać w treści.
 
 Typografia:
-- Nagłówki: DM Serif Display — grubsza antykwa z miękkimi, zaokrąglonymi
-  zakończeniami. Zastąpiła Bodoni Moda (za cienka) i wcześniej Fraunces.
-  Ma jedną grubość, więc `--display-weight` to 400 i nie należy go podnosić.
-- Tekst i etykiety: Jost (geometryczny bezszeryfowy). Zastąpił Figtree.
-- Nagłówek pierwszej sekcji (TYLKO on): Dancing Script 700 — ciągłe pismo
-  o jednej grubości kreski, jak lukier wyciskany z rękawa. Do tego cień
-  i delikatny połysk, żeby napis wyglądał jak wałek lukru leżący na pierniku.
-  Wzór: zdjęcie piernika z napisem „Warsztaty dekorowania pierników".
-  Reszta nagłówków na stronie zostaje w DM Serif Display — pismo odręczne
-  w długich tytułach podstron byłoby męczące do czytania.
-- Wszystkie etykiety, przyciski, nadtytuły i nawigacja: WERSALIKI z odstępem
-  między literami 0,14 em.
+- Nagłówki: DM Serif Display. Ma jedną grubość, więc `--display-weight` to 400.
+- Tekst i etykiety: Jost.
+- Nagłówek pierwszej sekcji (TYLKO on): Dancing Script 700 z cieniem i połyskiem,
+  czyli napis „pisany lukrem". Wzór: zdjęcie piernika od Dominiki.
+- Etykiety, przyciski, nadtytuły i nawigacja: wersaliki z odstępem 0,12 em.
 
 Kształty i detale:
-- Zaokrąglenia prawie zniknęły: panele 6 px, karty 3 px, przyciski 2 px.
-  Wcześniej było 34 px i pigułki.
-- Przerywnik między sekcjami: cienka kreska z małym rombem pośrodku
-  (wcześniej falista linia lukru).
-- Panele sekcji: cienka ramka odsunięta 16 px od krawędzi (9 px na telefonie).
-  Pierwsza sekcja ma ramkę podwójną.
-- Pudełka w środku sekcji („Co jest w cenie", cennik, wszystkie formularze):
-  falowana ramka z kokardą — RYSUNEK DOMINIKI (`ramka-z-kokardka.svg`),
-  rozdzielony na dwa pliki: `public/ramka-fala.svg` (dwie linie, kolor
-  #843F42 z jej rysunku), `public/ramka-fala-krem.svg` (ta sama ramka na
-  ciemne tło, klasa `.ornate--light`) i `public/kokarda.svg`.
-  Ramka działa przez `border-image` ze slice `130 fill` i szerokością 48 px:
-  rogi z jej falą mają stały rozmiar, rozciągają się tylko proste odcinki
-  między nimi. Słowo `fill` sprawia, że rysunek wypełnia też wnętrze, więc
-  tło pudełka kończy się dokładnie na fali — pudełka NIE mają własnego
-  prostokątnego tła. Kolor wypełnienia jest w pliku SVG: blady róż #F7E7E3
-  na jasnych pudełkach, wino #6E2433 na ciemnym.
-  Trzy zmiany wobec oryginalnego rysunku, wymuszone przez to, że pudełka
-  na stronie mają różne proporcje: górna linia jest DOMKNIĘTA (w rysunku
-  urywa się tam, gdzie wpisana jest kokarda — na stronie ta przerwa nigdy
-  nie trafiłaby w kokardę), druga linia jest odsunięta do środka o ~6
-  jednostek (w oryginale biegną 4–5 jednostek od siebie i przy tej skali
-  zlewają się w jedną), a kreski są o 35% grubsze.
-  Kokarda jest maską szeroką na 28% pudełka, więc trzyma proporcję także
-  na wąskich pudełkach, a jej kolor to `--frame-ink` (kolor linii),
-  nie kolor tekstu.
-- Panele mają dodatkowo miękki, niski cień.
-- Logo i ikona strony: grafika „przytulenie” w kolorze wina na kości słoniowej.
+- ŻADNYCH ramek. Sekcje i pudełka odróżnia sam odcień tła plus bardzo delikatny
+  cień pod panelem. Nie dodawać obramowań ani ozdobnych narożników.
+- Zaokrąglenia: panele 10 px, pudełka i przyciski 6 px, drobiazgi 4 px.
+- Przerywnik między sekcjami: pojedyncza cienka kreska.
+- Rysunki falowanej ramki i kokardy (`public/ramka-fala*.svg`, `public/kokarda.svg`)
+  zostały w repozytorium, ale NIC ICH NIE UŻYWA. To prace Dominiki — nie kasować
+  bez pytania.
+- Logo i ikona strony: grafika „przytulenie" w ciemnym brązie na papierze.
 
 ## Kontakt i miejsce
 - Pracownia: Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
