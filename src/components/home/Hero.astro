@@ -52,7 +52,16 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     <div class="stage" data-for-season={v.season}>
       {v.shots.map((s, i) => (
         <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} />
+          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} position="28% 50%" />
+        </div>
+      ))}
+    </div>
+  ))}
+  {variants.map((v) => (
+    <div class="stage stage--soft" data-for-season={v.season} aria-hidden="true">
+      {v.shots.map((s, i) => (
+        <div class="shot" style={`--i: ${i}`}>
+          <Photo name={s.name} alt="" sizes="100vw" position="28% 50%" />
         </div>
       ))}
     </div>
@@ -104,17 +113,27 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     100% { transform: scale(1); }
   }
 
-  /* the copy half stays solidly readable; the picture keeps the other half */
+  /* the same picture, blurred and dimmed, running under the copy and dissolving
+     into the sharp one — the photo becomes the background instead of being
+     covered by a flat panel. Scaled up so the blur has pixels to chew at the
+     edges instead of smearing into transparency. */
+  .stage--soft {
+    z-index: 1;
+    transform: scale(1.08);
+    filter: blur(26px) brightness(.38) saturate(.7);
+    -webkit-mask-image: linear-gradient(96deg, #000 0 40%, rgba(0, 0, 0, .72) 54%, transparent 72%);
+    mask-image: linear-gradient(96deg, #000 0 40%, rgba(0, 0, 0, .72) 54%, transparent 72%);
+  }
+  /* a last wash of brown, just enough to hold the type */
   .scrim {
-    position: absolute; inset: 0; z-index: 1;
+    position: absolute; inset: 0; z-index: 2;
     background:
       linear-gradient(96deg,
-        var(--umber) 0 38%,
-        color-mix(in srgb, var(--umber) 90%, transparent) 50%,
-        color-mix(in srgb, var(--umber) 32%, transparent) 63%,
-        transparent 76%);
+        color-mix(in srgb, var(--umber) 72%, transparent) 0 34%,
+        color-mix(in srgb, var(--umber) 42%, transparent) 52%,
+        transparent 70%);
   }
-  .inner { position: relative; z-index: 2; }
+  .inner { position: relative; z-index: 3; }
   .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
 
   .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
@@ -135,11 +154,15 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
       0 6px 16px rgba(26, 20, 14, .45);
   }
   h1 em { font-style: normal; color: inherit; }
+  /* a shade brighter than the usual muted text: this one sits on a photo,
+     and it has to clear 4.5:1 on the brightest frame of the fade too */
+  .copy .lead { color: color-mix(in srgb, var(--on-dark) 82%, var(--umber)); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .note { font-size: 0.72rem; letter-spacing: .06em; color: var(--on-dark-soft); }
 
   /* narrow screens: the picture becomes a band under the copy */
   @media (max-width: 860px) {
+    .stage--soft { display: none; }
     .hero { min-height: 0; padding-bottom: clamp(260px, 62vw, 380px); }
     .stage { top: auto; height: clamp(240px, 58vw, 360px); }
     .scrim { display: none; }
