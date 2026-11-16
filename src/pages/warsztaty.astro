@@ -212,7 +212,7 @@ const closedFacts = [
     </div>
   </section>
 
-  <section class="section section--sunk" id="voucher" aria-labelledby="voucher-title">
+  <section class="section section--dark voucher-section" id="voucher" aria-labelledby="voucher-title">
     <div class="wrap split">
       <div class="pitch">
         <SectionHead
@@ -229,7 +229,7 @@ const closedFacts = [
         </ul>
         <VoucherCard />
       </div>
-      <div class="form-box">
+      <div class="form-box voucher-order">
         <h3>Zamów voucher</h3>
         <InquiryForm
           kind="voucher"
@@ -321,6 +321,23 @@ const closedFacts = [
   .form-box h3 { font-size: 1.6rem; }
 
   .voucher-facts { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+  .voucher-section .pitch :global(.ticket) { margin-top: clamp(20px, 3vw, 36px); }
+  .voucher-section { position: relative; isolation: isolate; }
+  .voucher-section::before {
+    content: ""; position: absolute; inset: 0;
+    z-index: -1; pointer-events: none;
+    background: url("/zdjecia/szron-voucher.webp") right top / auto 100% no-repeat;
+    opacity: .2;
+    -webkit-mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+    mask-image: linear-gradient(90deg, transparent 65%, #000 100%);
+  }
+  .voucher-order {
+    background: var(--ground); color: var(--ink);
+    border: 1px solid var(--line); border-radius: var(--radius-panel);
+  }
+  .voucher-order :global(.input), .voucher-order :global(.sel) { border: 1px solid var(--line); }
+  .voucher-order :global(.btn-primary) { background: var(--dark); color: var(--on-dark); }
+  .voucher-order :global(.btn-primary:hover) { background: var(--tan); color: var(--on-tan); }
 
   @media (min-width: 900px) {
     .split { grid-template-columns: 1fr 1fr; gap: 56px; }

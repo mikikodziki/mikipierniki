@@ -1,6 +1,16 @@
 # Miki Pierniki
 
-Strona warsztatów dekorowania pierników i pierników na zamówienie. Astro 7, statyczny build, dane na razie z mocków.
+Strona warsztatów lukrowania pierników i pierników na zamówienie. Astro 7, statyczny build, dane na razie z mocków.
+
+## Wersja do publikacji
+
+Zatwierdzony wygląd strony jest zapisany pod tagiem `wersja-do-publikacji`.
+[Instrukcja przekazania i wdrożenia dla Dawida](docs/wersja-do-publikacji.md).
+
+Ta gałąź zawiera frontend. Zaplecze zapisów, poczty, panelu i konfiguracja VPS
+są na gałęzi [`feat/zapisy`](https://github.com/mikikodziki/mikipierniki/tree/feat/zapisy).
+Przed uruchomieniem zapisów trzeba połączyć zatwierdzony wygląd z tym zapleczem;
+formularze w samym frontendzie zwracają obecnie przykładowe potwierdzenia.
 
 ## Uruchomienie
 

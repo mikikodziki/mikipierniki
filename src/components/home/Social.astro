@@ -122,7 +122,7 @@ const testimonials = await getTestimonials();
   .portrait { aspect-ratio: 4 / 5; max-width: 100%; border-radius: var(--radius-panel); overflow: hidden; background: var(--sunk); }
   .a-copy { display: grid; gap: 18px; }
 
-  @media (min-width: 1101px) { .quotes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  @media (min-width: 1101px) { .quotes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 600px) { .quotes { grid-template-columns: 1fr; } }
   @media (max-width: 760px) { .voucher, .about { grid-template-columns: 1fr; } .portrait { max-width: 340px; } }
   @media (max-width: 700px) { .gallery { grid-template-columns: repeat(2, 1fr); } }

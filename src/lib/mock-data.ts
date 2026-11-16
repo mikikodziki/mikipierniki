@@ -27,7 +27,6 @@ export const terms: Term[] = [
 // PRZYKŁADOWE opinie — Dominika prześle prawdziwe.
 export const testimonials: Testimonial[] = [
   { author: "Kasia", context: "warsztaty świąteczne", text: "Byłam pewna, że nic mi nie wyjdzie, a wyszłam z pudełkiem pierników, których szkoda było zjeść. Dominika tłumaczy wszystko spokojnie i z humorem.", photo: "opinie-piernikowe-kamieniczki", photoAlt: "Kolorowe piernikowe kamieniczki, bombki, misie i Mikołaje udekorowane po warsztatach" },
-  { author: "Marek", context: "warsztaty firmowe", text: "Najlepsza przedświąteczna integracja, jaką mieliśmy. Cały zespół wciągnął się tak, że przedłużyliśmy o godzinę.", photo: "opinie-pierniki-na-talerzu", photoAlt: "Piernikowe kamieniczki w żółtym lukrze, śnieżynka, renifer i miś na szklanym talerzu" },
   { author: "Agnieszka", context: "warsztaty dla dzieci", text: "Byłyśmy z córką na warsztatach dla dzieci. Ona do dziś opowiada o swoim pierniczkowym reniferze.", photo: "opinie-sniezynka-i-konik", photoAlt: "Piernikowa śnieżynka, miś, konik na biegunach i kamieniczka na serwetce w żółtą kratkę" },
 ];
 

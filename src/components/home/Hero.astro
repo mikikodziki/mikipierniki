@@ -3,22 +3,21 @@ import Photo from "../Photo.astro";
 import type { Season } from "@/lib/types";
 
 /**
- * The one place on the site that moves: her gingerbread fills the whole panel
- * and slowly cross-fades while the picture drifts closer. Four photos per
- * season — the fade keyframes are cut into quarters, so four is the number.
+ * Four photographs per season fade into one another over 32 seconds.
+ * The keyframes are cut into quarters, so each season needs four shots.
  */
 interface Shot { name: string; alt: string; position?: string }
 const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shots: [Shot, Shot, Shot, Shot] }[] = [
   {
     season: "swieta",
     badge: "Zapisy na sezon świąteczny 2026 otwarte",
-    title: "Warsztaty dekorowania ", em: "pierników", after: "",
+    title: "Warsztaty lukrowania ", em: "pierników", after: "",
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
     shots: [
-      { name: "swieta-stol", alt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole" },
-      { name: "hero-swieta-mis-choinka", alt: "Piernikowy biały miś w zielonym szaliku i choinka na tle igliwia", position: "75% 50%" },
-      { name: "hero-swieta-mikolaj-domek", alt: "Piernikowy Mikołaj i domek z czerwonym sercem na tle igliwia", position: "75% 50%" },
-      { name: "hero-swieta-igliwie", alt: "Piernikowa śnieżynka ze złotym wzorem i kamieniczka na tle igliwia", position: "75% 50%" },
+      { name: "hero-swieta-galazki-pierniki", alt: "Świąteczne gałązki z lampkami obok piernikowych domków, misiów i bałwanków", position: "80% 50%" },
+      { name: "hero-swieta-lampki-mis-choinka", alt: "Piernikowy miś w zielonym szaliku i choinka wśród gałązek ze złotymi światełkami", position: "80% 50%" },
+      { name: "hero-swieta-lampki-sniezynka-kamieniczka", alt: "Piernikowa śnieżynka ze złotymi detalami i kamieniczka wśród świerkowych gałązek z lampkami", position: "80% 50%" },
+      { name: "hero-swieta-lampki-mikolaj-domek", alt: "Piernikowy Mikołaj i domek z czerwonym sercem wśród świerkowych gałązek ze złotymi światełkami", position: "80% 50%" },
     ],
   },
   {
@@ -57,17 +56,7 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
       ))}
     </div>
   ))}
-  {variants.map((v) => (
-    <div class="stage stage--soft" data-for-season={v.season} aria-hidden="true">
-      {v.shots.map((s, i) => (
-        <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt="" sizes="100vw" position={s.position ?? "28% 50%"} />
-        </div>
-      ))}
-    </div>
-  ))}
   <div class="scrim" aria-hidden="true"></div>
-  <div class="frost" aria-hidden="true"></div>
 
   <div class="wrap inner">
     {variants.map((v) => (
@@ -98,7 +87,8 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   .shot {
     position: absolute; inset: 0; opacity: 0;
     animation: hero-shot 32s linear infinite, hero-drift 32s ease-in-out infinite;
-    animation-delay: calc(var(--i) * 8s);
+    /* Start with the first photograph fully visible. */
+    animation-delay: calc(var(--i) * 8s - 1.28s);
   }
   .shot :global(.photo) { width: 100%; height: 100%; object-fit: cover; }
   /* each photo holds a quarter of the cycle, with a slow dissolve between */
@@ -115,47 +105,15 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     100% { transform: scale(1); }
   }
 
-  /* the frozen pane: the same picture, blurred and softened the way frost
-     scatters it, running under the copy and clearing into the sharp photo on
-     the right. Scaled up so the blur has pixels to chew at the edges instead
-     of smearing into transparency. */
-  .stage--soft {
-    z-index: 1;
-    transform: scale(1.08);
-    filter: blur(26px) brightness(.5) saturate(.65);
-    -webkit-mask-image: linear-gradient(96deg, #000 0 34%, rgba(0, 0, 0, .6) 44%, transparent 56%);
-    mask-image: linear-gradient(96deg, #000 0 34%, rgba(0, 0, 0, .6) 44%, transparent 56%);
-  }
-  /* dark pine behind the copy, fading into the unshaded photo on the right */
+  /* Shade the branches beneath the copy, keeping the cookies clear. */
   .scrim {
     position: absolute; inset: 0; z-index: 2;
     background:
       linear-gradient(96deg,
-        color-mix(in srgb, var(--hero-shade) 94%, transparent) 0 30%,
-        color-mix(in srgb, var(--hero-shade) 88%, transparent) 40%,
-        color-mix(in srgb, var(--hero-shade) 40%, transparent) 48%,
-        transparent 60%);
-  }
-  /* the ice itself, drawn by scripts/szron.mjs: ferns thick at the left
-     edge, fir-like crystals reaching out over the photo. It stays still while
-     the photos change behind it, like looking out through a frozen window.
-     Only on wide screens: on phones the photo is a band under the copy, and
-     the file is never downloaded there. */
-  .frost {
-    position: absolute; inset: 0; z-index: 3; pointer-events: none;
-    opacity: 1;
-    /* thinner where the words are, so they read over it */
-    -webkit-mask-image:
-      radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%),
-      linear-gradient(90deg, #000 0 37%, transparent 58%);
-    -webkit-mask-composite: source-in;
-    mask-image:
-      radial-gradient(ellipse 32% 64% at 28% 56%, rgba(0, 0, 0, .26) 0 58%, #000 100%),
-      linear-gradient(90deg, #000 0 37%, transparent 58%);
-    mask-composite: intersect;
-  }
-  @media (min-width: 861px) {
-    .frost { background: url(/szron.svg) left center / cover no-repeat; }
+        color-mix(in srgb, var(--brand-deep) 72%, transparent) 0%,
+        color-mix(in srgb, var(--brand-deep) 62%, transparent) 30%,
+        color-mix(in srgb, var(--brand-deep) 30%, transparent) 46%,
+        transparent 64%);
   }
   .inner { position: relative; z-index: 4; }
   .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
@@ -163,17 +121,17 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
   .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 500; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
 
-  /* a clear editorial serif replaces the joined handwriting */
+  /* Rounded, ornamental lettering for the workshop headline. */
   h1 {
-    font-family: var(--display);
-    font-weight: var(--display-weight);
-    font-size: clamp(2.55rem, 5.2vw, 4.4rem);
-    line-height: 1.08;
-    letter-spacing: -.025em;
+    font-family: var(--hero-display);
+    font-weight: 400;
+    font-size: clamp(2.7rem, 5vw, 4.5rem);
+    line-height: 1.14;
+    letter-spacing: 0;
     color: var(--on-dark);
     text-shadow: var(--hero-text-shadow);
   }
-  h1 em { font-style: italic; color: inherit; }
+  h1 em { font-style: normal; color: inherit; }
   .copy .lead, .copy .note { color: var(--on-dark); }
   .copy .lead, .copy .note, .badge { text-shadow: var(--hero-text-shadow); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -181,7 +139,6 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
 
   /* narrow screens: the picture becomes a band under the copy */
   @media (max-width: 860px) {
-    .stage--soft { display: none; }
     .hero { min-height: 0; padding-bottom: clamp(260px, 62vw, 380px); }
     .stage { top: auto; height: clamp(240px, 58vw, 360px); }
     .scrim { display: none; }

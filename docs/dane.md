@@ -23,8 +23,8 @@ jest zachowana pod znacznikiem `wersja-1` w gicie.
 Typografia:
 - Nagłówki: DM Serif Display. Ma jedną grubość, więc `--display-weight` to 400.
 - Tekst i etykiety: Jost.
-- Nagłówek pierwszej sekcji (TYLKO on): Dancing Script 700 z cieniem i połyskiem,
-  czyli napis „pisany lukrem". Wzór: zdjęcie piernika od Dominiki.
+- Nagłówek pierwszej sekcji: ozdobny Berkshire Swash 400. Treść świątecznego
+  hero: „Warsztaty lukrowania pierników”.
 - Etykiety, przyciski, nadtytuły i nawigacja: wersaliki z odstępem 0,12 em.
 
 Kształty i detale:
@@ -32,22 +32,20 @@ Kształty i detale:
   cień pod panelem. Nie dodawać obramowań ani ozdobnych narożników.
 - Zaokrąglenia: panele 10 px, pudełka i przyciski 6 px, drobiazgi 4 px.
 - Przerywnik między sekcjami: pojedyncza cienka kreska.
-- Pierwsza sekcja to JEDYNE miejsce na stronie, gdzie coś się rusza.
-  Zdjęcie wypełnia cały panel, a cztery zdjęcia danego sezonu powoli
-  przenikają jedno w drugie (32 s na pełny obieg) i delikatnie się przybliżają.
-  Lewa strona wygląda jak zamarznięta szyba: pod tekstem leży to samo
-  zdjęcie drugi raz, rozmyte i przyciemnione, a na nim szron — paprocie lodu
-  gęste przy lewej krawędzi i igiełki wychodzące na ostre zdjęcie po prawej.
-  Szron stoi w miejscu, zdjęcia zmieniają się „za szybą". Za tekstem szron
-  jest celowo rzadszy, żeby napisy dało się czytać na każdym zdjęciu.
-  Rysunek szronu (`public/szron.svg`) generuje skrypt `scripts/szron.mjs`
-  (`node scripts/szron.mjs`); inny wzór = inna wartość SEED w skrypcie.
-  Szron jest tylko na szerszych ekranach — na telefonie zdjęcie stoi pod
-  tekstem i szronu nie ma.
-  Zdjęcia są kadrowane `object-position: 28% 50%`, żeby pierniki wychodziły
-  bardziej na prawo, tam gdzie nic ich nie zasłania. Liczba zdjęć musi być
-  równa CZTERY — klatki animacji są pocięte na ćwiartki.
-  Przy `prefers-reduced-motion` animacja znika i zostaje pierwsze zdjęcie.
+- Świąteczne hero ma cztery zdjęcia: `hero-swieta-galazki-pierniki-*.webp`
+  oraz trzy serie `hero-swieta-lampki-*.webp`. Źródła to „Świąteczne gałązki
+  z piernikami.png”, „Piernikowy miś i choinka wśród złotych świateł.png”,
+  „Świąteczne pierniki wśród świerkowych gałązek.png” i „Piernikowy Mikołaj
+  i domek wśród świerku.png” (każde 1672 × 941 px).
+  Gałązki i lampki są po lewej, pierniki po prawej. Bez szronu i dodatkowej
+  rozmytej warstwy; pod tekstem jest tylko łagodne przyciemnienie.
+  Kadr: `object-position: 80% 50%`. Na telefonie zdjęcie stoi pod tekstem.
+  Wszystkie sezony mają po cztery zdjęcia, które zmieniają się co 8 sekund,
+  płynnie przenikają i delikatnie przybliżają (32 sekundy na pełen cykl).
+  Pierwszy obraz jest widoczny od razu po otwarciu strony. Przy
+  `prefers-reduced-motion` zostaje pierwsze zdjęcie. Animacja jest wyłącznie w hero.
+  Dawny szron (`public/szron.svg`) i jego generator `scripts/szron.mjs`
+  pozostają w repozytorium; hero już z nich nie korzysta.
 - Rysunki falowanej ramki i kokardy (`public/ramka-fala*.svg`, `public/kokarda.svg`)
   zostały w repozytorium, ale NIC ICH NIE UŻYWA. To prace Dominiki — nie kasować
   bez pytania.
@@ -105,6 +103,11 @@ Kształty i detale:
 - 500 zł, ważny rok, na dowolne warsztaty.
 - Forma: PDF albo drukowany, przy czym drukowany tylko do odbioru osobistego.
 - Realizacja: obdarowany zapisuje się na wybrany termin i wybiera płatność kartą podarunkową.
+- Sekcja zamówienia na stronie Warsztaty ma ciemnozielone tło i jasny, kremowy
+  formularz z obrysowanymi polami. Delikatny szron jest wyłącznie na zewnętrznej
+  prawej krawędzi sekcji. Na samym voucherze nie ma szronu — również na stronie głównej.
+- Sam voucher ma maksymalnie 440 px szerokości. Jasny panel wewnętrzny jest
+  nieco mniejszy, z węższym przejściem gradientowym na krawędziach.
 
 ## O Dominice
 - Piecze i dekoruje pierniki od 14 lat. Samouk.
@@ -135,14 +138,17 @@ W sekcji „Czym się wyróżniam” na „O mnie” jest zdjęcie Dominiki przy
 świątecznym (`dominika-stoisko-swiateczne.webp`, 615 × 643 px). Źródło:
 przekazany plik `2904243_b.jpg`. Zastępuje w tej sekcji zdjęcie kamieniczek.
 
-Cztery zdjęcia gotowych prac uczestników (`IMG_3813.HEIC`, `IMG_3824.HEIC`,
-`IMG_3849.heic`, `IMG_3924.HEIC`) są w kafelkach sekcji opinii na stronie głównej,
-jako `opinie-*.webp`. Nie należą do galerii. Trzy towarzyszą istniejącym opiniom,
-a czwarte pokazuje efekty warsztatów bez przypisywania dodatkowej opinii uczestnikowi.
+Zdjęcia gotowych prac uczestników (`IMG_3813.HEIC`, `IMG_3849.heic`,
+`IMG_3924.HEIC`) są w kafelkach sekcji opinii na stronie głównej jako `opinie-*.webp`.
+Nie należą do galerii. Dwa towarzyszą istniejącym opiniom, a trzecie pokazuje efekty
+warsztatów bez przypisywania dodatkowej opinii uczestnikowi. Kafelek z opinią Marka
+i zdjęciem `IMG_3824.HEIC` został usunięty; pliki zdjęcia pozostają w repozytorium.
 
-Trzy szerokie zdjęcia `hero-swieta-mis-choinka`, `hero-swieta-mikolaj-domek`
-i `hero-swieta-igliwie` są przeznaczone wyłącznie do świątecznego hero.
-W rotacji towarzyszy im dotychczasowe `swieta-stol`. Nie dodawaj nowych zdjęć do galerii.
+Trzy wcześniejsze zdjęcia `hero-swieta-mis-choinka`, `hero-swieta-mikolaj-domek`
+i `hero-swieta-igliwie` pozostają w repozytorium. W świątecznym hero zastąpiły je
+nowe `hero-swieta-galazki-pierniki` i trzy serie `hero-swieta-lampki-*`.
+Wszystkie zdjęcia `hero-*` są wyłącznie do hero,
+nie dodawaj ich do galerii.
 
 Tło hero podstron to `igliwie-lampki-hq.webp` (2200 × 3300 px), z lżejszym
 `igliwie-lampki-mobile.webp` (900 × 1350 px) na telefony. Źródłem jest przekazany
