@@ -1,36 +1,65 @@
 ---
 import Photo from "../Photo.astro";
-import type { CookieShape, Season } from "@/lib/types";
+import type { Season } from "@/lib/types";
 
-const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; photo: string; photoAlt: string; shapes: [CookieShape, CookieShape, CookieShape, CookieShape] }[] = [
+/**
+ * The one place on the site that moves: her gingerbread fills the whole panel
+ * and slowly cross-fades while the picture drifts closer. Four photos per
+ * season — the fade keyframes are cut into quarters, so four is the number.
+ */
+interface Shot { name: string; alt: string }
+const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shots: [Shot, Shot, Shot, Shot] }[] = [
   {
     season: "swieta",
     badge: "Zapisy na sezon świąteczny 2026 otwarte",
     title: "Warsztaty dekorowania ", em: "pierników", after: "",
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
-    photo: "swieta-stol", photoAlt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole",
-    shapes: ["man", "star", "tree", "heart"],
+    shots: [
+      { name: "swieta-stol", alt: "Piernikowe domki, misie i bałwanki rozłożone na drewnianym stole" },
+      { name: "kamieniczki", alt: "Trzy piernikowe kamieniczki zdobione lukrem i złotymi detalami" },
+      { name: "mis-mikolaj", alt: "Piernikowy miś w czerwonym szaliku obok głowy Mikołaja" },
+      { name: "sniezynka-zlota", alt: "Piernikowa śnieżynka w białym lukrze ze złotym wzorem" },
+    ],
   },
   {
     season: "wielkanoc",
     badge: "Warsztaty wielkanocne: marzec i kwiecień",
     title: "Pisanki, które ", em: "pachną", after: " piernikiem",
     lead: "Wiosenne kolory lukru, zajączki i pisanki do koszyczka. Warsztaty dla dorosłych i osobne dla dzieci, w grupach od 4 do 10 osób.",
-    photo: "zajaczki-trzy", photoAlt: "Trzy piernikowe zajączki w różowych i zielonych sukienkach",
-    shapes: ["egg", "heart", "egg", "star"],
+    shots: [
+      { name: "zajaczki-trzy", alt: "Trzy piernikowe zajączki w różowych i zielonych sukienkach" },
+      { name: "wielkanoc-kurczaczki", alt: "Piernikowe kurczaczki w żółtym lukrze" },
+      { name: "zajac-auto", alt: "Piernikowy kabriolet z zajączkiem i bagażnikiem pełnym marchewek" },
+      { name: "wielkanoc-zajaczek", alt: "Piernikowy zajączek w pastelowym lukrze" },
+    ],
   },
   {
     season: "rok",
     badge: "Pierniki na urodziny, walentynki i Halloween",
     title: "Pierniki na ", em: "każdą", after: " okazję",
     lead: "Ręcznie dekorowane zestawy na prezent, podziękowania dla gości i firmowe upominki w dowolnym kształcie. A dla grup prywatne warsztaty przez cały rok.",
-    photo: "kamieniczki", photoAlt: "Trzy piernikowe kamieniczki zdobione lukrem i złotymi detalami",
-    shapes: ["heart", "pumpkin", "man", "star"],
+    shots: [
+      { name: "kamieniczki", alt: "Trzy piernikowe kamieniczki zdobione lukrem i złotymi detalami" },
+      { name: "gwiazdka-zlota", alt: "Piernikowa gwiazdka w białym lukrze ze złotym wzorem" },
+      { name: "zajac-auto", alt: "Piernikowy kabriolet z zajączkiem i bagażnikiem pełnym marchewek" },
+      { name: "kury", alt: "Piernikowe kury w kolorowym lukrze" },
+    ],
   },
 ];
 ---
 <section class="hero panel--deep">
-  <div class="wrap grid">
+  {variants.map((v) => (
+    <div class="stage" data-for-season={v.season}>
+      {v.shots.map((s, i) => (
+        <div class="shot" style={`--i: ${i}`}>
+          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0} />
+        </div>
+      ))}
+    </div>
+  ))}
+  <div class="scrim" aria-hidden="true"></div>
+
+  <div class="wrap inner">
     {variants.map((v) => (
       <div class="copy" data-for-season={v.season}>
         <span class="badge">{v.badge}</span>
@@ -43,38 +72,82 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
         <p class="note">Pracownia we Wrocławiu · grupy 4–10 osób · wszystko w cenie</p>
       </div>
     ))}
-    {variants.map((v) => (
-      <div class="tray" data-for-season={v.season}>
-        <Photo name={v.photo} alt={v.photoAlt} ratio="5 / 4" sizes="(max-width: 860px) 100vw, 45vw" eager />
-      </div>
-    ))}
   </div>
 </section>
 
 <style>
-  .hero { padding-block: clamp(40px, 7vw, 84px) clamp(48px, 7vw, 88px); }
-  .grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
-  .copy { display: grid; gap: 22px; }
-  /* a letterspaced line over a short rule, the way the board opens a page */
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: center;
+    min-height: clamp(560px, 80vh, 840px);
+    padding-block: clamp(48px, 6vw, 88px);
+  }
+  .stage { position: absolute; inset: 0; z-index: 0; }
+  .shot {
+    position: absolute; inset: 0; opacity: 0;
+    animation: hero-shot 32s linear infinite, hero-drift 32s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 8s);
+  }
+  .shot :global(.photo) { width: 100%; height: 100%; object-fit: cover; }
+  /* each photo holds a quarter of the cycle, with a slow dissolve between */
+  @keyframes hero-shot {
+    0%   { opacity: 0; }
+    4%   { opacity: 1; }
+    25%  { opacity: 1; }
+    29%  { opacity: 0; }
+    100% { opacity: 0; }
+  }
+  @keyframes hero-drift {
+    0%   { transform: scale(1); }
+    29%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  /* the copy half stays solidly readable; the picture keeps the other half */
+  .scrim {
+    position: absolute; inset: 0; z-index: 1;
+    background:
+      linear-gradient(96deg,
+        var(--umber) 0 38%,
+        color-mix(in srgb, var(--umber) 90%, transparent) 50%,
+        color-mix(in srgb, var(--umber) 32%, transparent) 63%,
+        transparent 76%);
+  }
+  .inner { position: relative; z-index: 2; }
+  .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
+
   .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 400; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
+
   /* piped icing: one even stroke, a sheen along the top and the shadow the
      bead casts on the gingerbread under it */
   h1 {
     font-family: var(--script);
     font-weight: 700;
-    font-size: clamp(3rem, 7.4vw, 5.2rem);
-    line-height: 1.16;
+    font-size: clamp(3.2rem, 8vw, 5.8rem);
+    line-height: 1.12;
     letter-spacing: 0;
-    color: #FFF7EC;
+    color: #FFF9F0;
     text-shadow:
       0 -1px 0 rgba(255, 255, 255, .6),
-      0 2px 2px rgba(40, 8, 14, .5),
-      0 5px 13px rgba(40, 8, 14, .34);
+      0 2px 3px rgba(26, 20, 14, .6),
+      0 6px 16px rgba(26, 20, 14, .45);
   }
   h1 em { font-style: normal; color: inherit; }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
   .note { font-size: 0.72rem; letter-spacing: .06em; color: var(--on-dark-soft); }
-  .tray { max-width: 100%; border-radius: var(--radius-panel); overflow: hidden; }
-  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+
+  /* narrow screens: the picture becomes a band under the copy */
+  @media (max-width: 860px) {
+    .hero { min-height: 0; padding-bottom: clamp(260px, 62vw, 380px); }
+    .stage { top: auto; height: clamp(240px, 58vw, 360px); }
+    .scrim { display: none; }
+    .copy { max-width: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shot { animation: none; opacity: 0; }
+    .shot:first-child { opacity: 1; }
+  }
 </style>

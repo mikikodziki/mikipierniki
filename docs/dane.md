@@ -32,6 +32,12 @@ Kształty i detale:
   cień pod panelem. Nie dodawać obramowań ani ozdobnych narożników.
 - Zaokrąglenia: panele 10 px, pudełka i przyciski 6 px, drobiazgi 4 px.
 - Przerywnik między sekcjami: pojedyncza cienka kreska.
+- Pierwsza sekcja to JEDYNE miejsce na stronie, gdzie coś się rusza.
+  Zdjęcie wypełnia cały panel, a cztery zdjęcia danego sezonu powoli
+  przenikają jedno w drugie (32 s na pełny obieg) i delikatnie się przybliżają.
+  Tekst leży na przyciemnieniu po lewej stronie. Liczba zdjęć musi być
+  równa CZTERY — klatki animacji są pocięte na ćwiartki.
+  Przy `prefers-reduced-motion` animacja znika i zostaje pierwsze zdjęcie.
 - Rysunki falowanej ramki i kokardy (`public/ramka-fala*.svg`, `public/kokarda.svg`)
   zostały w repozytorium, ale NIC ICH NIE UŻYWA. To prace Dominiki — nie kasować
   bez pytania.
