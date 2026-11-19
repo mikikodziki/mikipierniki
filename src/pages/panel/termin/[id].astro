@@ -101,7 +101,7 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
       <span>{weekday(term.startsAt)}, {shortDate(term.startsAt)}, {timeRange(term)} · {workshopTypeLabel[term.type]} · {pln(term.price)}</span>
     </div>
     <div class="grid3">
-      <div><b>{interestPeople} os.</b><br /><span class="note">chętnych ({activeInterest.length} zgłoszeń{interestPeople >= site.groupMin ? ", grupa się zbiera" : `, minimum to ${site.groupMin}`})</span></div>
+      <div><b>{interestPeople} os.</b><br /><span class="note">chętnych ({activeInterest.length} {plural(activeInterest.length, "zgłoszenie", "zgłoszenia", "zgłoszeń")}{interestPeople >= site.groupMin ? ", grupa się zbiera" : `, minimum to ${site.groupMin}`})</span></div>
       <div><b>{taken}/{term.capacity}</b><br /><span class="note">miejsc zajętych przez rezerwacje</span></div>
       <div><b>{bookings.filter((b) => b.status === "waitlist").length}</b><br /><span class="note">na liście rezerwowej</span></div>
     </div>
