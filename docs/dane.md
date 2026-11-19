@@ -162,7 +162,8 @@ nowe `hero-swieta-galazki-pierniki` i trzy serie `hero-swieta-lampki-*`.
 Wszystkie zdjęcia `hero-*` są wyłącznie do hero,
 nie dodawaj ich do galerii.
 
-Tło hero podstron to `igliwie-lampki-hq.webp` (2200 × 3300 px), z lżejszym
+Tło hero podstron to `igliwie-lampki-hq.webp` (2200 × 1650 px: środkowy pas oryginału
+2200 × 3300, bo tylko on mieści się w nagłówkach), z lżejszym
 `igliwie-lampki-mobile.webp` (900 × 1350 px) na telefony. Źródłem jest przekazany
 plik `artur-stanulevich-drX8CsOCaks-unsplash.jpg` (4160 × 6240 px).
 Zdjęcie jest używane wyłącznie jako tło nagłówków, bez dodawania do galerii.
