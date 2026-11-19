@@ -18,7 +18,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 ---
 <article class:list={["term", { proposed }]} data-type={term.type} data-term-id={term.id}>
   <div class="media">
-    <Photo name={term.photo} alt={term.photoAlt} sizes="(max-width: 700px) 100vw, 33vw" />
+    <Photo name={term.photo} alt={term.photoAlt} sizes="(max-width: 700px) 100vw, (max-width: 1000px) 50vw, 360px" />
   </div>
 
   <div class="panel">
