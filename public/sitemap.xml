@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public pages from src/pages; add a new page here too (panel, api, zapis and newsletter stay out). -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://mikipierniki.pl/</loc></url>
+  <url><loc>https://mikipierniki.pl/warsztaty</loc></url>
+  <url><loc>https://mikipierniki.pl/zamowienia</loc></url>
+  <url><loc>https://mikipierniki.pl/galeria</loc></url>
+  <url><loc>https://mikipierniki.pl/o-mnie</loc></url>
+  <url><loc>https://mikipierniki.pl/faq</loc></url>
+  <url><loc>https://mikipierniki.pl/kontakt</loc></url>
+  <url><loc>https://mikipierniki.pl/regulamin</loc></url>
+  <url><loc>https://mikipierniki.pl/polityka-prywatnosci</loc></url>
+</urlset>

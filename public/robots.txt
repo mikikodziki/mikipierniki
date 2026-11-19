@@ -3,3 +3,5 @@ Allow: /
 Disallow: /panel
 Disallow: /api/
 
+
+Sitemap: https://mikipierniki.pl/sitemap.xml
