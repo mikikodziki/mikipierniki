@@ -11,7 +11,8 @@ interface Shot { name: string; alt: string; position?: string }
 const variants: { season: Season; badge: string; title: string; em: string; after: string; lead: string; shots: [Shot, Shot, Shot, Shot] }[] = [
   {
     season: "swieta",
-    badge: "Zapisy na sezon świąteczny 2026 otwarte",
+    // the Christmas season runs 15 Sep – 31 Dec, so it always belongs to the current year
+    badge: `Zapisy na sezon świąteczny ${new Date().getFullYear()} otwarte`,
     title: "Warsztaty lukrowania ", em: "pierników", after: "",
     lead: "Trzy do czterech godzin, lukier królewski i 6–8 pierników, które zabierasz do domu. Nie musisz umieć rysować. Pokażę Ci każdy ruch rękawem cukierniczym.",
     shots: [
