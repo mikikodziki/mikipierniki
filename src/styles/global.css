@@ -4,6 +4,10 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 [id] { scroll-margin-top: 100px; }
+/* keyboard focus never lands under the sticky header or, on phones, the fixed bottom CTA (WCAG 2.4.11) */
+/* :is() with [tabindex] weighs as much as [id] above, so form fields with ids get these margins too (header ends at 103 px) */
+:is(a, button, input, select, textarea, summary, [tabindex]) { scroll-margin-top: 110px; scroll-margin-bottom: 24px; }
+@media (max-width: 900px) { :is(a, button, input, select, textarea, summary, [tabindex]) { scroll-margin-bottom: 96px; } }
 body {
   margin: 0;
   background: var(--sheet);
