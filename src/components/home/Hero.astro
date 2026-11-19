@@ -46,7 +46,9 @@ const variants: { season: Season; badge: string; title: string; em: string; afte
     ],
   },
 ];
-// Only the current season's photo loads eagerly; the hidden variants stay lazy and are never fetched.
+// Only the current season's first shot loads eagerly, at high priority (the LCP image); the other
+// seasons stay lazy inside display:none and are never fetched. The current season's shots 2–4 sit
+// in view at opacity 0, so they load at once anyway: low priority keeps them behind the first.
 const buildSeason = seasonFor(new Date());
 ---
 <section class="hero panel--deep">
@@ -54,7 +56,7 @@ const buildSeason = seasonFor(new Date());
     <div class="stage" data-for-season={v.season}>
       {v.shots.map((s, i) => (
         <div class="shot" style={`--i: ${i}`}>
-          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0 && v.season === buildSeason} position={s.position ?? "28% 50%"} />
+          <Photo name={s.name} alt={i === 0 ? s.alt : ""} sizes="100vw" eager={i === 0 && v.season === buildSeason} priority={i > 0 ? "low" : undefined} position={s.position ?? "28% 50%"} />
         </div>
       ))}
     </div>
