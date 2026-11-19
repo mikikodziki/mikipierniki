@@ -6,6 +6,10 @@ interface Props {
 }
 const { eyebrow, title, lead } = Astro.props;
 ---
+<!-- The header photo is a CSS background, found only after styles are applied, so on phones it
+     was the late, low-priority LCP image. Same files and breakpoint as .evergreen-head in global.css. -->
+<link rel="preload" as="image" href="/zdjecia/igliwie-lampki-mobile.webp" media="(max-width: 760px)" fetchpriority="high" />
+<link rel="preload" as="image" href="/zdjecia/igliwie-lampki-hq.webp" media="(min-width: 761px)" fetchpriority="high" />
 <header class="page-head evergreen-head panel--deep">
   <div class="wrap">
     <span class="eyebrow">{eyebrow}</span>
