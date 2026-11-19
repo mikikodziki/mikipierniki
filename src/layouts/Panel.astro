@@ -54,17 +54,17 @@ const nav = [
 
 <style is:global>
   body { background: var(--sheet); }
-  .bar { background: var(--dark); color: var(--on-dark); --focus: var(--blue); }
+  .bar { background: var(--dark); color: var(--on-dark); --focus: var(--tan); }
   .bar-in { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; justify-content: space-between; padding-block: 14px; }
   .brand { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.2rem; color: var(--on-dark); text-decoration: none; }
   .bar nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
   .bar nav a { color: var(--on-dark); text-decoration: none; font-weight: 500; }
-  .bar nav a[aria-current="page"] { color: var(--blue); }
+  .bar nav a[aria-current="page"] { color: var(--tan); }
   .panel { display: grid; gap: 20px; padding-block: 28px 64px; }
   .panel h1 { font-size: clamp(1.7rem, 4vw, 2.3rem); }
   .panel h2 { font-size: 1.4rem; }
   .flash { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: var(--radius); font-weight: 600; }
-  .flash--ok { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .flash--ok { background: color-mix(in srgb, var(--tan) 35%, var(--ground)); }
   .flash--err { background: color-mix(in srgb, var(--berry) 14%, var(--ground)); color: var(--berry); }
   .box { background: var(--ground); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 24px); box-shadow: var(--panel-shadow); display: grid; gap: 14px; min-width: 0; }
   .note { color: var(--ink-soft); font-size: .92rem; }
@@ -74,10 +74,10 @@ const nav = [
   .tbl th { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
   .tbl tr.muted td { color: var(--ink-soft); }
   .pill { display: inline-block; font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--sunk); white-space: nowrap; }
-  .pill--proposed { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .pill--proposed { background: color-mix(in srgb, var(--tan) 35%, var(--ground)); }
   .pill--open { background: var(--dark); color: var(--on-dark); }
   .pill--cancelled, .pill--warn { background: color-mix(in srgb, var(--berry) 14%, var(--ground)); color: var(--berry); }
-  .pill--ok { background: color-mix(in srgb, var(--blue) 35%, var(--ground)); }
+  .pill--ok { background: color-mix(in srgb, var(--tan) 35%, var(--ground)); }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .actions form { display: contents; }
   .grid3 { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
@@ -85,7 +85,7 @@ const nav = [
   /* fields sit on the light panel card, so they take the deeper cream to stay visible */
   .box .input, .box .radio { background: var(--panel-deep); }
   .box .input:hover, .box .input:focus { background: var(--field-strong); }
-  .box .radio:has(input:checked) { background: color-mix(in srgb, var(--blue) 30%, var(--panel-deep)); }
+  .box .radio:has(input:checked) { background: color-mix(in srgb, var(--tan) 30%, var(--panel-deep)); }
   /* on a phone every table row becomes a small card; data-label names the cells that need it */
   @media (max-width: 700px) {
     .tbl thead { display: none; }
