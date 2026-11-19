@@ -137,11 +137,12 @@ Dominika zawsze pyta uczestników o zgodę przed publikacją.
 
 ## Zdjęcia
 Galeria zawiera 26 zdjęć pierników: świątecznych, wielkanocnych, na okazje oraz Halloween.
-Pliki są w `public/zdjecia`, w wersjach WebP o szerokościach 600, 1000 i 1600 px.
+Pliki są w `public/zdjecia`, w wersjach WebP o szerokościach 400, 600, 800, 1000 i 1600 px
+(nowe zdjęcie: `node scripts/zdjecia.mjs <plik> <nazwa>`).
 Do kategorii Halloween należy 10 zdjęć duszków, nietoperzy i dyń, przekazanych w HEIC.
 Aktualny portret Dominiki (`portret-dominika-*.webp`) stoi na „O mnie” oraz w sekcji
 o niej na stronie głównej. Źródło: `Portret kobiety w granatowej marynarce.png`
-(1254 × 1254 px), warianty WebP 600, 1000 i 1254 px, bez powiększania oryginału.
+(1254 × 1254 px), warianty WebP 400, 600, 800, 1000 i 1254 px, bez powiększania oryginału.
 Nadal brak zdjęć z przebiegu warsztatów, więc galeria nie ma kategorii
 „Z warsztatów”.
 
@@ -175,7 +176,7 @@ Pełną, aktualną listę braków w treści (z plikami i liniami) wypisuje `npm 
   prawdziwe; pusta lista w `src/lib/mock-data.ts` ukrywa sekcję opinii (razem z kafelkiem
   „Efekty warsztatów”).
 - Dane działalności do regulaminu i polityki prywatności: `legal` w `src/lib/site.ts`.
-  Pytanie do Dominiki: czy adres siedziby działalności to adres pracowni? Jeśli tak, trafi
-  do regulaminu i polityki, choć poza nimi adresu pracowni nie publikujemy.
+  Pytanie do Dominiki: czy adres siedziby działalności to adres pracowni (ul. Długa 55J,
+  publiczny na stronie Kontakt)?
 - Przeczytanie regulaminu i polityki przez prawnika (potem `legal.draft = false`).
 - Zdjęcia z przebiegu warsztatów (zdjęcia gotowych prac są już w sekcji opinii).

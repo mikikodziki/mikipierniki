@@ -20,8 +20,8 @@ export const site = {
 /**
  * Business data for the regulamin and the privacy policy, in one place. Values in [brackets] are
  * still placeholders; `npm run check:launch` lists them with everything else missing before launch.
- * Before filling `address`: if the registered business address is the studio, ask Dominika first,
- * because the studio street address is otherwise never published (only sent in confirmations).
+ * Before filling `address`, ask Dominika which address the business is registered at; the studio
+ * address (ul. Długa 55J) is public on /kontakt anyway.
  */
 export const legal = {
   /** Until a lawyer has read both documents: shows the "Wersja robocza" note on them */

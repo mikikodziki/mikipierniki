@@ -26,7 +26,7 @@ export const config = {
   cronToken: clean(CRON_TOKEN),
   bankAccount: clean(BANK_ACCOUNT),
   bankRecipient: clean(BANK_RECIPIENT),
-  /** The street address is never published on the site; it only goes out in booking e-mails */
+  /** Goes into booking e-mails; keep it the same as the studio address on /kontakt (venues in mock-data.ts) */
   studioAddress: clean(STUDIO_ADDRESS),
 };
 

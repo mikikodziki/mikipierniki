@@ -194,7 +194,7 @@ export function bookingConfirmed(b: BookingMailData, t: Term): Mail {
       hi(b.name),
       { p: b.payment === "voucher" ? "voucher się zgadza, rezerwacja jest potwierdzona!" : "wpłata dotarła, rezerwacja jest potwierdzona!" },
       { details: bookingDetails(b, t, true) },
-      { p: "Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu, fartuch i wszystkie materiały czekają na miejscu. Dzień przed warsztatami przypomnę się mailem." },
+      { p: "Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu, wszystkie materiały czekają na miejscu. Dzień przed warsztatami przypomnę się mailem." },
       { small: CANCEL_RULE },
     ]),
   };
