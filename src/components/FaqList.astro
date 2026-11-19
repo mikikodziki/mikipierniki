@@ -56,7 +56,8 @@ const { items, openFirst = true } = Astro.props;
   summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; padding-block: 20px; font-family: var(--display); font-weight: 600; font-size: 1.1rem; }
   summary::-webkit-details-marker { display: none; }
   summary::after {
-    content: "+"; font-family: var(--display); font-weight: var(--display-weight);
+    /* the "+" is decoration: the alt text after the slash keeps it out of the question's name */
+    content: "+"; content: "+" / ""; font-family: var(--display); font-weight: var(--display-weight);
     font-size: 1.5rem; line-height: 1; color: var(--accent);
     transition: transform .3s cubic-bezier(.2,.7,.3,1);
   }
