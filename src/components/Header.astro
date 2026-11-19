@@ -29,11 +29,26 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
 <script>
   const btn = document.getElementById("menu-btn");
   const menu = document.getElementById("mobile-menu");
-  btn?.addEventListener("click", () => {
-    const open = btn.getAttribute("aria-expanded") === "true";
-    btn.setAttribute("aria-expanded", String(!open));
-    if (menu) menu.hidden = open;
+  const setOpen = (open: boolean) => {
+    btn?.setAttribute("aria-expanded", String(open));
+    if (menu) menu.hidden = !open;
+    // the fixed bottom CTA would cover the last links on short screens
+    document.documentElement.toggleAttribute("data-menu-open", open);
+  };
+  const isOpen = () => btn?.getAttribute("aria-expanded") === "true";
+  btn?.addEventListener("click", () => setOpen(!isOpen()));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen()) {
+      setOpen(false);
+      btn?.focus();
+    }
   });
+  // a tap or focus outside the header closes the menu
+  const outside = (e: Event) => {
+    if (isOpen() && !(e.target as Element).closest?.(".top")) setOpen(false);
+  };
+  document.addEventListener("click", outside);
+  document.addEventListener("focusin", outside);
 </script>
 
 <style>
@@ -100,6 +115,9 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     background: var(--surface);
     color: var(--ink);
     border-radius: var(--radius-panel);
+    /* phones in landscape: the menu scrolls instead of running off the screen */
+    max-height: calc(100dvh - 110px);
+    overflow-y: auto;
   }
   .mobile-menu a { text-decoration: none; color: var(--ink); padding-block: 12px; font-size: 1.05rem; font-weight: 500; border-bottom: 1px solid var(--line); transition: color .16s ease; }
   .mobile-menu a:last-child { border-bottom: 0; }
