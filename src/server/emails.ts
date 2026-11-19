@@ -9,6 +9,18 @@ import { config } from "./config";
 import type { Mail } from "./mail";
 import { escapeHtml } from "./util";
 
+/** Dominika's green palette from src/styles/tokens.css (e-mail clients need literal colours) */
+const C = {
+  sheet: "#E4E7DD", // --sheet
+  surface: "#FFFEFA", // --surface
+  panel: "#E9EEE3", // between --surface and --panel-deep: the details table
+  ink: "#21362D", // --ink
+  soft: "#455947", // --ink-soft
+  brand: "#3C5948", // --dark
+  button: "#3C5948", // --dark, as .btn-primary
+  onButton: "#FFFCF4", // --on-dark
+};
+
 type Block =
   | { p: string }
   | { list: string[] }
@@ -34,19 +46,19 @@ function render(blocks: Block[], opts: { signature?: boolean } = {}): { text: st
   const inner = blocks.map((b) =>
     "p" in b ? `<p style="margin:0 0 16px">${e(b.p).replace(/\n/g, "<br>")}</p>`
     : "list" in b ? `<ul style="margin:0 0 16px;padding-left:20px">${b.list.map((x) => `<li style="margin:0 0 4px">${e(x)}</li>`).join("")}</ul>`
-    : "details" in b ? `<table role="presentation" style="margin:0 0 16px;border-collapse:collapse;width:100%;background:#FFF2D9;border-radius:12px">${b.details
-        .map(([k, v]) => `<tr><td style="padding:8px 14px;color:#764B31;vertical-align:top;white-space:nowrap">${e(k)}</td><td style="padding:8px 14px;font-weight:600">${e(v)}</td></tr>`).join("")}</table>`
-    : "button" in b ? `<p style="margin:8px 0 24px"><a href="${e(b.button.url)}" style="display:inline-block;background:#4A2C24;color:#FFFBF1;text-decoration:none;font-weight:600;padding:13px 22px;border-radius:999px">${e(b.button.label)}</a></p>`
-    : `<p style="margin:0 0 16px;font-size:13px;color:#764B31">${e(b.small).replace(/\n/g, "<br>")}</p>`,
+    : "details" in b ? `<table role="presentation" style="margin:0 0 16px;border-collapse:collapse;width:100%;background:${C.panel};border-radius:12px">${b.details
+        .map(([k, v]) => `<tr><td style="padding:8px 14px;color:${C.soft};vertical-align:top;white-space:nowrap">${e(k)}</td><td style="padding:8px 14px;font-weight:600">${e(v)}</td></tr>`).join("")}</table>`
+    : "button" in b ? `<p style="margin:8px 0 24px"><a href="${e(b.button.url)}" style="display:inline-block;background:${C.button};color:${C.onButton};text-decoration:none;font-weight:600;padding:13px 22px;border-radius:999px">${e(b.button.label)}</a></p>`
+    : `<p style="margin:0 0 16px;font-size:13px;color:${C.soft}">${e(b.small).replace(/\n/g, "<br>")}</p>`,
   ).join("");
   const sigHtml = sig
-    ? `<p style="margin:24px 0 0">${e(SIGNATURE[0])}<br><strong>${e(SIGNATURE[1])}</strong><br><span style="font-size:13px;color:#764B31">${e(SIGNATURE[2])}</span></p>`
+    ? `<p style="margin:24px 0 0">${e(SIGNATURE[0])}<br><strong>${e(SIGNATURE[1])}</strong><br><span style="font-size:13px;color:${C.soft}">${e(SIGNATURE[2])}</span></p>`
     : "";
   const html = `<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;background:#F6EEDB;color:#36150D;font:16px/1.55 -apple-system,'Segoe UI',Roboto,Arial,sans-serif">
+<body style="margin:0;background:${C.sheet};color:${C.ink};font:16px/1.55 -apple-system,'Segoe UI',Roboto,Arial,sans-serif">
 <div style="max-width:560px;margin:0 auto;padding:24px 16px">
-<p style="margin:0 0 16px;font:800 22px Georgia,serif;color:#500208">${e(site.name)}</p>
-<div style="background:#FFFBF1;border-radius:18px;padding:24px">${inner}${sigHtml}</div>
+<p style="margin:0 0 16px;font:800 22px Georgia,serif;color:${C.brand}">${e(site.name)}</p>
+<div style="background:${C.surface};border-radius:18px;padding:24px">${inner}${sigHtml}</div>
 </div></body></html>`;
   return { text, html };
 }
