@@ -218,8 +218,10 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
 
   .tile { margin: 0; aspect-ratio: 1; border-radius: 12px; position: relative; overflow: hidden; background: var(--tile); }
   .tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .photo-open { display: block; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; cursor: zoom-in; }
-  .photo-open:focus-visible { outline: 3px solid var(--on-dark); outline-offset: -5px; box-shadow: inset 0 0 0 7px var(--brand-deep); }
+  .photo-open { position: relative; display: block; width: 100%; height: 100%; border: 0; padding: 0; background: transparent; cursor: zoom-in; }
+  .photo-open:focus-visible { outline: none; }
+  /* the ring is drawn above the photo, light inside dark, so it reads on pale and dark shots alike */
+  .photo-open:focus-visible::after { content: ""; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 3px var(--brand-deep), inset 0 0 0 6px var(--on-dark), inset 0 0 0 8px var(--brand-deep); }
   .zoom-hint { position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius); background: var(--surface); color: var(--ink); opacity: 0; transition: opacity .16s ease; }
   .photo-open:hover .zoom-hint, .photo-open:focus-visible .zoom-hint { opacity: 1; }
   @media (hover: none) { .zoom-hint { opacity: 1; } }
