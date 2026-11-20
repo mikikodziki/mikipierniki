@@ -7,7 +7,8 @@ do `public/` z tą samą ścieżką.
 - `public/szron.svg` i jego generator `scripts/szron.mjs`: dawny szron w hero.
 - `public/ramka-fala.svg`, `public/ramka-fala-krem.svg`, `public/kokarda.svg`: falowana ramka
   i kokarda z wersji „butikowa cukiernia”, rysunki Dominiki.
-- `public/logo.svg`: wcześniejsze logo.
+- `public/logo.svg` i komponent `src/components/Logo.astro`: wcześniejsze logo (napis).
+  Komponent nie zadziała stąd bez przeniesienia z powrotem do `src/components/`.
 - `public/zdjecia/`: zdjęcia z wcześniejszych wersji hero (`hero-swieta-igliwie`,
   `hero-swieta-mikolaj-domek`, `hero-swieta-mis-choinka`), `igliwie-lampki.webp`
   (zastąpione przez `-hq` i `-mobile`), `opinie-pierniki-na-talerzu` i stary `portret`.

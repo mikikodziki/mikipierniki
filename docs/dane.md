@@ -152,10 +152,12 @@ Zdjęcia gotowych prac uczestników (`IMG_3813.HEIC`, `IMG_3849.heic`,
 `IMG_3924.HEIC`) są w kafelkach sekcji opinii na stronie głównej jako `opinie-*.webp`.
 Nie należą do galerii. Dwa towarzyszą istniejącym opiniom, a trzecie pokazuje efekty
 warsztatów bez przypisywania dodatkowej opinii uczestnikowi. Kafelek z opinią Marka
-i zdjęciem `IMG_3824.HEIC` został usunięty; pliki zdjęcia pozostają w repozytorium.
+i zdjęciem `IMG_3824.HEIC` został usunięty; pliki tego zdjęcia (`opinie-pierniki-na-talerzu-*`)
+są w `docs/archiwum/`. Cała sekcja opinii jest ukryta, dopóki nie przyjdą prawdziwe
+(decyzja z 20.11.2026, `src/lib/mock-data.ts`).
 
 Trzy wcześniejsze zdjęcia `hero-swieta-mis-choinka`, `hero-swieta-mikolaj-domek`
-i `hero-swieta-igliwie` pozostają w repozytorium. W świątecznym hero zastąpiły je
+i `hero-swieta-igliwie` są w `docs/archiwum/`. W świątecznym hero zastąpiły je
 nowe `hero-swieta-galazki-pierniki` i trzy serie `hero-swieta-lampki-*`.
 Wszystkie zdjęcia `hero-*` są wyłącznie do hero,
 nie dodawaj ich do galerii.
