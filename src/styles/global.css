@@ -247,6 +247,13 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
 .dlg .done { display: grid; gap: 14px; text-align: center; justify-items: center; }
 .dlg .done .done-cookie { width: 90px; }
 .dlg .done p { color: var(--ink-soft); max-width: 40ch; }
+/* phones: the whole dialog takes the form's sage tone, so the fields get the width the white frame took */
+@media (max-width: 600px) {
+  .dlg { background: var(--panel-deep); }
+  .dlg .body { padding: 22px 18px; }
+  .dlg .form-grid--boxed { padding: 0; background: transparent; border-radius: 0; }
+  .dlg .x { background: var(--surface); }
+}
 
 /* Honeypot: invisible to people, filled in by bots; the server drops those posts */
 .hp { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
