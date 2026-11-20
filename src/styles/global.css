@@ -161,6 +161,9 @@ select.input {
   background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px;
 }
 input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
+/* number fields: no spinner arrows (Safari shows them even on touch) */
+input[type="number"].input { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"].input::-webkit-inner-spin-button, input[type="number"].input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .input::placeholder { color: var(--field-line); opacity: 1; }
 .input:hover { background: var(--field-strong); }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; background: var(--field-strong); }
