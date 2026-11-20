@@ -20,21 +20,37 @@ export const site = {
 /**
  * Business data for the regulamin and the privacy policy, in one place. Values in [brackets] are
  * still placeholders; `npm run check:launch` lists them with everything else missing before launch.
- * Before filling `address`, ask Dominika which address the business is registered at; the studio
- * address (ul. Długa 55J) is public on /kontakt anyway.
  */
-export const legal = {
+export const legal: {
+  draft: boolean;
+  owner: string;
+  /** Registered business (JDG): name, registered address, NIP and REGON. Dominika has none yet
+   *  (2026-11-20); once she registers, fill all four in and the regulamin, the privacy policy and
+   *  the invoice lines show them. Her decision: the studio address is not printed in either
+   *  document, it goes only into the booking e-mails. */
+  business: string | null;
+  address: string | null;
+  nip: string | null;
+  regon: string | null;
+  hosting: string;
+  /** Accounting office, if there is one; listed among the data recipients */
+  accounting: string | null;
+  /** Latest notice, in days, when a term is cancelled for too few people */
+  lowTurnoutNoticeDays: string;
+  regulaminFrom: string;
+  privacyFrom: string;
+} = {
   /** Until a lawyer has read both documents: shows the "Wersja robocza" note on them */
   draft: true,
-  owner: "[imię i nazwisko]",
-  business: "[nazwa działalności]",
-  address: "[adres siedziby]",
-  nip: "[NIP]",
-  regon: "[REGON]",
-  hosting: "seohost.pl [pełna nazwa firmy i adres]",
-  accounting: "[nazwa biura rachunkowego]",
-  /** Latest notice, in days, when a term is cancelled for too few people */
-  lowTurnoutNoticeDays: "[liczba]",
+  owner: "Dominika Saczyńska",
+  business: null,
+  address: null,
+  nip: null,
+  regon: null,
+  hosting: "SEOHOST Sp. z o.o., ul. Obornicka 330, 60-689 Poznań",
+  accounting: null,
+  lowTurnoutNoticeDays: "7",
+  // the day the site goes live
   regulaminFrom: "[data]",
   privacyFrom: "[data]",
 };

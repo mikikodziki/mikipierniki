@@ -21,7 +21,7 @@ import { legal, site } from "@/lib/site";
     <div class="wrap">
       <div class="prose">
         <h2 id="organizator">1. Organizator</h2>
-        <p>Organizatorką warsztatów lukrowania pierników „{site.name}” jest {legal.owner}, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}, zwana dalej „Organizatorką”.</p>
+        <p>Organizatorką warsztatów lukrowania pierników „{site.name}” jest {legal.owner}{legal.business && <>, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}</>}, zwana dalej „Organizatorką”.</p>
         <p>Kontakt z Organizatorką: e-mail <a href={`mailto:${site.email}`}>{site.email}</a>, telefon <a href={site.phoneHref}>{site.phone}</a>.</p>
         <p>Warsztaty otwarte odbywają się w mojej pracowni we Wrocławiu. Dokładny adres podaję w potwierdzeniu zapisu.</p>
         <p>Regulamin określa zasady zapisów, płatności, udziału i rezygnacji z warsztatów otwartych ogłaszanych na stronie. Warsztaty zamknięte (dla firm i prywatnych grup) wyceniam indywidualnie i mogą mieć warunki ustalane osobno.</p>
@@ -43,7 +43,7 @@ import { legal, site } from "@/lib/site";
           <li>Możesz zapłacić przelewem na rachunek podany w e-mailu, który dostajesz zaraz po rezerwacji, albo kartą podarunkową (voucherem).</li>
           <li>Przy wyborze przelewu wpłata powinna zostać zaksięgowana w ciągu 3 dni od dokonania rezerwacji. Po tym czasie nieopłacona rezerwacja może zostać anulowana, a miejsce zwolnione.</li>
           <li>Voucher kosztuje 500 zł, jest ważny rok od daty zakupu i można go wykorzystać na dowolne warsztaty. Przy zapisie obdarowana osoba wybiera płatność kartą podarunkową i podaje kod vouchera, a ja potwierdzam rezerwację e-mailem po sprawdzeniu kodu. Voucher wysyłam w PDF albo, w wersji drukowanej, wydaję do odbioru osobistego w pracowni. Vouchera nie wymieniam na gotówkę.</li>
-          <li>Na życzenie wystawiam fakturę. Dane do faktury podaj w formularzu zapisu lub e-mailem.</li>
+          {legal.business && <li>Na życzenie wystawiam fakturę. Dane do faktury podaj w formularzu zapisu lub e-mailem.</li>}
         </ol>
 
         <h2 id="rezygnacja">4. Rezygnacja uczestnika</h2>

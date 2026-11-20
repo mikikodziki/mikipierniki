@@ -27,7 +27,7 @@ import { legal, site } from "@/lib/site";
         <p>Dbam o Twoje dane tak samo starannie jak o lukier na piernikach. Poniżej wyjaśniam, jakie dane zbieram, po co i jak długo je przechowuję, oraz jakie masz prawa zgodnie z RODO (rozporządzenie Parlamentu Europejskiego i Rady (UE) 2016/679).</p>
 
         <h2 id="administrator">1. Administrator danych</h2>
-        <p>Administratorką Twoich danych osobowych jest {legal.owner}, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}.</p>
+        <p>Administratorką Twoich danych osobowych jest {legal.owner}{legal.business && <>, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}</>}.</p>
         <p>Pracownia, w której prowadzę warsztaty, mieści się we Wrocławiu.</p>
         <p>We wszystkich sprawach dotyczących danych osobowych możesz napisać na <a href={`mailto:${site.email}`}>{site.email}</a> lub zadzwonić: <a href={site.phoneHref}>{site.phone}</a>.</p>
 
@@ -37,7 +37,7 @@ import { legal, site } from "@/lib/site";
           <li><strong>Zapis na warsztaty:</strong> imię i nazwisko, adres e-mail, numer telefonu, liczba uczestników (dorosłych i dzieci), wybrana metoda płatności oraz uwagi, np. informacje o alergiach.</li>
           <li><strong>Zapytania i formularz kontaktowy</strong> (zamówienia, warsztaty dla firm, vouchery): imię i nazwisko, e-mail, opcjonalnie telefon, treść wiadomości i dodatkowe szczegóły, np. okazja, liczba sztuk, termin, wielkość grupy, a także zdjęcia, które dosyłasz e-mailem.</li>
           <li><strong>Powiadomienia o nowych terminach (newsletter):</strong> adres e-mail oraz daty zapisu i potwierdzenia.</li>
-          <li><strong>Faktury:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP).</li>
+          {legal.business && <li><strong>Faktury:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP).</li>}
           <li><strong>Zdjęcia z warsztatów:</strong> wizerunek na zdjęciach, jeśli zgodzisz się na ich publikację.</li>
         </ul>
         <p>Informacje o alergiach mogą stanowić dane dotyczące zdrowia. Podajesz je dobrowolnie i wykorzystuję je wyłącznie po to, żeby bezpiecznie przygotować warsztaty.</p>
@@ -51,7 +51,7 @@ import { legal, site } from "@/lib/site";
           <li>Wysyłka powiadomień o nowych terminach: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą potwierdzasz, klikając link w pierwszym mailu, i którą możesz wycofać w każdej chwili jednym kliknięciem w linku „wypisz się”.</li>
           <li>Informacje o alergiach: Twoja wyraźna zgoda (art. 9 ust. 2 lit. a RODO).</li>
           <li>Publikacja zdjęć z warsztatów, na których widać Twój wizerunek: Twoja zgoda (art. 6 ust. 1 lit. a RODO), o którą pytam na miejscu.</li>
-          <li>Wystawianie faktur i prowadzenie księgowości: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>
+          {legal.business && <li>Wystawianie faktur i prowadzenie księgowości: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>}
           <li>Dochodzenie roszczeń i obrona przed nimi: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
         </ul>
 
@@ -59,7 +59,7 @@ import { legal, site } from "@/lib/site";
         <p>Nie sprzedaję Twoich danych. Mogą je otrzymać wyłącznie firmy, które pomagają mi prowadzić działalność, i tylko w niezbędnym zakresie:</p>
         <ul>
           <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: {legal.hosting},</li>
-          <li>biuro rachunkowe {legal.accounting} – w zakresie danych z faktur,</li>
+          {legal.accounting && <li>biuro rachunkowe {legal.accounting} – w zakresie danych z faktur,</li>}
           <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
         </ul>
         <p>[Do weryfikacji: jeśli któryś z dostawców przetwarza dane poza Europejskim Obszarem Gospodarczym, należy wskazać podstawę przekazania, np. standardowe klauzule umowne.]</p>
@@ -73,7 +73,7 @@ import { legal, site } from "@/lib/site";
           <li>Informacje o alergiach: do 30 dni po warsztatach.</li>
           <li>Kopie wiadomości e-mail wysłanych ze strony: 30 dni od wysłania.</li>
           <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
-          <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>
+          {legal.business && <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>}
         </ul>
 
         <h2 id="prawa">6. Twoje prawa</h2>

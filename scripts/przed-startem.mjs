@@ -43,6 +43,10 @@ add("Uwagi dla prawnika widoczne na stronie", all
   .filter((l) => /\[(Do|do) (weryfikacji|ustalenia|aktualizacji)/.test(l.text))
   .map((l) => `${l.at}  ${l.text.match(/\[(?:Do|do) [^\]]+\]/)[0].slice(0, 110)}`));
 
+// Not a launch blocker: Dominika has no registered business yet; the documents work without it
+const unset = legal.filter(([, k, v]) => ["business", "address", "nip", "regon"].includes(k) && v.startsWith("null")).map(([, k]) => k);
+if (unset.length) console.log(`Po założeniu działalności (JDG) uzupełnij w src/lib/site.ts: ${unset.join(", ")}.`);
+
 if (sections.length === 0) {
   console.log("Wszystko uzupełnione. Pamiętaj jeszcze o ustawieniach na serwerze (deploy/env.example).");
   process.exit(0);
