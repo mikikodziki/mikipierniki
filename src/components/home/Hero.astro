@@ -152,7 +152,7 @@ const buildSeason = seasonFor(new Date());
   .inner { position: relative; z-index: 4; }
   .copy { display: grid; gap: 24px; max-width: min(560px, 45%); }
 
-  .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 500; font-size: 0.7rem; letter-spacing: var(--caps); text-transform: uppercase; }
+  .badge { justify-self: start; display: grid; gap: 12px; color: var(--on-dark); font-weight: 500; font-size: 0.75rem; letter-spacing: var(--caps); text-transform: uppercase; }
   .badge::after { content: ""; width: 56px; height: 1px; background: color-mix(in srgb, var(--on-dark) 55%, transparent); }
 
   /* Rounded, ornamental lettering for the workshop headline. */
@@ -169,7 +169,7 @@ const buildSeason = seasonFor(new Date());
   .copy .lead, .copy .note { color: var(--on-dark); }
   .copy .lead, .copy .note, .badge { text-shadow: var(--hero-text-shadow); }
   .actions { display: flex; flex-wrap: wrap; gap: 12px; }
-  .note { font-size: 0.72rem; letter-spacing: .06em; }
+  .note { font-size: 0.75rem; letter-spacing: .06em; }
 
   /* narrow screens: the picture becomes a band under the copy */
   @media (max-width: 860px) {

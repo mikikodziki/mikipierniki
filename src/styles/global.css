@@ -67,7 +67,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
   .wrap { padding-inline: 22px; }
 }
 .section-head { display: grid; gap: 12px; margin-bottom: 36px; max-width: 680px; }
-.eyebrow { font-size: 0.7rem; font-weight: 500; letter-spacing: var(--caps); text-transform: uppercase; color: var(--accent); }
+/* nothing on the site is set below 12 px (0.75rem) */
+.eyebrow { font-size: 0.75rem; font-weight: 500; letter-spacing: var(--caps); text-transform: uppercase; color: var(--accent); }
 .lead { color: var(--ink-soft); font-size: 1.05rem; line-height: 1.7; max-width: 60ch; }
 .prose { display: grid; gap: 16px; max-width: 68ch; }
 .prose h2 { font-size: clamp(1.5rem, 3vw, 1.9rem); margin-top: 16px; }
@@ -131,12 +132,12 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .section--dark .btn-primary:hover, .panel--deep .btn-primary:hover, .term .btn-primary:hover { background: var(--tan); color: var(--on-tan); }
 .btn-ghost { background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink); }
 .btn-ghost:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
-.btn-small { padding: 12px 18px; font-size: 0.68rem; }
+.btn-small { padding: 12px 18px; font-size: 0.75rem; }
 .btn[disabled] { opacity: .6; cursor: progress; transform: none; }
 
 /* Chips (filters) */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.chip { font: 500 0.7rem var(--body); letter-spacing: var(--caps); text-transform: uppercase; padding: 11px 18px; border-radius: var(--radius); border: 0; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); cursor: pointer; }
+.chip { font: 500 0.75rem var(--body); letter-spacing: var(--caps); text-transform: uppercase; padding: 11px 18px; border-radius: var(--radius); border: 0; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); cursor: pointer; }
 .chip:hover { background: color-mix(in srgb, var(--ink) 16%, transparent); }
 .chip[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
 
@@ -144,9 +145,9 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .card { background: var(--card); border: 0; border-radius: var(--radius); }
 
 /* Forms */
-.field { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-transform: uppercase; }
+.field { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; }
 .field > .input { flex: 1 0 100%; }
-.field .hint { font-weight: 400; color: var(--ink-soft); font-size: .68rem; letter-spacing: .04em; text-transform: none; }
+.field .hint { font-weight: 400; color: var(--ink-soft); font-size: .75rem; letter-spacing: .04em; text-transform: none; }
 .input {
   font: 400 1rem var(--body); color: var(--ink); background: var(--field);
   border: 0; border-radius: var(--radius); padding: 14px 16px; width: 100%;
@@ -181,7 +182,7 @@ input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; o
 .check { display: flex; gap: 10px; align-items: start; font-weight: 400; font-size: .88rem; color: var(--ink-soft); }
 .check input, .radio input { accent-color: var(--accent); width: 18px; height: 18px; margin: 2px 0 0; flex: none; }
 fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
-legend { font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-transform: uppercase; margin-bottom: 8px; padding: 0; }
+legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; margin-bottom: 8px; padding: 0; }
 .form-error { color: var(--berry); font-size: .9rem; }
 .form-ok { font-weight: 600; color: var(--accent); }
 /* focused from script after sending, so screen readers land on it; no ring */
@@ -191,7 +192,7 @@ legend { font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-
 .ph { position: relative; background: var(--sunk); overflow: hidden; }
 .ph[data-label]::after {
   content: attr(data-label); position: absolute; left: 12px; bottom: 12px;
-  font-size: .72rem; color: var(--ink-soft); background: var(--surface);
+  font-size: .75rem; color: var(--ink-soft); background: var(--surface);
   padding: 3px 10px; border-radius: var(--radius);
 }
 
