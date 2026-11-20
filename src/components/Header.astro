@@ -59,6 +59,10 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
     padding-inline: var(--panel-gap);
     margin-block: var(--panel-gap);
   }
+  /* phones in landscape: a stuck bar would take a fifth of the screen, so it scrolls away */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .top { position: relative; top: auto; }
+  }
   .bar {
     max-width: var(--panel-max);
     margin-inline: auto;
