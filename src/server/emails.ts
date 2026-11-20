@@ -164,10 +164,10 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
     ...render([
       hi(b.name),
       { p: intro ?? `dziękuję za rezerwację! Miejsce na ${shortDate(t.startsAt)} czeka na Ciebie.` },
-      { details: bookingDetails(b, t, false) },
+      { details: bookingDetails(b, t, true) },
       { p: "Dane do przelewu:" },
       { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
-      { p: "Masz 3 dni na wpłatę. Gdy przelew dotrze, potwierdzę rezerwację mailem i podam adres pracowni." },
+      { p: "Masz 3 dni na wpłatę. Gdy przelew dotrze, potwierdzę rezerwację mailem." },
       { small: CANCEL_RULE },
     ]),
   };
@@ -180,7 +180,7 @@ export function bookingVoucher(b: BookingMailData, t: Term): Mail {
     ...render([
       hi(b.name),
       { p: `dziękuję za rezerwację! Sprawdzę kod vouchera ${b.voucherCode ?? ""} i potwierdzę rezerwację mailem, zwykle tego samego dnia.` },
-      { details: bookingDetails(b, t, false) },
+      { details: bookingDetails(b, t, true) },
       { small: CANCEL_RULE },
     ]),
   };

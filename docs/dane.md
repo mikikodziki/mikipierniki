@@ -177,7 +177,8 @@ Pełną, aktualną listę braków w treści (z plikami i liniami) wypisuje `npm 
   prawdziwe; pusta lista w `src/lib/mock-data.ts` ukrywa sekcję opinii (razem z kafelkiem
   „Efekty warsztatów”).
 - Dane działalności do regulaminu i polityki prywatności: `legal` w `src/lib/site.ts`.
-  Pytanie do Dominiki: czy adres siedziby działalności to adres pracowni (ul. Długa 55J,
-  publiczny na stronie Kontakt)?
+  Na 20.11.2026 Dominika nie ma zarejestrowanej działalności: dokumenty podają tylko jej imię
+  i nazwisko oraz kontakt. Adresu nie wpisujemy do regulaminu ani polityki; każdy zapisany
+  dostaje go w mailu. Po założeniu JDG uzupełnić nazwę, adres siedziby, NIP i REGON.
 - Przeczytanie regulaminu i polityki przez prawnika (potem `legal.draft = false`).
 - Zdjęcia z przebiegu warsztatów (zdjęcia gotowych prac są już w sekcji opinii).

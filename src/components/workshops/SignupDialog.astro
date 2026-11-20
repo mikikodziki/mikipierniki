@@ -181,8 +181,8 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
         $("su-done-title").textContent = res.status === "waitlist" ? "Jesteś na liście rezerwowej" : "Do zobaczenia przy lukrze!";
         $("su-done-text").textContent =
           res.status === "waitlist" ? `Gdy zwolni się miejsce na ${date}, napiszę do Ciebie jako pierwszej osoby z listy.`
-          : req.payment === "voucher" ? `Rezerwacja na ${date} zapisana. Sprawdzę voucher i potwierdzę ją mailem na ${req.email}, razem z adresem pracowni.`
-          : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) wysłałam na ${req.email}. Masz na wpłatę 3 dni, a po wpłacie dostaniesz potwierdzenie z adresem pracowni.`;
+          : req.payment === "voucher" ? `Rezerwacja na ${date} zapisana. Szczegóły z adresem pracowni wysłałam na ${req.email}. Sprawdzę voucher i potwierdzę rezerwację mailem.`
+          : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) i adres pracowni wysłałam na ${req.email}. Masz na wpłatę 3 dni, a po wpłacie dostaniesz potwierdzenie.`;
         $("signup-fields").hidden = true;
         $("signup-done").hidden = false;
         $("su-done-title").focus();

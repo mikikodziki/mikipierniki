@@ -288,6 +288,8 @@ try {
   check("panel term page renders bookings and interest", html.includes("Celina Zawada") && html.includes("Anna Kowalska") && html.includes("wycofane"));
   const htmlMail = readFileSync(join(dataDir, "mail", mails().find((f) => f.includes("booking-awaiting")).replace(".txt", ".html")), "utf8");
   check("HTML mail escapes user input", !htmlMail.includes("<script"));
+  const firstMails = mails().filter((f) => f.includes("booking-awaiting") || f.includes("booking-voucher")).map((f) => readFileSync(join(dataDir, "mail", f), "utf8"));
+  check("first booking e-mails (transfer and voucher) carry the studio address", firstMails.length >= 2 && firstMails.every((x) => x.includes("ul. Testowa 1")), firstMails.length);
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "<script>alert(1)</script>", email: "xss@example.com", consent: true });
   check("interest on open term rejected (only proposed)", r.status === 409);
   // ---------- production without SMTP: mail must fail visibly, not pretend to be sent ----------

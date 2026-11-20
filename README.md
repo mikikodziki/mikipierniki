@@ -30,8 +30,8 @@ hasła, na serwerze wymaga `PANEL_PASSWORD`.
 **Jak działają zapisy:** Dominika dodaje w panelu termin jako *propozycję*. Odwiedzający
 zaznaczają „pasuje mi” (bez płatności). Gdy zbierze się grupa, Dominika *otwiera zapisy* i jednym
 przyciskiem wysyła chętnym link do rezerwacji. Rezerwacja to przelew w 3 dni albo voucher;
-po wpłacie Dominika klika „Opłacone” i uczestnik dostaje potwierdzenie z adresem pracowni,
-a dzień przed warsztatami przypomnienie.
+adres pracowni jest już w pierwszym mailu po rezerwacji. Po wpłacie Dominika klika „Opłacone”
+i uczestnik dostaje potwierdzenie, a dzień przed warsztatami przypomnienie.
 
 Wymaga Node ≥ 22.12. Podgląd sezonu: `?sezon=swieta`, `?sezon=wielkanoc`, `?sezon=rok`.
 
@@ -68,7 +68,7 @@ docs/szkic.html         zatwierdzony szkic wizualny
 - Dane statyczne tylko przez `src/lib/api.ts`, terminy tylko przez `src/server/terms.ts`. Strony nie importują `mock-data.ts`.
 - Kod z `src/server/` nie może trafić do skryptów w przeglądarce (importuje `node:sqlite`).
 - Strony renderowane na serwerze mają `export const prerender = false`. Reszta zostaje statyczna.
-- Adres pracowni nie trafia na stronę ani do repozytorium: jest tylko w `STUDIO_ADDRESS` na serwerze i w mailach z potwierdzeniem.
+- Adres pracowni w mailach bierze się tylko z `STUDIO_ADDRESS` na serwerze (jedno miejsce). Regulamin i polityka go nie podają (decyzja Dominiki); mapa na stronie Kontakt zostaje, jak jest.
 - Treść sezonowa: renderuj wszystkie warianty z `data-for-season="swieta"` itd., CSS pokazuje właściwy.
 - Zdjęcia: do czasu prawdziwych zdjęć `<div class="ph" data-label="zdjęcie: …">` z ilustracją `<Cookie>`.
 - Nowe zdjęcie: `node scripts/zdjecia.mjs <plik> <nazwa>` tworzy w `public/zdjecia` wszystkie szerokości, których używa `<Photo>`.
