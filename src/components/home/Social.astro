@@ -34,7 +34,8 @@ const testimonials = await getTestimonials();
 <section class="section section--sunk" id="opinie" aria-labelledby="opinions-title">
   <div class="wrap">
     <SectionHead id="opinions-title" eyebrow="Opinie uczestników" title="Co mówią po warsztatach" lead="Po warsztatach wyszły piękne pierniki — każdy udekorowany po swojemu." />
-    <div class="quotes">
+    <!-- focusable so the sideways scroll (600–1100 px) also works from the keyboard -->
+    <div class="quotes" role="region" aria-label="Opinie, przewiń w bok" tabindex="0">
       {testimonials.map((t) => (
         <figure class="quote card">
           {t.photo && <div class="quote-photo"><Photo name={t.photo} alt={t.photoAlt ?? "Pierniki udekorowane po warsztatach"} ratio="1" sizes="(max-width: 600px) 100vw, (max-width: 1100px) 50vw, 25vw" /></div>}
@@ -125,6 +126,14 @@ const testimonials = await getTestimonials();
   .a-copy { display: grid; gap: 18px; }
 
   @media (min-width: 1101px) { .quotes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  /* two opinions in view and the third peeking in: scroll sideways instead of wrapping 2 + 1 */
+  @media (min-width: 601px) and (max-width: 1100px) {
+    .quotes:has(> :nth-child(3)) {
+      grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 18px) * .45);
+      overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    }
+    .quotes > * { scroll-snap-align: start; }
+  }
   @media (max-width: 600px) { .quotes { grid-template-columns: 1fr; } }
   @media (max-width: 760px) { .voucher, .about { grid-template-columns: 1fr; } .portrait { max-width: 340px; } }
   @media (max-width: 700px) { .gallery { grid-template-columns: repeat(2, 1fr); } }
