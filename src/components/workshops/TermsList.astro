@@ -7,7 +7,8 @@ interface Props {
   terms: Term[];
   /** Show type filter chips */
   filters?: boolean;
-  /** Home page: between 600 and 1100 px three cards scroll sideways instead of wrapping 2 + 1 */
+  /** Home page: on phones the cards sit in one row that scrolls sideways, with dots under it;
+   *  wider screens show them all (three in a row, or 2 + 1) */
   row?: boolean;
 }
 const { terms, filters = true, row = false } = Astro.props;
@@ -23,9 +24,16 @@ const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
     </div>
   )}
   {terms.length > 0 ? (
-    <div class:list={["grid", { row }]}>
-      {terms.map((t) => <TermCard term={t} />)}
-    </div>
+    <>
+      <div class:list={["grid", { row }]}>
+        {terms.map((t) => <TermCard term={t} />)}
+      </div>
+      {row && terms.length > 1 && (
+        <div class="dots" aria-hidden="true">
+          {terms.map((_, i) => <i class:list={{ on: i === 0 }} />)}
+        </div>
+      )}
+    </>
   ) : (
     <p class="none">Nowe terminy pojawią się tu wkrótce. <a href="/#powiadomienia">Zapisz się na powiadomienia</a>, a dam Ci znać jako pierwszej osobie, albo <a href="/kontakt">napisz do mnie</a>.</p>
   )}
@@ -49,23 +57,55 @@ const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
         if (empty) empty.hidden = shown > 0;
       }),
     );
+
+    // phones: the dot of the card in view
+    const row = root.querySelector<HTMLElement>(".row");
+    const dots = root.querySelectorAll<HTMLElement>(".dots i");
+    if (!row || dots.length < 2) return;
+    // Tab into a card that is half off-screen: the browser's own nudge would be undone by the
+    // snap, so bring the whole card in
+    row.addEventListener("focusin", (e) => {
+      if (row.scrollWidth <= row.clientWidth) return;
+      (e.target as HTMLElement).closest<HTMLElement>(".term")?.scrollIntoView({ block: "nearest", inline: "start" });
+    });
+    let queued = false;
+    row.addEventListener("scroll", () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        const step = cards[1].offsetLeft - cards[0].offsetLeft;
+        const atEnd = row.scrollLeft >= row.scrollWidth - row.clientWidth - 2;
+        const at = atEnd ? dots.length - 1 : Math.round(row.scrollLeft / step);
+        dots.forEach((d, i) => d.classList.toggle("on", i === at));
+      });
+    }, { passive: true });
   });
 </script>
 
 <style>
   .terms-list { display: grid; gap: 24px; }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(290px, 100%), 1fr)); gap: 18px; }
-  /* two cards in view and the third peeking in from the edge; the padding leaves room for the
-     hover lift and shadow, which a scroll container would otherwise clip */
-  @media (min-width: 600px) and (max-width: 1100px) {
-    .row:has(> :nth-child(3)) {
-      grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: calc((100% - 18px) * .45);
-      overflow-x: auto; overscroll-behavior-x: contain;
-      scroll-snap-type: x mandatory;
-      padding-block: 8px 48px; margin-block: -8px -48px;
+  .dots { display: none; }
+  /* tablets: always 2 + 1, all in view (auto-fill would give one huge column just above 600 px) */
+  @media (min-width: 601px) and (max-width: 1100px) { .row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  /* phones: one row that scrolls sideways across the whole section, so the next card is cut off
+     at its edge and the dots show there is more; the block padding leaves room for the
+     shadow, which a scroll container would otherwise clip */
+  @media (max-width: 600px) {
+    .row:has(> :nth-child(2)) {
+      grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 84%;
+      overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+      scroll-snap-type: x mandatory; scroll-padding-inline: 22px;
+      margin-inline: -22px; padding: 8px 22px 16px; margin-block: -8px -16px;
     }
-    .row:has(> :nth-child(3)) > :global(*) { scroll-snap-align: start; }
+    .row::-webkit-scrollbar { display: none; }
+    .row:has(> :nth-child(2)) > :global(*) { scroll-snap-align: start; }
+    .dots { display: flex; justify-content: center; gap: 8px; }
+    .dots i { width: 8px; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--ink) 25%, transparent); transition: width .2s ease, background-color .2s ease; }
+    .dots i.on { width: 22px; background: var(--ink); }
   }
+  @media (prefers-reduced-motion: reduce) { .dots i { transition: none; } }
   .empty { color: var(--ink-soft); }
   .none { padding: 22px 24px; border-radius: var(--radius-lg); background: var(--card); max-width: 70ch; }
   .none a { font-weight: 600; }

@@ -123,10 +123,13 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 
   /* touch screens have no hover: keep everything open */
   @media (hover: none) {
-    .term { aspect-ratio: auto; }
+    /* a card next to a taller one (in a row or 2 + 1) grows its panel, price and button go to the bottom */
+    .term { aspect-ratio: auto; display: flex; flex-direction: column; }
     .media { position: relative; aspect-ratio: 4 / 3; }
-    .panel { position: static; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+    .panel { position: static; flex: 1; grid-template-rows: auto 1fr; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
     .more { grid-template-rows: 1fr; opacity: 1; }
+    .more-in { grid-template-rows: auto auto 1fr; }
+    .foot { align-self: end; }
   }
   @media (prefers-reduced-motion: reduce) { .more { transition: none; } }
 </style>
