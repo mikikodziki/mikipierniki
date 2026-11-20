@@ -9,7 +9,7 @@ interface Props {
 const { updated } = Astro.props;
 ---
 <aside class:list={["draft", { "draft--done": !legal.draft }]} role="note">
-  {legal.draft && <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją. Fragmenty w nawiasach kwadratowych, np. [nazwa działalności, NIP, numer rachunku], czekają na dane działalności i zostaną uzupełnione.</p>}
+  {legal.draft && <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją.</p>}
   <p class="updated">Ostatnia aktualizacja: {updated}</p>
 </aside>
 

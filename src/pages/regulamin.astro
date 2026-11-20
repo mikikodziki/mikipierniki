@@ -5,8 +5,9 @@ import DraftNote from "@/components/pages/DraftNote.astro";
 import { legal, site } from "@/lib/site";
 
 /*
- * DRAFT: to be verified by a lawyer before launch.
- * Company data comes from `legal` in src/lib/site.ts; [bracketed] notes left in the text are for the lawyer.
+ * DRAFT: to be verified by a lawyer before launch (legal.draft shows the note).
+ * Company data comes from `legal` in src/lib/site.ts. Sections 4.5 (withdrawal, voucher) and 6.5
+ * (teenagers from 13) are proposals written on 2026-11-20, waiting for Dominika's and a lawyer's OK.
  */
 ---
 <Base
@@ -52,7 +53,7 @@ import { legal, site } from "@/lib/site";
           <li>Przy rezygnacji później niż 7 dni przed terminem wpłata nie podlega zwrotowi, ale możesz przekazać swoje miejsce innej osobie. Wystarczy, że podasz mi jej imię i nazwisko e-mailem przed warsztatami.</li>
           <li>Rezygnację zgłaszasz e-mailem na adres {site.email}. Liczy się data otrzymania wiadomości.</li>
           <li>Zwrot następuje w ciągu 14 dni, tą samą metodą, którą dokonano płatności, chyba że ustalimy inaczej.</li>
-          <li>[Do weryfikacji przez prawnika: zakres prawa odstąpienia od umowy zawartej na odległość w przypadku usług związanych z wypoczynkiem i rozrywką w określonym terminie, art. 38 ustawy o prawach konsumenta.]</li>
+          <li>Warsztaty to usługa związana z wypoczynkiem, świadczona w z góry ustalonym dniu. Przy takich usługach ustawa o prawach konsumenta (art. 38) nie daje prawa odstąpienia od umowy zawartej na odległość, dlatego obowiązują zasady rezygnacji z punktów 1–4. Inaczej jest z voucherem, który nie ma ustalonego terminu: od jego zakupu możesz odstąpić w ciągu 14 dni bez podania przyczyny, jeśli nie został jeszcze wykorzystany.</li>
         </ol>
 
         <h2 id="odwolanie">5. Odwołanie lub zmiana warsztatów przez Organizatorkę</h2>
@@ -68,7 +69,8 @@ import { legal, site } from "@/lib/site";
           <li>Warsztaty dla dzieci są przeznaczone dla dzieci w wieku od 6 do 12 lat i trwają 2 godziny. Dziecko z tej grupy wiekowej przychodzi z rodzicem lub opiekunem.</li>
           <li>Starsze dzieci radzą sobie samodzielnie i mogą wziąć udział bez opiekuna.</li>
           <li>Dzieci przez cały czas trwania warsztatów pozostają pod opieką rodzica lub opiekuna, który odpowiada za ich bezpieczeństwo.</li>
-          <li>Warsztaty wieczorne z winem są przeznaczone wyłącznie dla osób pełnoletnich. [Do ustalenia: udział młodzieży w warsztatach dla dorosłych od określonego wieku za zgodą opiekuna.]</li>
+          <li>Warsztaty wieczorne z winem są przeznaczone wyłącznie dla osób pełnoletnich.</li>
+          <li>W warsztatach dla dorosłych mogą wziąć udział osoby od 13 lat. Osoba niepełnoletnia potrzebuje zgody rodzica lub opiekuna, którą wystarczy przesłać e-mailem przed warsztatami.</li>
         </ol>
 
         <h2 id="alergeny">7. Alergeny i bezpieczeństwo</h2>
