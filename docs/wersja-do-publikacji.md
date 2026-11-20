@@ -1,8 +1,12 @@
 # Wersja do publikacji — przekazanie dla Dawida
 
+> **Stan z 20.11.2026:** integracja opisana niżej jest zrobiona. Wygląd z tej wersji i zaplecze
+> z `feat/zapisy` są razem na `main`, a gałąź `feat/frontend` została usunięta (jej commity są
+> w historii `main`, a tag `wersja-do-publikacji` zostaje). Dalej oryginalna notatka przekazania.
+
 Repozytorium: https://github.com/mikikodziki/mikipierniki
 
-Zatwierdzony frontend: gałąź `feat/frontend`, tag `wersja-do-publikacji`, wydanie
+Zatwierdzony frontend: gałąź `feat/frontend` (usunięta po integracji), tag `wersja-do-publikacji`, wydanie
 „Wersja do publikacji” w GitHub Releases. Tag wskazuje konkretną wersję, niezależnie
 od kolejnych zmian na gałęzi.
 
@@ -29,9 +33,9 @@ panel, testy oraz konfigurację nginx, systemd i GitHub Actions.
 
 Instrukcje zaplecza:
 
-- [Wdrożenie na VPS](https://github.com/mikikodziki/mikipierniki/blob/feat/zapisy/deploy/README.md).
-- [Konfiguracja środowiska — przykład bez haseł](https://github.com/mikikodziki/mikipierniki/blob/feat/zapisy/deploy/env.example).
-- [Płatności online](https://github.com/mikikodziki/mikipierniki/blob/feat/zapisy/docs/platnosci-online.md).
+- [Wdrożenie na VPS](https://github.com/mikikodziki/mikipierniki/blob/main/deploy/README.md).
+- [Konfiguracja środowiska — przykład bez haseł](https://github.com/mikikodziki/mikipierniki/blob/main/deploy/env.example).
+- [Płatności online](https://github.com/mikikodziki/mikipierniki/blob/main/docs/platnosci-online.md).
 
 Gałęzie nie zostały automatycznie scalone. Przy integracji trzeba zachować wygląd
 z tagu `wersja-do-publikacji` i działanie serwera z `feat/zapisy`. W szczególności

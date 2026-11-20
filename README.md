@@ -8,7 +8,8 @@ z bazą SQLite. Wdrożenie na VPS: `deploy/README.md`.
 
 Zatwierdzony wygląd strony jest zapisany pod tagiem `wersja-do-publikacji`.
 [Instrukcja przekazania i wdrożenia dla Dawida](docs/wersja-do-publikacji.md).
-Ta gałąź (`feat/zapisy`) łączy ten wygląd z zapleczem zapisów, poczty i panelu.
+Od 20.11.2026 `main` łączy ten wygląd z zapleczem zapisów, poczty i panelu (dawne gałęzie
+`feat/frontend` i `feat/zapisy` są scalone; wygląd referencyjny został na tagu).
 
 ## Uruchomienie
 
