@@ -88,6 +88,8 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <slot name="end" />
 
 <script>
+  import { enhanceDate } from "@/lib/date-picker";
+
   /**
    * Replaces the OS dropdown list with one we can style. The native <select>
    * stays in the DOM and keeps the value, so forms and scripts are unaffected.
@@ -212,6 +214,8 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   }
 
   document.querySelectorAll<HTMLSelectElement>("select.input").forEach(enhance);
+  // and the OS date picker with a calendar in the site's style (src/lib/date-picker.ts)
+  document.querySelectorAll<HTMLInputElement>('input[type="date"].input').forEach(enhanceDate);
 </script>
   </body>
 </html>

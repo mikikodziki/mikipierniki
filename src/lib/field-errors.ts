@@ -33,8 +33,9 @@ export function messageFor(el: Field): string | null {
   return el.checkValidity() ? null : "Sprawdź to pole.";
 }
 
-/** The element people actually focus: the styled button for an enhanced <select>, else the field. */
-const focusTarget = (el: Field): HTMLElement => el.closest(".select-shell")?.querySelector<HTMLElement>(".sel") ?? el;
+/** The element people actually focus: the styled button for an enhanced <select> or date, else the field. */
+const focusTarget = (el: Field): HTMLElement =>
+  el.closest(".select-shell")?.querySelector<HTMLElement>(".sel") ?? el.closest(".date-shell")?.querySelector<HTMLElement>(".dp") ?? el;
 
 /** Shows (or, with null, removes) the message under one field. */
 export function setFieldError(el: Field, msg: string | null): void {
@@ -56,7 +57,7 @@ export function setFieldError(el: Field, msg: string | null): void {
     box.setAttribute("aria-hidden", "true");
     // a consent box gets it at the end of its line; a box in a group of choices, under the group
     if (el instanceof HTMLInputElement && el.type === "checkbox") (el.closest(".check") ?? el.closest("fieldset") ?? el.closest("label")!).append(box);
-    else (el.closest(".select-shell") ?? el).after(box);
+    else (el.closest(".select-shell") ?? el.closest(".date-shell") ?? el).after(box);
   }
   box.textContent = msg;
   for (const t of targets) {
@@ -95,7 +96,7 @@ export function liveFieldErrors(form: HTMLFormElement, check: (el: Field) => str
   form.addEventListener("change", update);
 }
 
-/** Moves focus to the first bad field (the styled button for a select). */
+/** Moves focus to the first bad field (the styled button for a select or a date). */
 export function focusFirst(bad: Field[]): void {
   if (bad[0]) focusTarget(bad[0]).focus();
 }

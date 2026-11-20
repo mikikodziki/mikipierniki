@@ -243,6 +243,64 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
 .sel-opt.is-active { background: color-mix(in srgb, var(--ink) 10%, transparent); }
 .sel-opt[aria-selected="true"].is-active { background: color-mix(in srgb, var(--tan) 34%, transparent); }
 
+/* Custom date picker: the native date input stays in the DOM and keeps the value, the button and
+   calendar below are what people see. Enhanced by src/lib/date-picker.ts. The shell sits inside
+   the field's label, so it undoes the label's small caps. */
+.date-shell { position: relative; width: 100%; font-size: 1rem; font-weight: 400; letter-spacing: normal; text-transform: none; }
+.date-shell input.input { position: absolute; width: 1px; height: 1px; min-height: 0; padding: 0; margin: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; pointer-events: none; }
+.dp {
+  font: 400 1rem var(--body); color: var(--ink); background: var(--field);
+  border: 0; border-radius: var(--radius); padding: 14px 48px 14px 16px; width: 100%; min-height: 52px;
+  text-align: left; cursor: pointer; position: relative;
+  box-shadow: inset 0 0 0 1px var(--field-line);
+}
+.dp.is-empty { color: var(--ink-soft); }
+.dp::after, .dp-nav::before { content: ""; position: absolute; background: currentColor; }
+.dp::after {
+  right: 16px; top: 50%; width: 18px; height: 18px; margin-top: -9px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Crect x='2' y='3.5' width='14' height='12.5' rx='2'/%3E%3Cpath d='M2 7.5h14M6 1.8v3.4M12 1.8v3.4'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round'%3E%3Crect x='2' y='3.5' width='14' height='12.5' rx='2'/%3E%3Cpath d='M2 7.5h14M6 1.8v3.4M12 1.8v3.4'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.dp:hover { background: var(--field-strong); }
+.dp:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+.dp[aria-invalid="true"] { outline: 2px solid var(--berry); }
+.dp-pop {
+  position: absolute; z-index: 40; left: 0; top: calc(100% + 6px);
+  width: 328px; max-width: calc(100vw - 16px); padding: 12px 14px 8px;
+  background: var(--surface); color: var(--ink); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-menu);
+}
+.dp-pop[hidden] { display: none !important; }
+.dp-pop--up { top: auto; bottom: calc(100% + 6px); }
+.dp-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.dp-title { margin: 0; font-family: var(--display); font-weight: var(--display-weight); font-size: 1.2rem; }
+.dp-title::first-letter { text-transform: uppercase; }
+.dp-nav { position: relative; width: 40px; height: 40px; flex: none; border: 0; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer; }
+.dp-nav::before {
+  left: 14px; top: 16px; width: 12px; height: 8px;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23000' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.dp-nav--prev::before { transform: rotate(90deg); }
+.dp-nav--next::before { transform: rotate(-90deg); }
+.dp-nav:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.dp-nav:focus-visible, .dp-day:focus-visible, .dp-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.dp-nav:disabled { opacity: .3; cursor: default; background: none; }
+.dp-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.dp-grid th { padding: 4px 0 6px; font-size: .75rem; font-weight: 500; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-soft); text-align: center; }
+.dp-grid td { padding: 2px; text-align: center; }
+.dp-day {
+  width: 100%; max-width: 40px; aspect-ratio: 1; border: 0; border-radius: var(--radius);
+  background: transparent; color: var(--ink); font: 400 .95rem var(--body); cursor: pointer;
+}
+.dp-day:hover { background: color-mix(in srgb, var(--tan) 34%, transparent); }
+.dp-day[aria-current="date"] { box-shadow: inset 0 0 0 1px var(--ink-soft); font-weight: 600; }
+.dp-day[aria-pressed="true"] { background: var(--accent); color: var(--on-dark); font-weight: 600; box-shadow: none; }
+.dp-day[aria-disabled="true"] { color: color-mix(in srgb, var(--ink) 32%, transparent); background: none; cursor: default; }
+.dp-foot { display: flex; justify-content: space-between; margin-top: 6px; padding-top: 4px; border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+.dp-link { padding: 10px 8px; border: 0; border-radius: var(--radius); background: none; color: var(--accent); font: 600 .75rem var(--body); letter-spacing: var(--caps); text-transform: uppercase; cursor: pointer; }
+.dp-link:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+
 /* Dialogs (sign-up and "this date suits me"): <dialog class="dlg"> with .body, .head, .done inside */
 .dlg { border: 0; padding: 0; border-radius: 22px; width: min(560px, calc(100% - 32px)); max-height: calc(100% - 32px); background: var(--surface); color: var(--ink); box-shadow: var(--shadow-dialog); }
 .dlg::backdrop { background: var(--backdrop); backdrop-filter: blur(3px); }
