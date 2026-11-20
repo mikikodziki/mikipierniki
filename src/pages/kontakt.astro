@@ -11,6 +11,9 @@ const homeAddress = home?.address ? `${home.address}, ${home.city}` : undefined;
 // Pin the municipal address point: Google resolves the text "55J" to number 55.
 const mapDestination = home?.coordinates ? `${home.coordinates.lat},${home.coordinates.lng}` : homeAddress;
 const mapQuery = mapDestination ? encodeURIComponent(mapDestination) : "";
+// The Google map loads only after a click: until then the browser sends Google nothing (privacy policy, section 7).
+const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=17&output=embed&hl=pl`;
+const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
@@ -100,22 +103,32 @@ const jsonLd = {
         <p class="lead">Wszystkie warsztaty otwarte prowadzę w mojej pracowni we Wrocławiu. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
       </div>
       {homeAddress && (
-        <div class="venue-map">
-          <iframe
-            title={`Mapa dojazdu do Miki Pierniki — ${homeAddress}`}
-            src={`https://maps.google.com/maps?q=${mapQuery}&z=17&output=embed&hl=pl`}
-            width="380"
-            height="300"
-            loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"
-            allowfullscreen
-          ></iframe>
+        <div class="venue-map" data-map={mapSrc} data-map-title={`Mapa dojazdu do Miki Pierniki — ${homeAddress}`}>
+          <div class="map-gate">
+            <svg class="map-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
+            <button class="btn btn-primary btn-small" type="button" data-map-show>Pokaż mapę</button>
+            <p>Mapa Google wczyta się po kliknięciu. Wtedy Google otrzyma m.in. Twój adres IP. <a href={mapLink} target="_blank" rel="noopener">Otwórz w Google Maps</a></p>
+          </div>
         </div>
       )}
     </div>
   </section>
 </Base>
 
+<script>
+  document.querySelector("[data-map-show]")?.addEventListener("click", () => {
+    const box = document.querySelector<HTMLElement>(".venue-map")!;
+    const frame = document.createElement("iframe");
+    frame.src = box.dataset.map!;
+    frame.title = box.dataset.mapTitle!;
+    frame.referrerPolicy = "no-referrer-when-downgrade";
+    frame.allowFullscreen = true;
+    box.replaceChildren(frame);
+    // the button is gone: keep keyboard focus in the same place
+    frame.tabIndex = 0;
+    frame.focus();
+  });
+</script>
 <style>
   .contact { display: grid; gap: 40px; }
   @media (min-width: 900px) { .contact { grid-template-columns: 0.9fr 1.1fr; gap: 64px; align-items: start; } }
@@ -137,6 +150,13 @@ const jsonLd = {
   .venue-copy { display: grid; gap: 20px; min-width: 0; }
   .venue-map { min-width: 0; width: 100%; max-width: 380px; height: 280px; justify-self: center; overflow: hidden; border-radius: var(--radius-panel); border: 1px solid var(--line); background: var(--surface); }
   .venue-map iframe { display: block; width: 100%; height: 100%; border: 0; }
+  .map-gate {
+    height: 100%; display: grid; place-content: center; justify-items: center; gap: 14px;
+    padding: 24px; text-align: center; background: var(--panel-deep);
+  }
+  .map-pin { width: 34px; height: 34px; fill: var(--accent); }
+  .map-gate p { font-size: .85rem; color: var(--ink-soft); max-width: 34ch; }
+  .map-gate a { color: var(--ink); font-weight: 600; }
   @media (min-width: 900px) {
     .venue-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
     .venue-map { height: 300px; justify-self: end; }
