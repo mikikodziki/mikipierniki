@@ -25,6 +25,8 @@
   --card: rgba(255, 255, 255, .78);
   --field: #FFFEFA;
   --field-strong: #FFFFFF;
+  /* field outline and placeholder text: 5:1 on --field, 3.6:1 on --panel-deep (WCAG 1.4.3, 1.4.11) */
+  --field-line: color-mix(in srgb, var(--ink) 70%, var(--field));
   --sunk: #DDE4D4;
   --panel-deep: #D4DEC9;
   --ink: #21362D;

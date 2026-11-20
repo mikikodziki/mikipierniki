@@ -150,6 +150,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
   font: 400 1rem var(--body); color: var(--ink); background: var(--field);
   border: 0; border-radius: var(--radius); padding: 14px 16px; width: 100%;
   min-height: 52px; appearance: none; -webkit-appearance: none;
+  box-shadow: inset 0 0 0 1px var(--field-line);
 }
 textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
 select.input {
@@ -158,14 +159,14 @@ select.input {
   background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px;
 }
 input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
-.input::placeholder { color: color-mix(in srgb, var(--ink) 45%, transparent); }
+.input::placeholder { color: var(--field-line); opacity: 1; }
 .input:hover { background: var(--field-strong); }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; background: var(--field-strong); }
 .input[aria-invalid="true"] { outline: 2px solid var(--berry); }
 .form-grid { display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
-.radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: var(--radius); cursor: pointer; }
+.radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: var(--radius); cursor: pointer; box-shadow: inset 0 0 0 1px var(--field-line); }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
 /* a form sits on the deeper panel tone, so the light fields read clearly */
@@ -206,6 +207,7 @@ legend { font-weight: 500; font-size: .72rem; letter-spacing: var(--caps); text-
   font: 400 1rem var(--body); color: var(--ink); background: var(--field);
   border: 0; border-radius: var(--radius); padding: 14px 44px 14px 16px; width: 100%; min-height: 52px;
   text-align: left; cursor: pointer; position: relative;
+  box-shadow: inset 0 0 0 1px var(--field-line);
 }
 .sel::after {
   content: ""; position: absolute; right: 16px; top: 50%; width: 12px; height: 8px; margin-top: -4px;
