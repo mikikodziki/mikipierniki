@@ -40,6 +40,11 @@ const {
     const bad = !input || !input.checkValidity() || !input.value.trim();
     const fail = document.getElementById("news-fail")!;
     document.getElementById("news-err")!.hidden = !bad;
+    // the message under the field is also read when the field gets focus
+    for (const [k, v] of [["aria-invalid", "true"], ["aria-describedby", "news-err"]]) {
+      if (bad) input?.setAttribute(k, v);
+      else input?.removeAttribute(k);
+    }
     fail.hidden = true;
     if (bad) { input?.focus(); return; }
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;

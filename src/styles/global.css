@@ -145,7 +145,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .card { background: var(--card); border: 0; border-radius: var(--radius); }
 
 /* Forms */
-.field { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; }
+.field { display: flex; flex-wrap: wrap; align-items: baseline; align-content: start; gap: 6px; font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; }
 .field > .input { flex: 1 0 100%; }
 .field .hint { font-weight: 400; color: var(--ink-soft); font-size: .75rem; letter-spacing: .04em; text-transform: none; }
 .input {
@@ -167,7 +167,13 @@ input[type="number"].input::-webkit-inner-spin-button, input[type="number"].inpu
 .input::placeholder { color: var(--field-line); opacity: 1; }
 .input:hover { background: var(--field-strong); }
 .input:focus { outline: 2px solid var(--accent); outline-offset: 0; background: var(--field-strong); }
-.input[aria-invalid="true"] { outline: 2px solid var(--berry); }
+.input[aria-invalid="true"], .sel[aria-invalid="true"] { outline: 2px solid var(--berry); }
+/* per-field error under the control, inside its label (src/lib/field-errors.ts) */
+.field-msg { flex: 1 0 100%; color: var(--berry); font-size: .85rem; font-weight: 500; letter-spacing: normal; text-transform: none; line-height: 1.4; }
+.check:has(.field-msg) { flex-wrap: wrap; }
+.check > span:not(.field-msg) { flex: 1 1 0; min-width: 0; }
+.check .field-msg { padding-left: 28px; }
+.check input[aria-invalid="true"] { outline: 2px solid var(--berry); outline-offset: 2px; }
 .form-grid { display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }

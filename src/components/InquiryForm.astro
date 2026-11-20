@@ -51,25 +51,22 @@ const {
 
 <script>
   import { ApiError, sendInquiry } from "@/lib/api";
+  import { checkFields, focusFirst, liveFieldErrors, summary } from "@/lib/field-errors";
   import type { InquiryKind } from "@/lib/types";
 
   document.querySelectorAll<HTMLFormElement>("form[data-inquiry]").forEach((form) => {
     const err = form.querySelector<HTMLElement>(".form-error")!;
     const ok = form.querySelector<HTMLElement>(".form-ok")!;
     const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+    liveFieldErrors(form);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      let valid = true;
-      form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(".input").forEach((el) => {
-        const good = el.checkValidity() && (!el.required || el.value.trim() !== "");
-        el.setAttribute("aria-invalid", String(!good));
-        if (!good) valid = false;
-      });
       const consent = form.querySelector<HTMLInputElement>('input[name="consent"]')!;
-      if (!valid || !consent.checked) {
+      const bad = checkFields([...form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(".input"), consent]);
+      if (bad.length) {
         err.hidden = false;
-        err.textContent = !valid ? "Uzupełnij zaznaczone pola." : "Zaznacz zgodę na kontakt, żebym mogła odpisać.";
-        (form.querySelector<HTMLElement>('[aria-invalid="true"]') ?? consent).focus();
+        err.textContent = summary(bad.length);
+        focusFirst(bad);
         return;
       }
       err.hidden = true;

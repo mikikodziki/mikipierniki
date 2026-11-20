@@ -81,6 +81,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
 
 <script>
   import { ApiError, bookingTotal, createBooking } from "@/lib/api";
+  import { clearFieldErrors, focusFirst, liveFieldErrors, messageFor, setFieldError, summary } from "@/lib/field-errors";
   import { plural, seatsWord } from "@/lib/format";
   import type { BookingRequest, PaymentMethod, Term } from "@/lib/types";
 
@@ -125,38 +126,44 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
       $("signup-fields").hidden = false;
       $("signup-done").hidden = true;
       err.hidden = true;
-      form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+      clearFieldErrors(form);
       sync();
       dlg!.showModal();
     }
 
-    function validate(): string | null {
-      const t = current();
-      const count = n(people);
-      const bad: string[] = [];
-      for (const id of ["su-name", "su-email", "su-phone"]) {
-        const el = $<HTMLInputElement>(id);
-        const ok = el.checkValidity() && el.value.trim() !== "";
-        el.setAttribute("aria-invalid", String(!ok));
-        if (!ok) bad.push(id);
+    // the people count and the voucher code have rules of their own; the rest follows the field
+    function check(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | null {
+      if (el === people) {
+        const t = current();
+        const count = n(people);
+        if (count < 1) return t.type === "dzieci" ? "Wpisz co najmniej jedno dziecko." : "Dodaj co najmniej jedną osobę.";
+        if (count > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
+        if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin ${plural(t.seatsLeft, "zostało", "zostały", "zostało")} ${t.seatsLeft} ${seatsWord(t.seatsLeft)}. Zmniejsz liczbę osób albo wybierz inny termin.`;
+        return null;
       }
-      if (count < 1) return t.type === "dzieci" ? "Wpisz co najmniej jedno dziecko." : "Dodaj co najmniej jedną osobę.";
-      if (count > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
-      if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin ${plural(t.seatsLeft, "zostało", "zostały", "zostało")} ${t.seatsLeft} ${seatsWord(t.seatsLeft)}. Zmniejsz liczbę osób albo wybierz inny termin.`;
-      if (bad.length) return "Uzupełnij imię i nazwisko, poprawny e-mail i numer telefonu.";
-      if (pay() === "voucher" && !$<HTMLInputElement>("su-voucher").value.trim()) return "Wpisz numer vouchera albo wybierz inny sposób płatności.";
-      if (!$<HTMLInputElement>("su-terms").checked) return "Zaznacz akceptację regulaminu, żeby zarezerwować miejsce.";
-      return null;
+      if (el.id === "su-voucher") return pay() === "voucher" && !el.value.trim() ? "Wpisz numer vouchera albo wybierz przelew." : null;
+      return messageFor(el);
+    }
+
+    function validate() {
+      const fields = [people, "su-name", "su-email", "su-phone", "su-voucher", "su-terms"].map((f) => (typeof f === "string" ? $<HTMLInputElement>(f) : f));
+      const bad = fields.filter((el) => {
+        const msg = check(el);
+        setFieldError(el, msg);
+        return msg;
+      });
+      return bad;
     }
 
     form.addEventListener("input", sync);
+    liveFieldErrors(form, check);
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const problem = validate();
-      err.hidden = !problem;
-      err.textContent = problem ?? "";
-      if (problem) {
-        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+      const bad = validate();
+      err.hidden = !bad.length;
+      err.textContent = bad.length ? summary(bad.length) : "";
+      if (bad.length) {
+        focusFirst(bad);
         return;
       }
       const t = current();
