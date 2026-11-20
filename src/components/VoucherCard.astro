@@ -77,7 +77,8 @@ const ticketShape = "M3042 0a151 151 0 1 0 302 0h401a200 200 0 0 1 200 200v1395a
   .ticket .t-term {
     font-family: var(--body);
     font-weight: 400;
-    font-size: 3.5cqw;
+    /* scales with the ticket, but never below 12 px */
+    font-size: max(.75rem, 3.5cqw);
     left: 50%;
   }
   .t-term-1 { top: 58.8%; }
