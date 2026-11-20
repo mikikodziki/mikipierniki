@@ -3,7 +3,7 @@
 // ragged front line, a granular rime along the edge, and a few fir-like
 // dendrites that reach out over the photo.
 //
-//   node scripts/szron.mjs        → public/szron.svg
+//   node docs/archiwum/scripts/szron.mjs → public/szron.svg (archived, unused since the hero lost its frost)
 //
 // The drawing is seeded, so running it again gives exactly the same frost.
 // Change SEED for a different pattern.

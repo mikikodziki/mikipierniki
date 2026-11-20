@@ -44,11 +44,9 @@ Kształty i detale:
   płynnie przenikają i delikatnie przybliżają (32 sekundy na pełen cykl).
   Pierwszy obraz jest widoczny od razu po otwarciu strony. Przy
   `prefers-reduced-motion` zostaje pierwsze zdjęcie. Animacja jest wyłącznie w hero.
-  Dawny szron (`public/szron.svg`) i jego generator `scripts/szron.mjs`
-  pozostają w repozytorium; hero już z nich nie korzysta.
-- Rysunki falowanej ramki i kokardy (`public/ramka-fala*.svg`, `public/kokarda.svg`)
-  zostały w repozytorium, ale NIC ICH NIE UŻYWA. To prace Dominiki — nie kasować
-  bez pytania.
+  Dawny szron i jego generator są w `docs/archiwum/`; hero już z nich nie korzysta.
+- Rysunki falowanej ramki i kokardy, stare logo i zdjęcia z wcześniejszych wersji są w
+  `docs/archiwum/` (przeniesione z `public/` 20.11.2026, nie skasowane). To prace Dominiki.
 - Logo i ikona strony: grafika „przytulenie" w ciemnym brązie na papierze.
 
 ## Kontakt i miejsce
