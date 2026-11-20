@@ -20,16 +20,22 @@ interface Props {
   priority?: "high" | "low";
   /** Crop focus, e.g. "50% 20%" to keep a face in frame */
   position?: string;
+  /** Leave the file out until a script copies data-src/data-srcset over (photos shown later) */
+  deferred?: boolean;
 }
-const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", widths = [600, 1000, 1600], class: className, eager = false, priority, position } = Astro.props;
+const { name, alt, ratio, sizes = "(max-width: 760px) 100vw, 50vw", widths = [600, 1000, 1600], class: className, eager = false, priority, position, deferred = false } = Astro.props;
 const base = `/zdjecia/${name}`;
 // phones pick the 400 and 800 px files instead of the 600 and 1000 ones
 const srcWidths = [...new Set([400, 800, ...widths])].sort((a, b) => a - b);
+const src = `${base}-${widths[1]}.webp`;
+const srcset = srcWidths.map((width) => `${base}-${width}.webp ${width}w`).join(", ");
 ---
 <img
   class:list={["photo", className]}
-  src={`${base}-${widths[1]}.webp`}
-  srcset={srcWidths.map((width) => `${base}-${width}.webp ${width}w`).join(", ")}
+  src={deferred ? undefined : src}
+  srcset={deferred ? undefined : srcset}
+  data-src={deferred ? src : undefined}
+  data-srcset={deferred ? srcset : undefined}
   sizes={sizes}
   alt={alt}
   loading={eager ? "eager" : "lazy"}
