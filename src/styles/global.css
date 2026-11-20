@@ -157,7 +157,7 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 textarea.input { min-height: 120px; line-height: 1.5; resize: vertical; }
 select.input {
   padding-right: 44px; cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%232B2219' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none' stroke='%2321362D' stroke-width='1.8' stroke-linecap='round'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px;
 }
 input[type="date"].input::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
@@ -225,7 +225,7 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
   position: absolute; z-index: 40; left: 0; right: 0; top: calc(100% + 6px);
   margin: 0; padding: 6px; list-style: none;
   background: var(--surface); border-radius: var(--radius);
-  box-shadow: 0 16px 32px rgba(43, 34, 25, .18);
+  box-shadow: var(--shadow-menu);
   max-height: 260px; overflow-y: auto;
 }
 .sel-list[hidden] { display: none !important; }

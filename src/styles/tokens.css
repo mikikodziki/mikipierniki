@@ -43,9 +43,10 @@
   /* one-off shadows and overlays, kept here so components hold no colour literals */
   --shadow-mobile-cta: 0 -8px 20px rgba(0, 0, 0, .06);
   --shadow-ticket: drop-shadow(0 18px 30px rgba(0, 0, 0, .28));
-  --shadow-term-hover: 0 18px 32px rgba(54, 21, 13, .3);
+  --shadow-term-hover: 0 18px 32px rgba(16, 30, 26, .3);
   --shadow-dialog: 0 30px 60px rgba(0, 0, 0, .3);
-  --backdrop: rgba(26, 18, 13, .55);
+  --backdrop: rgba(16, 30, 26, .55);
+  --shadow-menu: 0 16px 32px rgba(16, 30, 26, .18);
   --card-hover: rgba(255, 255, 255, .7);
   /* keyboard focus ring; dark green surfaces switch it to the light sage */
   --focus: var(--accent);
