@@ -36,6 +36,8 @@ const addMonths = (d: Date, n: number) => {
 /** Monday = 0 … Sunday = 6 */
 const weekday = (d: Date) => (d.getDay() + 6) % 7;
 const long = (d: Date) => d.toLocaleDateString("pl-PL", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+/** What the field shows: fits a half-width field on one line; screen readers get the long form */
+const short = (d: Date) => d.toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" });
 
 let uid = 0;
 
@@ -131,7 +133,7 @@ export function enhanceDate(input: HTMLInputElement): void {
 
   const paint = () => {
     const d = parse(input.value);
-    btn.textContent = d ? long(d) : "Wybierz datę";
+    btn.textContent = d ? short(d) : "Wybierz datę";
     btn.classList.toggle("is-empty", !d);
     btn.setAttribute("aria-label", `${caption}: ${d ? long(d) : "nie wybrano"}`);
   };
@@ -183,6 +185,12 @@ export function enhanceDate(input: HTMLInputElement): void {
     }
     while (row.children.length < 7) row.appendChild(document.createElement("td"));
     body.appendChild(row);
+    // always six weeks, so the calendar keeps its height and the arrows stay under the pointer
+    while (body.children.length < 6) {
+      const blank = document.createElement("tr");
+      for (let i = 0; i < 7; i++) blank.appendChild(document.createElement("td"));
+      body.appendChild(blank);
+    }
     // no way to page into months with nothing to pick
     const lastPrev = new Date(y, m, 0);
     const firstNext = new Date(y, m + 1, 1);

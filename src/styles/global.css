@@ -254,6 +254,7 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
   text-align: left; cursor: pointer; position: relative;
   box-shadow: inset 0 0 0 1px var(--field-line);
 }
+.dp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dp.is-empty { color: var(--ink-soft); }
 .dp::after, .dp-nav::before { content: ""; position: absolute; background: currentColor; }
 .dp::after {
@@ -269,6 +270,8 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
   width: 328px; max-width: calc(100vw - 16px); padding: 12px 14px 8px;
   background: var(--surface); color: var(--ink); border-radius: var(--radius-lg);
   box-shadow: var(--shadow-menu);
+  /* when it has to be scrolled into view: clear of the sticky header and the phone bar */
+  scroll-margin: 88px 0 80px;
 }
 .dp-pop[hidden] { display: none !important; }
 .dp-pop--up { top: auto; bottom: calc(100% + 6px); }
@@ -289,6 +292,8 @@ legend { font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-
 .dp-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .dp-grid th { padding: 4px 0 6px; font-size: .75rem; font-weight: 500; letter-spacing: var(--caps); text-transform: uppercase; color: var(--ink-soft); text-align: center; }
 .dp-grid td { padding: 2px; text-align: center; }
+/* an empty cell is as tall as a day, so the six weeks always take the same space */
+.dp-grid td:empty::before { content: ""; display: block; max-width: 40px; aspect-ratio: 1; }
 .dp-day {
   width: 100%; max-width: 40px; aspect-ratio: 1; border: 0; border-radius: var(--radius);
   background: transparent; color: var(--ink); font: 400 .95rem var(--body); cursor: pointer;
