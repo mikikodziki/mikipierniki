@@ -127,8 +127,12 @@ Kształty i detale:
   i jest zadowolony ze swojego dzieła.
 - Bez sekcji „w liczbach” — żadnych statystyk na stronie.
 
-## Alergeny
+## Alergeny i bezpieczeństwo
 Pierniki zawierają gluten, jajka, soję i laktozę, mogą zawierać śladowe ilości orzechów.
+- Złoty lukier jest niejadalny: na stronie trzeba to wyraźnie zaznaczyć (FAQ, cennik na
+  /zamowienia, regulamin §7).
+- Świeżość: w szczelnym pudełku spokojnie do pół roku, ale Dominika chce podkreślać, że pierniki
+  to przede wszystkim ozdoby (decyzja 20.11.2026).
 
 ## Zdjęcia z warsztatów
 Dominika zawsze pyta uczestników o zgodę przed publikacją.

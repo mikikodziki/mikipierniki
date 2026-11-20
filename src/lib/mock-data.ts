@@ -29,7 +29,8 @@ export const faq: FaqItem[] = [
   { topic: "zamowienia", q: "Czy zrobisz pierniki w niestandardowym kształcie?", a: "Tak. Przy zamówieniach firmowych tworzę foremki pod konkretny projekt, więc piernik może mieć kształt Twojego logo, produktu czy budynku. Wystarczy opis albo zdjęcie inspiracji." },
   { topic: "zamowienia", q: "Do kiedy przyjmujesz zamówienia świąteczne?", a: "Zamówienia detaliczne na święta przyjmuję do 18 grudnia, a firmowe najpóźniej dwa tygodnie przed odbiorem. W szczycie sezonu terminy kończą się wcześniej, więc lepiej napisać zawczasu." },
   { topic: "zamowienia", q: "Jak dostanę pierniki?", a: "Możesz odebrać je osobiście w mojej pracowni we Wrocławiu albo wysyłam je Paczkomatem: mała paczka 12 zł, duża 20 zł." },
-  { topic: "zamowienia", q: "Jak długo pierniki są świeże?", a: "Udekorowane pierniki zachowują świeżość nawet 4–6 tygodni w szczelnym pudełku. Z czasem stają się coraz bardziej miękkie." },
+  { topic: "zamowienia", q: "Jak długo pierniki są świeże?", a: "Moje pierniki to przede wszystkim ozdoby. W szczelnym pudełku spokojnie zachowują świeżość do pół roku, choć z czasem stają się coraz bardziej miękkie." },
+  { topic: "zamowienia", q: "Czy wszystkie zdobienia są jadalne?", a: "Nie. Złoty lukier jest niejadalny i służy wyłącznie do dekoracji, więc złotych elementów nie jedz." },
 ];
 
 export const gallery: GalleryItem[] = [
