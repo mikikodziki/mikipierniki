@@ -117,6 +117,8 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
       $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
       $("su-sum").textContent = `${bookingTotal(t, n(people))} zł`;
       submit.textContent = waitlist ? "Dopisz mnie do listy" : "Rezerwuję miejsce";
+      // the seats-left message depends on the term, so it follows a change of term
+      if (people.getAttribute("aria-invalid") === "true") setFieldError(people, check(people));
     }
 
     function open(id: string) {

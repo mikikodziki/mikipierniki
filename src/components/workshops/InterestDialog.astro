@@ -107,6 +107,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         if (Number(people.value) > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
         return null;
       }
+      if (el.id === "in-consent") return (el as HTMLInputElement).checked ? null : "Zaznacz zgodę na kontakt, żebym mogła dać Ci znać.";
       return messageFor(el);
     }
 
