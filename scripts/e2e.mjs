@@ -155,7 +155,7 @@ try {
   await settle();
   check("booking by transfer → awaiting_payment, total 1350", r.status === 200 && b1.status === "awaiting_payment" && b1.total === 1350, JSON.stringify(b1));
   m = lastMails(2);
-  check("transfer mail has account, recipient, ref; no address yet", m.some((x) => x.includes("12 3456 7890") && x.includes("Dominika Testowa") && x.includes(b1.bookingId) && !x.includes("Testowa 1")));
+  check("transfer mail has account, recipient, ref and the studio address", m.some((x) => x.includes("12 3456 7890") && x.includes("Dominika Testowa") && x.includes(b1.bookingId) && x.includes("ul. Testowa 1")));
   check("booking notify to Dominika", m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Rezerwacja (przelew)")));
   r = await book({ people: 1 });
   check("second booking with the same e-mail → 409", r.status === 409 && (await r.json()).error.includes("Masz już rezerwację"));
