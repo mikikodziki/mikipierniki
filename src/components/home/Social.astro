@@ -19,7 +19,6 @@ const testimonials = await getTestimonials();
       {gallery.map((g) => (
         <figure style={`background: var(--tile-${g.tile})`}>
           {g.photo ? <Photo name={g.photo} alt={g.alt} sizes="(max-width: 700px) 60vw, (max-width: 1240px) 40vw, 470px" /> : <Cookie shape={g.shape} class="g-cookie" label={g.alt} />}
-          <figcaption>{g.caption}</figcaption>
         </figure>
       ))}
     </div>
