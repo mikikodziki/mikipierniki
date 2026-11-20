@@ -89,9 +89,9 @@ const included = [
 ];
 
 const closedFacts = [
-  { title: "Wycena indywidualna", text: "Cena zależy od liczby osób i od tego, ile czasu chcecie spędzić przy stole. Napisz, ile Was będzie, a odeślę propozycję." },
+  { title: "Wycena indywidualna", text: `Pełny warsztat prowadzę dla grupy do ${site.closedGroupMax} osób. Cena zależy od liczby osób i od tego, ile czasu chcecie spędzić przy stole. Napisz, ile Was będzie, a odeślę propozycję.` },
   { title: "U mnie albo u Was", text: `Spotykamy się w mojej pracowni we ${studio.city === 'Wrocław' ? 'Wrocławiu' : studio.city} albo przyjeżdżam pod wskazany adres z kompletem materiałów.` },
-  { title: "Większa grupa, krótszy cykl", text: "Przy dużych grupach robimy krótsze cykle: 1–2 pierniki na osobę i rotacja grup, żeby każdy zdążył usiąść przy stole." },
+  { title: "Większa grupa, krótszy cykl", text: `Przy grupach większych niż ${site.closedGroupMax} osób robimy krótsze cykle: 1–2 pierniki na osobę i rotacja grup, żeby każdy zdążył usiąść przy stole.` },
   { title: "Stanowisko do lukrowania", text: "Zamiast pełnego warsztatu mogę ustawić stanowisko do lukrowania dla chętnych. Kto ma ochotę, przysiada się i dekoruje." },
 ];
 ---
@@ -186,12 +186,11 @@ const closedFacts = [
           kind="warsztaty-zamkniete"
           id="firmy-form"
           messageLabel="Opowiedz coś więcej o grupie"
-          messagePlaceholder="Np. zespół 14 osób, mamy jakieś dwie godziny, chcielibyśmy u nas w biurze."
+          messagePlaceholder="Np. zespół 10 osób, mamy jakieś dwie godziny, chcielibyśmy u nas w biurze."
           successText="Dziękuję! Odpiszę w ciągu 24 godzin z propozycją terminu i wyceną."
         >
-          <!-- DO UZUPEŁNIENIA: maksymalna wielkość grupy na warsztatach zamkniętych -->
           <div class="row2">
-            <label class="field" for="firmy-form-size">Liczba osób
+            <label class="field" for="firmy-form-size">Liczba osób <span class="hint">pełny warsztat do {site.closedGroupMax}</span>
               <input class="input" type="number" id="firmy-form-size" name="groupSize" data-detail="liczba_osob" min="1" inputmode="numeric" />
             </label>
             <label class="field" for="firmy-form-date">Preferowany termin
