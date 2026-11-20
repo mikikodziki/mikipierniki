@@ -26,7 +26,7 @@ const {
   noindex = false,
 } = Astro.props;
 
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty dekorowania pierników we Wrocławiu`;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · warsztaty lukrowania pierników we Wrocławiu`;
 // Bez ustawionej domeny (astro.config.mjs) nie wypisujemy canonical ani og:url.
 // build.format "file" gives "/warsztaty.html" here; publish the clean URL the nav links use.
 const cleanPath = Astro.url.pathname.replace(/\/index\.html$/, "/").replace(/\.html$/, "");

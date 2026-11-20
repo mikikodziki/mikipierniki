@@ -41,8 +41,8 @@ const jsonLd = terms.filter((t) => t.status === "open").map((t) => {
   return {
     "@context": "https://schema.org",
     "@type": "Event",
-    name: `${t.title} · warsztaty dekorowania pierników`,
-    description: `Warsztaty dekorowania pierników lukrem w grupie do ${t.capacity} ${plural(t.capacity, "osoby", "osób", "osób")}. Materiały w cenie, ${t.cookies} pierników zabierasz do domu.`,
+    name: `${t.title} · warsztaty lukrowania pierników`,
+    description: `Warsztaty lukrowania pierników w grupie do ${t.capacity} ${plural(t.capacity, "osoby", "osób", "osób")}. Materiały w cenie, ${t.cookies} pierników zabierasz do domu.`,
     startDate: t.startsAt,
     endDate: t.endsAt,
     eventStatus: "https://schema.org/EventScheduled",
@@ -69,7 +69,7 @@ const jsonLd = terms.filter((t) => t.status === "open").map((t) => {
 });
 
 const flow = [
-  { title: "Powitanie", text: "Poznajemy się i zajmujesz miejsce przy stole. Czekają już na Ciebie upieczone przeze mnie pierniki i wszystkie materiały do dekorowania." },
+  { title: "Powitanie", text: "Poznajemy się i zajmujesz miejsce przy stole. Czekają już na Ciebie upieczone przeze mnie pierniki i wszystkie materiały do lukrowania." },
   { title: "Konsystencje lukrów", text: "Pokazuję, czym różni się gęsty lukier do konturów od rzadkiego do wypełniania. Uczysz się rozpoznawać konsystencje i dobierać je do dekoracji." },
   { title: "Trzymanie rękawa i prowadzenie linii", text: "Ćwiczymy wygodny chwyt rękawa, nacisk i prowadzenie linii nad powierzchnią. Najpierw próbujesz obok piernika, żeby spokojnie oswoić ruch dłoni." },
   { title: "Kontury i kolejność lukrowania", text: "Planujemy, od których elementów zacząć i co powinno przeschnąć przed kolejną warstwą. Gęstszym lukrem obrysowujesz kształty i wyznaczasz pola do wypełnienia." },
@@ -80,7 +80,7 @@ const flow = [
 ];
 
 const included = [
-  "pierniki, które piekę przed warsztatami, gotowe do dekorowania",
+  "pierniki, które piekę przed warsztatami, gotowe do lukrowania",
   "lukry, a ten, który Ci zostanie, zabierasz do domu",
   "rękawy cukiernicze",
   "napoje",
@@ -96,8 +96,8 @@ const closedFacts = [
 ];
 ---
 <Base
-  title="Warsztaty dekorowania pierników we Wrocławiu"
-  description={`Warsztaty dekorowania pierników we Wrocławiu, w mojej pracowni. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
+  title="Warsztaty lukrowania pierników we Wrocławiu"
+  description={`Warsztaty lukrowania pierników we Wrocławiu, w mojej pracowni. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
   mobileCta={false}
   jsonLd={jsonLd}
 >

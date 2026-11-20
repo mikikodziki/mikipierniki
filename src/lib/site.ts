@@ -3,7 +3,7 @@ import type { Season, Term, WorkshopType } from "./types";
 export const site = {
   name: "Miki Pierniki",
   owner: "Dominika",
-  tagline: "Warsztaty dekorowania pierników i pierniki na zamówienie",
+  tagline: "Warsztaty lukrowania pierników i pierniki na zamówienie",
   email: "dominika.saczynska@gmail.com",
   phone: "880 122 269",
   phoneHref: "tel:+48880122269",
