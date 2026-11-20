@@ -125,7 +125,8 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
   @media (hover: none) {
     /* a card next to a taller one (in a row or 2 + 1) grows its panel, price and button go to the bottom */
     .term { aspect-ratio: auto; display: flex; flex-direction: column; }
-    .media { position: relative; aspect-ratio: 4 / 3; }
+    /* as a flex item the photo's own size would win over 4:3 without min-height: 0 */
+    .media { position: relative; aspect-ratio: 4 / 3; flex: none; min-height: 0; overflow: hidden; }
     .panel { position: static; flex: 1; grid-template-rows: auto 1fr; border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
     .more { grid-template-rows: 1fr; opacity: 1; }
     .more-in { grid-template-rows: auto auto 1fr; }
