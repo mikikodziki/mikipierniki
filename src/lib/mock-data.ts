@@ -1,5 +1,5 @@
 /**
- * Static site content. FAQ, venue and gallery are REAL (docs/dane.md); testimonials are still EXAMPLES.
+ * Static site content. FAQ, venue and gallery are REAL (docs/dane.md); testimonials wait for real ones.
  * Workshop terms are not here: Dominika manages them in /panel (database).
  */
 import type { FaqItem, GalleryItem, Testimonial, Venue } from "./types";
@@ -8,11 +8,10 @@ export const venues: Venue[] = [
   { id: "pracownia", name: "Pracownia Miki", city: "Wrocław", address: "ul. Długa 55J", coordinates: { lat: 51.123959, lng: 17.013382 } },
 ];
 
-// PRZYKŁADOWE opinie — Dominika prześle prawdziwe.
-export const testimonials: Testimonial[] = [
-  { author: "Kasia", context: "warsztaty świąteczne", text: "Byłam pewna, że nic mi nie wyjdzie, a wyszłam z pudełkiem pierników, których szkoda było zjeść. Dominika tłumaczy wszystko spokojnie i z humorem.", photo: "opinie-piernikowe-kamieniczki", photoAlt: "Kolorowe piernikowe kamieniczki, bombki, misie i Mikołaje udekorowane po warsztatach" },
-  { author: "Agnieszka", context: "warsztaty dla dzieci", text: "Byłyśmy z córką na warsztatach dla dzieci. Ona do dziś opowiada o swoim pierniczkowym reniferze.", photo: "opinie-sniezynka-i-konik", photoAlt: "Piernikowa śnieżynka, miś, konik na biegunach i kamieniczka na serwetce w żółtą kratkę" },
-];
+// Opinions: empty until real ones arrive (Dominika, 2026-11-20). With an empty list the whole
+// "Opinie uczestników" section, including the "Efekty warsztatów" tile, stays off the page.
+// Format: { author: "Kasia", context: "warsztaty świąteczne", text: "…", photo: "opinie-…", photoAlt: "…" }
+export const testimonials: Testimonial[] = [];
 
 export const faq: FaqItem[] = [
   { topic: "warsztaty", q: "Czy muszę mieć jakieś doświadczenie?", a: "Nie. Warsztaty prowadzę od podstaw, a większość uczestników pierwszy raz trzyma w ręku rękaw cukierniczy." },
