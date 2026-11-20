@@ -106,8 +106,9 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 }
 .evergreen-head .eyebrow, .evergreen-head .lead { color: var(--on-dark); }
 .evergreen-head h1, .evergreen-head .lead { text-shadow: var(--hero-text-shadow); }
-.evergreen-head .chip { background: color-mix(in srgb, var(--on-dark) 16%, transparent); color: var(--on-dark); }
-.evergreen-head .chip:hover { background: color-mix(in srgb, var(--on-dark) 30%, transparent); }
+/* deep pine under the label: stays at least 6:1 even over the brightest lights in the photo */
+.evergreen-head .chip { background: color-mix(in srgb, var(--brand-deep) 72%, transparent); color: var(--on-dark); }
+.evergreen-head .chip:hover { background: color-mix(in srgb, var(--brand-deep) 90%, transparent); }
 .evergreen-head :focus-visible { outline-color: var(--on-dark); }
 .page-head.evergreen-head .draft { background: var(--surface); }
 
