@@ -57,7 +57,7 @@ export const legal: {
   backups: "Amazon Web Services EMEA SARL, 38 Avenue John F. Kennedy, L-1855 Luksemburg",
   accounting: null,
   lowTurnoutNoticeDays: "7",
-  // the day the current versions were published
+  // the day the current versions were published; the "r." ends a sentence on the pages, so no full stop after it
   regulaminFrom: "21 listopada 2026 r.",
   privacyFrom: "21 listopada 2026 r.",
 };
