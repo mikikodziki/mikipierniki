@@ -8,7 +8,7 @@ import type { BookingRequest, BookingResult, BookingStatus, Term } from "@/lib/t
 import { bookingBlockers } from "./config";
 import { getDb, nowIso, tx } from "./db";
 import {
-  bookingAwaitingTransfer, bookingCancelled, bookingConfirmed, bookingNotify, bookingOverdue, bookingReminder, bookingVoucher, bookingWaitlist,
+  bookingAwaitingTransfer, bookingCancelled, bookingChanged, bookingConfirmed, bookingNotify, bookingOverdue, bookingReminder, bookingVoucher, bookingWaitlist,
   type BookingMailData, whenInText,
 } from "./emails";
 import { UserError } from "./http";
@@ -23,7 +23,10 @@ const dueDate = (t: Pick<Term, "startsAt">) =>
   new Date(Math.min(Date.now() + PAYMENT_DAYS * 24 * HOUR, new Date(t.startsAt).getTime() - 24 * HOUR)).toISOString();
 /** Least time to pay a seat freed close to the workshop, when the day-before deadline has passed or is near. */
 const LATE_ADMIT_HOURS = 12;
-/** A seat offered from the waitlist: the usual deadline, but never one that has passed or is minutes away (and never after the start). */
+/**
+ * A seat offered from the waitlist, or booked or moved in the panel close to the start: the usual deadline,
+ * but never one that has passed or is minutes away (and never after the start).
+ */
 const admitDueDate = (t: Pick<Term, "startsAt">) => {
   const floor = Math.min(Date.now() + LATE_ADMIT_HOURS * HOUR, new Date(t.startsAt).getTime());
   return new Date(Math.max(new Date(dueDate(t)).getTime(), floor)).toISOString();
@@ -41,20 +44,34 @@ const mailData = (b: BookingRow): BookingMailData => ({
   payment: b.payment, voucherCode: b.voucher_code, total: b.total, paymentDueAt: b.payment_due_at,
 });
 
-function seatsTaken(termId: string): number {
-  const r = getDb().prepare("SELECT COALESCE(SUM(people), 0) AS n FROM bookings WHERE term_id = ? AND status IN ('awaiting_payment','confirmed')")
-    .get(termId) as { n: number };
+/** Seats held on a term; `except` leaves out a booking being changed, so it doesn't compete with itself. */
+function seatsTaken(termId: string, except = ""): number {
+  const r = getDb().prepare("SELECT COALESCE(SUM(people), 0) AS n FROM bookings WHERE term_id = ? AND id != ? AND status IN ('awaiting_payment','confirmed')")
+    .get(termId, except) as { n: number };
   return r.n;
 }
 
-export function createBooking(req: BookingRequest): BookingResult {
+/** What a new booking needs; the online form also sends its consents, which aren't stored with it. */
+export type NewBooking = Omit<BookingRequest, "acceptedTerms" | "newsletter">;
+
+/** A booking Dominika enters in the panel, taken by phone or e-mail. */
+export interface PanelAdd {
+  /** Already paid: confirmed at once, and the confirmation is its first e-mail */
+  paid: boolean;
+  /** Send the customer the usual first e-mail */
+  notify: boolean;
+}
+
+export function createBooking(req: NewBooking, panel?: PanelAdd): BookingResult {
   const term = getTerm(req.termId);
   if (!term || term.status !== "open" || new Date(term.startsAt).getTime() <= Date.now()) {
     throw new UserError("Ten termin nie przyjmuje już zapisów. Odśwież stronę i wybierz inny.", 409);
   }
-  if (bookingClosed(term)) {
+  // by phone she can still fit someone in after online booking has closed
+  if (!panel && bookingClosed(term)) {
     throw new UserError("Zapisy online na ten termin są już zamknięte. Zadzwoń do mnie, może znajdzie się miejsce.", 409);
   }
+  if (panel && bookingBlockers().length) throw new UserError(`Zanim dodasz rezerwację, uzupełnij na serwerze: ${bookingBlockers().join(", ")}.`, 503);
   if (bookingBlockers().length) {
     throw new UserError("Zapisy chwilowo nie działają. Napisz do mnie albo zadzwoń, a zarezerwuję miejsce ręcznie.", 503);
   }
@@ -67,12 +84,15 @@ export function createBooking(req: BookingRequest): BookingResult {
   const row = tx(db, () => {
     // one active booking per person and term, so a single address can't hold the whole term
     const dup = db.prepare("SELECT id FROM bookings WHERE term_id = ? AND email = ? AND status != 'cancelled'").get(term.id, email);
+    if (dup && panel) throw new UserError(`Ten adres ma już rezerwację na ten termin (${dup.id}). Popraw tamtą zamiast dodawać nową.`, 409);
     if (dup) throw new UserError("Masz już rezerwację na ten termin. Jeśli chcesz coś zmienić, odpisz na maila z potwierdzeniem.", 409);
     const left = term.capacity - seatsTaken(term.id);
     let status: BookingStatus;
     if (left <= 0) status = "waitlist";
     else if (req.people > left) throw new UserError(`Na ten termin ${plural(left, "zostało", "zostały", "zostało")} ${left} ${seatsWord(left)}. Zmniejsz liczbę osób albo wybierz inny termin.`, 409);
-    else status = "awaiting_payment";
+    else status = panel?.paid ? "confirmed" : "awaiting_payment";
+    // nobody pays for a waitlist place: she frees a seat first, or saves it unpaid
+    if (panel?.paid && status === "waitlist") throw new UserError("Termin jest pełny, więc ta rezerwacja trafi na listę rezerwową. Odznacz „już opłacona” albo najpierw zwolnij miejsce.", 409);
 
     let id = bookingRef();
     while (db.prepare("SELECT 1 FROM bookings WHERE id = ?").get(id)) id = bookingRef();
@@ -82,17 +102,19 @@ export function createBooking(req: BookingRequest): BookingResult {
       id, term_id: term.id, status, name: req.name, email, phone: req.phone, people: req.people,
       guardians: term.type === "dzieci" ? (req.guardians ?? 0) : null, notes: req.notes ?? null, payment,
       voucher_code: payment === "voucher" ? (req.voucherCode ?? null) : null, total: bookingTotal(term, req.people),
-      created_at: nowIso(), payment_due_at: status === "awaiting_payment" && payment === "przelew" ? dueDate(term) : null,
-      paid_at: null, cancelled_at: null, reminded_at: null,
+      // in the panel's last 48 hours the day-before deadline may already have passed
+      created_at: nowIso(), payment_due_at: status === "awaiting_payment" && payment === "przelew" ? (panel ? admitDueDate(term) : dueDate(term)) : null,
+      paid_at: status === "confirmed" ? nowIso() : null, cancelled_at: null, reminded_at: null,
     };
-    db.prepare(`INSERT INTO bookings (id, term_id, status, name, email, phone, people, guardians, notes, payment, voucher_code, total, created_at, payment_due_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(b.id, b.term_id, b.status, b.name, b.email, b.phone, b.people, b.guardians, b.notes, b.payment, b.voucher_code, b.total, b.created_at, b.payment_due_at);
+    db.prepare(`INSERT INTO bookings (id, term_id, status, name, email, phone, people, guardians, notes, payment, voucher_code, total, created_at, payment_due_at, paid_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(b.id, b.term_id, b.status, b.name, b.email, b.phone, b.people, b.guardians, b.notes, b.payment, b.voucher_code, b.total, b.created_at, b.payment_due_at, b.paid_at);
     const d = mailData(b);
-    enqueue(
-      status === "waitlist" ? bookingWaitlist(d, term) : payment === "voucher" ? bookingVoucher(d, term) : bookingAwaitingTransfer(d, term),
-      bookingNotify(d, term, status),
-    );
+    const first = status === "waitlist" ? bookingWaitlist(d, term) : status === "confirmed" ? bookingConfirmed(d, term)
+      : payment === "voucher" ? bookingVoucher(d, term) : bookingAwaitingTransfer(d, term);
+    // what she enters herself needs no notification to her
+    if (!panel) enqueue(first, bookingNotify(d, term, status));
+    else if (panel.notify) enqueue(first);
     return b;
   });
   return { bookingId: row.id, status: row.status, total: row.total };
@@ -142,6 +164,94 @@ export function cancelBooking(id: string, notify: boolean): void {
     if (b.status === "cancelled") return;
     db.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE id = ?").run(nowIso(), id);
     if (notify) enqueue(bookingCancelled(mailData(b), t, "single"));
+  });
+}
+
+const started = (t: Term) => new Date(t.startsAt).getTime() <= Date.now();
+
+/**
+ * Drops unsent mail about a booking: pending, or failed and waiting for "Wyślij ponownie". Booking mails carry
+ * its number; the waitlist one only the date, in its subject. `to` keeps it to one recipient (the old address).
+ */
+function dropUnsentMail(b: BookingRow, t: Term, to?: string): void {
+  getDb().prepare(`DELETE FROM outbox WHERE status IN ('pending','failed') AND kind LIKE 'booking-%' AND (? IS NULL OR to_addr = ?)
+    AND (instr(text, ?) > 0 OR (kind = 'booking-waitlist' AND to_addr = ? AND subject = ?))`)
+    .run(to ?? null, to ?? null, b.id, b.email, bookingWaitlist(mailData(b), t).subject);
+}
+
+/** What Dominika can correct in a booking, and the term it should be on. */
+export interface BookingEdit {
+  termId: string; name: string; email: string; phone: string; people: number; guardians?: number; notes?: string;
+}
+
+export interface EditResult {
+  /** The term it was moved to, if it was */
+  movedTo: Term | null;
+  oldTotal: number;
+  total: number;
+  /** Paid before the change, so a different total is hers to settle */
+  paid: boolean;
+}
+
+/**
+ * Corrects a booking reported wrong by phone or e-mail, or moves it to another open term. Seats and
+ * the one-booking-per-address rule are checked as for a new booking, leaving the booking itself out.
+ * Money is never settled here: a paid booking whose total changes is for Dominika to sort out.
+ */
+export function editBooking(id: string, edit: BookingEdit, notify: boolean): EditResult {
+  const db = getDb();
+  return tx(db, () => {
+    const { b, t: from } = load(id);
+    if (b.status === "cancelled") throw new UserError("Anulowanej rezerwacji nie można poprawić.");
+    const moved = edit.termId !== b.term_id;
+    const to = moved ? getTerm(edit.termId) : from;
+    if (!to) throw new UserError("Nie ma takiego terminu.", 404);
+    if (moved && (to.status !== "open" || started(to))) throw new UserError("Przenieść można tylko na termin z otwartymi zapisami, który jeszcze się nie zaczął.");
+    if (edit.people > to.capacity) throw new UserError(`Ten termin ma tylko ${to.capacity} ${seatsWord(to.capacity)}.`);
+    if (to.type === "dzieci" && (edit.guardians ?? 0) < 1) throw new UserError("Na warsztatach dla dzieci zostaje co najmniej jeden rodzic lub opiekun.");
+    const email = normalizeEmail(edit.email);
+    if (moved || email !== b.email) {
+      const dup = db.prepare("SELECT id FROM bookings WHERE term_id = ? AND email = ? AND id != ? AND status != 'cancelled'").get(to.id, email, id);
+      if (dup) throw new UserError(`Ten adres ma już rezerwację na ${moved ? whenInText(to) : "ten termin"} (${dup.id}).`, 409);
+    }
+    // a waitlist place holds no seat: it moves without a seat check and stays on the waitlist
+    if (b.status !== "waitlist" && (moved || edit.people > b.people)) {
+      const left = Math.max(0, to.capacity - seatsTaken(to.id, id));
+      if (edit.people > left) {
+        throw new UserError(moved
+          ? `Na ${whenInText(to)} ${plural(left, "zostało", "zostały", "zostało")} ${left} ${seatsWord(left)}, a ta rezerwacja potrzebuje ${edit.people}.`
+          : `Wolnych miejsc razem z tą rezerwacją: ${left}, a potrzeba ${edit.people}.`, 409);
+      }
+    }
+    const next: BookingRow = {
+      ...b, term_id: to.id, name: edit.name, email, phone: edit.phone, people: edit.people,
+      guardians: to.type === "dzieci" ? (edit.guardians ?? 1) : null, notes: edit.notes || null, total: bookingTotal(to, edit.people),
+      // a new date gets a deadline that fits it, and its own reminder and overdue notice
+      payment_due_at: moved && b.status === "awaiting_payment" && b.payment === "przelew" ? admitDueDate(to) : b.payment_due_at,
+      reminded_at: moved ? null : b.reminded_at, overdue_notified_at: moved ? null : (b.overdue_notified_at ?? null),
+    };
+    db.prepare(`UPDATE bookings SET term_id = ?, name = ?, email = ?, phone = ?, people = ?, guardians = ?, notes = ?, total = ?,
+      payment_due_at = ?, reminded_at = ?, overdue_notified_at = ? WHERE id = ?`)
+      .run(next.term_id, next.name, next.email, next.phone, next.people, next.guardians, next.notes, next.total,
+        next.payment_due_at, next.reminded_at, next.overdue_notified_at ?? null, id);
+    // what was queued for the old address or date must not go out later
+    if (moved || email !== b.email) dropUnsentMail(b, from, b.email);
+    if (notify) enqueue(bookingChanged(mailData(next), to, b.status, { moved, previousTotal: b.total }));
+    return { movedTo: moved ? to : null, oldTotal: b.total, total: next.total, paid: !!b.paid_at };
+  });
+}
+
+/**
+ * Removes a booking entered by mistake, with the mail still waiting to go out about it. Paid ones stay
+ * in the accounts for 6 years (privacy policy, retention in tick.ts), so they can only be cancelled.
+ */
+export function deleteBooking(id: string): void {
+  const db = getDb();
+  tx(db, () => {
+    const { b, t } = load(id);
+    if (b.paid_at) throw new UserError(`Opłaconej rezerwacji nie da się usunąć: zostaje w rozliczeniach przez 6 lat.${b.status === "cancelled" ? "" : " Możesz ją anulować albo poprawić."}`);
+    dropUnsentMail(b, t);
+    db.prepare("DELETE FROM bookings WHERE id = ? AND paid_at IS NULL").run(id);
   });
 }
 
