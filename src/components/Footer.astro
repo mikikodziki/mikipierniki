@@ -1,5 +1,6 @@
 ---
 import { site } from "@/lib/site";
+import { out } from "@/lib/outbound";
 import Hug from "./Hug.astro";
 const year = new Date().getFullYear();
 ---
@@ -29,7 +30,7 @@ const year = new Date().getFullYear();
       <div>
         <h2 class="h">Obserwuj</h2>
         <ul>
-          <li><a href={site.instagram} rel="noopener">Instagram</a></li>
+          <li><a href={out("instagram")} rel="noopener">Instagram</a></li>
         </ul>
       </div>
     </div>

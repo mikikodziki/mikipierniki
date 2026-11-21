@@ -6,6 +6,7 @@ import Photo from "@/components/Photo.astro";
 import Piping from "@/components/Piping.astro";
 import { galleryCategories, getGallery } from "@/lib/api";
 import { site } from "@/lib/site";
+import { out } from "@/lib/outbound";
 import type { GalleryItem } from "@/lib/types";
 
 const items = await getGallery();
@@ -96,7 +97,7 @@ const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [{ 
         <p class="lead">Na bieżąco pokazuję tam nowe wzory, kulisy pieczenia i pierniki prosto z warsztatów. Zajrzyj, a jeśli coś wpadnie Ci w oko, napisz, zrobię podobne dla Ciebie.</p>
       </div>
       <div class="cta-actions">
-        <a class="btn btn-primary" href={site.instagram} rel="noopener">Obserwuj {site.instagramHandle}</a>
+        <a class="btn btn-primary" href={out("instagram")} rel="noopener">Obserwuj {site.instagramHandle}</a>
         <a class="btn btn-ghost" href="/warsztaty">Zrób własne na warsztatach</a>
       </div>
     </div>

@@ -4,16 +4,15 @@ import PageHead from "@/components/PageHead.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import { getVenues } from "@/lib/api";
 import { site } from "@/lib/site";
+import { out, studioMapQuery } from "@/lib/outbound";
 
 const venues = await getVenues();
 const home = venues[0];
 const homeAddress = home?.address ? `${home.address}, ${home.city}` : undefined;
-// Pin the municipal address point: Google resolves the text "55J" to number 55.
-const mapDestination = home?.coordinates ? `${home.coordinates.lat},${home.coordinates.lng}` : homeAddress;
-const mapQuery = mapDestination ? encodeURIComponent(mapDestination) : "";
 // The Google map loads only after a click: until then the browser sends Google nothing (privacy policy, section 7).
-const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=17&output=embed&hl=pl`;
-const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
+const mapSrc = `https://maps.google.com/maps?q=${studioMapQuery}&z=17&output=embed&hl=pl`;
+// the "open in Google Maps" link goes through /do/mapa, which counts the click (statistics)
+const mapLink = out("mapa");
 
 const topics = ["Warsztaty", "Warsztaty dla firm", "Zamówienie", "Voucher", "Inne"];
 
@@ -68,7 +67,7 @@ const jsonLd = {
           <div>
             <dt>Obserwuj</dt>
             <dd class="socials">
-              <a href={site.instagram} rel="noopener">Instagram {site.instagramHandle}</a>
+              <a href={out("instagram")} rel="noopener">Instagram {site.instagramHandle}</a>
             </dd>
           </div>
         </dl>
