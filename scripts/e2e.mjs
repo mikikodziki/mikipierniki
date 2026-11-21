@@ -1,5 +1,5 @@
 // End-to-end check of terms, interest, bookings, e-mail, newsletter and panel against the
-// production build. Starts dist/server/entry.mjs on port 4390 with a throwaway database and
+// production build. Starts dist/server/entry.mjs on port 4390 (E2E_PORT, plus the next three) with a throwaway database and
 // test settings; e-mails are written to that folder instead of being sent.
 // Usage: npm run build && npm run test:e2e
 import { spawn } from "node:child_process";
@@ -11,7 +11,8 @@ import { DatabaseSync } from "node:sqlite";
 
 const repo = new URL("..", import.meta.url).pathname;
 const dataDir = mkdtempSync(join(tmpdir(), "mikipierniki-e2e-"));
-const PORT = 4390;
+// E2E_PORT lets two runs (e.g. in separate worktrees) go side by side
+const PORT = Number(process.env.E2E_PORT) || 4390;
 const BASE = `http://127.0.0.1:${PORT}`;
 const env = {
   ...process.env, HOST: "127.0.0.1", PORT: String(PORT), DATABASE_PATH: join(dataDir, "test.sqlite"),
@@ -525,11 +526,12 @@ try {
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "<script>alert(1)</script>", email: "xss@example.com", consent: true });
   check("interest on open term rejected (only proposed)", r.status === 409);
   // ---------- production without SMTP: mail must fail visibly, not pretend to be sent ----------
-  const bare = { ...env, PORT: "4392", DATABASE_PATH: join(dataDir, "bare.sqlite"), MAIL_TO_FILES: "" };
+  const barePort = PORT + 2;
+  const bare = { ...env, PORT: String(barePort), DATABASE_PATH: join(dataDir, "bare.sqlite"), MAIL_TO_FILES: "" };
   const second = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: bare, stdio: "ignore" });
   try {
-    for (let i = 0; i < 100; i++) { try { await fetch("http://127.0.0.1:4392/faq"); break; } catch { await sleep(100); } }
-    await fetch("http://127.0.0.1:4392/api/newsletter", { method: "POST", headers: { origin: "http://127.0.0.1:4392", "content-type": "application/json" }, body: JSON.stringify({ email: "x@example.com" }) });
+    for (let i = 0; i < 100; i++) { try { await fetch(`http://127.0.0.1:${barePort}/faq`); break; } catch { await sleep(100); } }
+    await fetch(`http://127.0.0.1:${barePort}/api/newsletter`, { method: "POST", headers: { origin: `http://127.0.0.1:${barePort}`, "content-type": "application/json" }, body: JSON.stringify({ email: "x@example.com" }) });
     await settle();
     const row = new DatabaseSync(bare.DATABASE_PATH).prepare("SELECT status, last_error FROM outbox").get();
     check("no SMTP in production → mail not marked sent", row && row.status !== "sent" && /SMTP_HOST/.test(row.last_error ?? ""), JSON.stringify(row));
@@ -538,7 +540,7 @@ try {
   }
   // ---------- retention: clean-up on a database whose dates are moved back ----------
   {
-    const port = 4393, base = `http://127.0.0.1:${port}`;
+    const port = PORT + 3, base = `http://127.0.0.1:${port}`;
     const rEnv = { ...env, PORT: String(port), DATABASE_PATH: join(dataDir, "retention.sqlite") };
     let rlog = "";
     const start = async () => {
