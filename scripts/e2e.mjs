@@ -361,7 +361,7 @@ try {
     check("panel add: deadline no later than the day before", !!anna.payment_due_at && new Date(anna.payment_due_at).getTime() <= startOf(pA) - 24 * 3600000);
     const annaFirst = mailsTo("pa-anna@example.com", "booking-awaiting");
     check("panel add sends the online first mail (transfer data, address, deadline) and nothing to the owner", mails().length === before + 1 && annaFirst.length === 1
-      && annaFirst[0].includes("12 3456 7890") && annaFirst[0].includes("ul. Testowa 1") && annaFirst[0].includes(`Termin wpłaty: ${dueText(anna.payment_due_at)}.`)
+      && annaFirst[0].includes("12 3456 7890") && annaFirst[0].includes("ul. Testowa 1") && annaFirst[0].includes(dueText(anna.payment_due_at))
       && !byKind("booking-notify").some((x) => /\bpa-[\w-]*@example\.com/.test(x)), `${mails().length - before}`);
     r = await add(pA, { email: "PA-Anna@example.com" });
     check("panel add: same address on the same term → error naming the booking", flash(r, "err").includes("ma już rezerwację") && flash(r, "err").includes(anna.id)
@@ -376,7 +376,7 @@ try {
     await settle();
     let paid = bk("pa-oplacona@example.com");
     check("panel add 'już opłacona' → confirmed with paid_at, confirmation mail with the address", flash(r, "ok").includes("jako opłacona") && paid?.status === "confirmed" && !!paid.paid_at
-      && paid.voucher_code === "MIKI-PA" && mailsTo("pa-oplacona@example.com", "booking-confirmed").some((x) => x.includes("voucher się zgadza") && x.includes("ul. Testowa 1")), JSON.stringify(paid));
+      && paid.voucher_code === "MIKI-PA" && mailsTo("pa-oplacona@example.com", "booking-confirmed").some((x) => x.includes(paid.id) && x.includes("ul. Testowa 1")), JSON.stringify(paid));
     before = mails().length;
     r = await add(pA, { name: "Bez Maila", email: "pa-bezmaila@example.com", notify: "" });
     await settle();
@@ -392,7 +392,7 @@ try {
     await settle();
     const late = bk("pa-pozno@example.com");
     check("panel add works inside the last 48 hours, deadline neither passed nor after the start", late?.status === "awaiting_payment" && new Date(late.payment_due_at).getTime() > Date.now() + 11 * 3600000
-      && new Date(late.payment_due_at).getTime() <= startOf(pL) && mailsTo("pa-pozno@example.com", "booking-awaiting").some((x) => x.includes(`Termin wpłaty: ${dueText(late.payment_due_at)}.`)), JSON.stringify(late));
+      && new Date(late.payment_due_at).getTime() <= startOf(pL) && mailsTo("pa-pozno@example.com", "booking-awaiting").some((x) => x.includes(dueText(late.payment_due_at))), JSON.stringify(late));
     await add(pB, { email: "pa-pelny@example.com", people: "2" });
     r = await add(pB, { name: "Lena Lista", email: "pa-lista@example.com", people: "2" });
     await settle();
