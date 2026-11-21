@@ -178,7 +178,7 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
         <table class="tbl">
           <thead><tr><th>Imię i nazwisko</th><th>Kontakt</th><th>Osób</th><th>Uwagi</th><th>Zgłoszenie</th><th>Link wysłany</th><th></th></tr></thead>
           <tbody>
-            {interest.map((r) => (
+            {interest.map((r) => (<>
               <tr class:list={{ muted: !!r.withdrawn_at }}>
                 <td>{r.name}{r.withdrawn_at && <><br /><span class="pill pill--warn">wycofane</span></>}</td>
                 <td><a href={`mailto:${r.email}`}>{r.email}</a>{r.phone && <><br />{r.phone}</>}</td>
@@ -188,21 +188,8 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                 <td data-label="Link wysłany">{dt(r.notified_at) || "—"}</td>
                 <td>
                   <div class="actions">
-                    {/* a withdrawn row was emptied on purpose, so it can only be deleted */}
-                    {!r.withdrawn_at && (
-                      <details>
-                        <summary>Popraw</summary>
-                        <form method="post" class="confirm">
-                          <input type="hidden" name="action" value="interest-edit" /><input type="hidden" name="interest" value={r.id} />
-                          <label class="field" for={`ie-name-${r.id}`}>Imię i nazwisko<input class="input" id={`ie-name-${r.id}`} name="name" required minlength="2" maxlength="120" value={r.name} /></label>
-                          <label class="field" for={`ie-phone-${r.id}`}>Telefon <span class="hint">opcjonalnie</span><input class="input" type="tel" id={`ie-phone-${r.id}`} name="phone" pattern="[0-9 +\(\)\-]{9,20}" value={r.phone ?? ""} /></label>
-                          <label class="field" for={`ie-people-${r.id}`}>Osób<input class="input" type="number" id={`ie-people-${r.id}`} name="people" required min="1" max={site.bookingMax} value={r.people} /></label>
-                          <label class="field" for={`ie-notes-${r.id}`}>Uwagi<textarea class="input" id={`ie-notes-${r.id}`} name="notes" maxlength="2000">{r.notes ?? ""}</textarea></label>
-                          <span class="note">Adresu e-mail nie da się zmienić. Jeśli jest błędny, usuń zgłoszenie, a ta osoba zgłosi się jeszcze raz.</span>
-                          <button class="btn btn-primary btn-small">Zapisz poprawki</button>
-                        </form>
-                      </details>
-                    )}
+                    {/* a withdrawn row was emptied on purpose, so it can only be deleted; the form opens in the row below */}
+                    {!r.withdrawn_at && <details class="edit-toggle"><summary>Popraw</summary></details>}
                     {!r.withdrawn_at && (
                       <details>
                         <summary>Wycofaj</summary>
@@ -225,7 +212,22 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                   </div>
                 </td>
               </tr>
-            ))}
+              {!r.withdrawn_at && (
+                <tr class="edit-row">
+                  <td colspan="7">
+                    <form method="post" class="edit-grid">
+                      <input type="hidden" name="action" value="interest-edit" /><input type="hidden" name="interest" value={r.id} />
+                      <label class="field" for={`ie-name-${r.id}`}>Imię i nazwisko<input class="input" id={`ie-name-${r.id}`} name="name" required minlength="2" maxlength="120" value={r.name} /></label>
+                      <label class="field" for={`ie-phone-${r.id}`}>Telefon <span class="hint">opcjonalnie</span><input class="input" type="tel" id={`ie-phone-${r.id}`} name="phone" pattern="[0-9 +\(\)\-]{9,20}" value={r.phone ?? ""} /></label>
+                      <label class="field" for={`ie-people-${r.id}`}>Osób<input class="input" type="number" id={`ie-people-${r.id}`} name="people" required min="1" max={site.bookingMax} value={r.people} /></label>
+                      <label class="field wide" for={`ie-notes-${r.id}`}>Uwagi<textarea class="input" id={`ie-notes-${r.id}`} name="notes" maxlength="2000">{r.notes ?? ""}</textarea></label>
+                      <span class="note wide">Adresu e-mail nie da się zmienić. Jeśli jest błędny, usuń zgłoszenie, a ta osoba zgłosi się jeszcze raz.</span>
+                      <div class="wide"><button class="btn btn-primary btn-small">Zapisz poprawki</button></div>
+                    </form>
+                  </td>
+                </tr>
+              )}
+            </>))}
           </tbody>
         </table>
       </div>
@@ -241,7 +243,7 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
           <tbody>
             {bookings.map((b) => {
               const overdue = b.status === "awaiting_payment" && b.payment_due_at && new Date(b.payment_due_at).getTime() < now;
-              return (
+              return (<>
                 <tr class:list={{ muted: b.status === "cancelled" }}>
                   <td>{b.id}<br /><span class="note">{dt(b.created_at)}</span></td>
                   <td>{b.name}</td>
@@ -272,32 +274,8 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                           </form>
                         </details>
                       )}
-                      {b.status !== "cancelled" && (
-                        <details>
-                          <summary>Popraw</summary>
-                          <form method="post" class="confirm booking-edit">
-                            <input type="hidden" name="action" value="edit-booking" /><input type="hidden" name="booking" value={b.id} />
-                            <label class="field" for={`ed-name-${b.id}`}>Imię i nazwisko<input class="input" id={`ed-name-${b.id}`} name="name" required minlength="2" maxlength="120" value={b.name} /></label>
-                            <label class="field" for={`ed-email-${b.id}`}>E-mail<input class="input" type="email" id={`ed-email-${b.id}`} name="email" required maxlength="200" value={b.email} /></label>
-                            <label class="field" for={`ed-phone-${b.id}`}>Telefon<input class="input" type="tel" id={`ed-phone-${b.id}`} name="phone" required pattern={PHONE} value={b.phone} /></label>
-                            <label class="field" for={`ed-people-${b.id}`}>{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"}<input class="input" type="number" id={`ed-people-${b.id}`} name="people" required min="1" max={site.bookingMax} value={b.people} /></label>
-                            {kidsPossible && (
-                              <label class="field" for={`ed-guardians-${b.id}`}>Rodziców <span class="hint">tylko dzieci</span><input class="input" type="number" id={`ed-guardians-${b.id}`} name="guardians" min="0" max={site.bookingMax} value={b.guardians ?? ""} /></label>
-                            )}
-                            <label class="field" for={`ed-notes-${b.id}`}>Uwagi<textarea class="input" id={`ed-notes-${b.id}`} name="notes" rows="2" maxlength="2000">{b.notes ?? ""}</textarea></label>
-                            {moveTargets.length > 0 ? (
-                              <label class="field" for={`ed-term-${b.id}`}>Termin
-                                <select class="input" id={`ed-term-${b.id}`} name="termId">
-                                  <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
-                                  {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
-                                </select>
-                              </label>
-                            ) : <input type="hidden" name="termId" value={term.id} />}
-                            <label class="check" for={`ed-notify-${b.id}`}><input type="checkbox" id={`ed-notify-${b.id}`} name="notify" checked /><span>wyślij maila z poprawioną rezerwacją</span></label>
-                            <button class="btn btn-primary btn-small">Zapisz poprawki</button>
-                          </form>
-                        </details>
-                      )}
+                      {/* the form opens in the row below, across the whole table */}
+                      {b.status !== "cancelled" && <details class="edit-toggle"><summary>Popraw</summary></details>}
                       {b.paid_at ? (
                         <span class="note">Opłaconej rezerwacji nie usuniesz: zostaje w rozliczeniach przez 6 lat.{b.status !== "cancelled" && " Możesz ją anulować albo poprawić."}</span>
                       ) : (
@@ -313,7 +291,34 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                     </div>
                   </td>
                 </tr>
-              );
+                {b.status !== "cancelled" && (
+                  <tr class="edit-row">
+                    <td colspan="8">
+                      <form method="post" class="edit-grid booking-edit">
+                      <input type="hidden" name="action" value="edit-booking" /><input type="hidden" name="booking" value={b.id} />
+                      <label class="field" for={`ed-name-${b.id}`}>Imię i nazwisko<input class="input" id={`ed-name-${b.id}`} name="name" required minlength="2" maxlength="120" value={b.name} /></label>
+                      <label class="field" for={`ed-email-${b.id}`}>E-mail<input class="input" type="email" id={`ed-email-${b.id}`} name="email" required maxlength="200" value={b.email} /></label>
+                      <label class="field" for={`ed-phone-${b.id}`}>Telefon<input class="input" type="tel" id={`ed-phone-${b.id}`} name="phone" required pattern={PHONE} value={b.phone} /></label>
+                      <label class="field" for={`ed-people-${b.id}`}>{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"}<input class="input" type="number" id={`ed-people-${b.id}`} name="people" required min="1" max={site.bookingMax} value={b.people} /></label>
+                      {kidsPossible && (
+                        <label class="field" for={`ed-guardians-${b.id}`}>Rodziców <span class="hint">tylko dzieci</span><input class="input" type="number" id={`ed-guardians-${b.id}`} name="guardians" min="0" max={site.bookingMax} value={b.guardians ?? ""} /></label>
+                      )}
+                      <label class="field wide" for={`ed-notes-${b.id}`}>Uwagi<textarea class="input" id={`ed-notes-${b.id}`} name="notes" rows="2" maxlength="2000">{b.notes ?? ""}</textarea></label>
+                      {moveTargets.length > 0 ? (
+                        <label class="field wide" for={`ed-term-${b.id}`}>Termin
+                          <select class="input" id={`ed-term-${b.id}`} name="termId">
+                            <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
+                            {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
+                          </select>
+                        </label>
+                      ) : <input type="hidden" name="termId" value={term.id} />}
+                      <label class="check wide" for={`ed-notify-${b.id}`}><input type="checkbox" id={`ed-notify-${b.id}`} name="notify" checked /><span>wyślij maila z poprawioną rezerwacją</span></label>
+                      <div class="wide"><button class="btn btn-primary btn-small">Zapisz poprawki</button></div>
+                    </form>
+                    </td>
+                  </tr>
+                )}
+              </>);
             })}
           </tbody>
         </table>
@@ -377,7 +382,11 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
 
 <style>
   .confirm { display: grid !important; gap: 8px; margin-top: 8px; }
-  /* the correction form opens inside a table cell: wide enough to type in, notes kept short */
-  .booking-edit { min-width: 15rem; }
-  .booking-edit textarea.input, .booking-add textarea.input { min-height: 64px; }
+  /* "Popraw" opens its form in the row under the entry, across the table; hidden while closed
+     (only hidden, so the phone layout's block rows still apply when it opens) */
+  tr:not(:has(.edit-toggle[open])) + .edit-row { display: none; }
+  .edit-row td { background: var(--sunk, transparent); }
+  .edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 10px 12px; align-items: end; padding: 4px 0 6px; }
+  .edit-grid .wide { grid-column: 1 / -1; }
+  .edit-grid textarea.input, .booking-add textarea.input { min-height: 64px; }
 </style>
