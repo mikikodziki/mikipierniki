@@ -597,9 +597,14 @@ try {
   check("GET did not confirm and wrote no consent", sub() === "pending" && consents().length === 0);
   check("cross-site confirm POST → 403", (await confirmPost(ctoken, "https://evil.example")).status === 403 && sub() === "pending");
   // "Origin: null": what a mail-link page that sent no referrer posts; Sec-Fetch-Site decides
-  const nullOrigin = (site) => fetch(`${BASE}/newsletter/potwierdz?t=nie-ma-takiego`, { method: "POST", headers: { origin: "null", "sec-fetch-site": site, "content-type": "application/x-www-form-urlencoded" }, body: "" });
-  const [nullSame, nullCross] = [(await nullOrigin("same-origin")).status, (await nullOrigin("cross-site")).status];
-  check("Origin: null passes only with Sec-Fetch-Site: same-origin", nullSame === 200 && nullCross === 403, `${nullSame} ${nullCross}`);
+  const nullOrigin = (site) => fetch(`${BASE}/newsletter/potwierdz?t=nie-ma-takiego`, { method: "POST", headers: { origin: "null", ...(site && { "sec-fetch-site": site }), "content-type": "application/x-www-form-urlencoded" }, body: "" });
+  const [nullSame, nullCross, nullBare] = [(await nullOrigin("same-origin")).status, (await nullOrigin("cross-site")).status, (await nullOrigin(null)).status];
+  check("Origin: null passes only with Sec-Fetch-Site: same-origin (not cross-site, not without it)", nullSame === 200 && nullCross === 403 && nullBare === 403, `${nullSame} ${nullCross} ${nullBare}`);
+  // in production the app sees http:// behind the proxy, so the button passes as the site's https:// origin
+  r = await confirmPost("nie-ma-takiego", "https://mikipierniki.pl");
+  check("confirm POST from https://mikipierniki.pl is accepted", r.status === 200, String(r.status));
+  r = await get("/zapis/wypisz?t=nie-ma-takiego");
+  check("withdraw page keeps its address to this site too", r.headers.get("referrer-policy") === "same-origin", r.headers.get("referrer-policy"));
   r = await confirmPost(ctoken);
   html = await r.text();
   check("confirm POST activates", r.status === 200 && html.includes("Gotowe, jesteś na liście") && sub() === "active");
