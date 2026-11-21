@@ -380,7 +380,8 @@ try {
     before = mails().length;
     r = await add(pA, { name: "Bez Maila", email: "pa-bezmaila@example.com", notify: "" });
     await settle();
-    check("panel add without 'wyślij maila' → saved, no mail", bk("pa-bezmaila@example.com")?.status === "awaiting_payment" && mails().length === before, `${mails().length - before}`);
+    check("panel add without 'wyślij maila' → saved, no mail, the deadline to pass on shown", bk("pa-bezmaila@example.com")?.status === "awaiting_payment" && mails().length === before
+      && flash(r, "ok").includes("Termin wpłaty:") && flash(r, "ok").includes("Przekaż go"), `${mails().length - before} ${flash(r, "ok")}`);
     r = await add(pK, { email: "pa-dziecko@example.com", people: "2", guardians: "0" });
     check("panel add on a children's term without a parent → error", flash(r, "err").includes("co najmniej jeden rodzic") && !bk("pa-dziecko@example.com"), flash(r, "err"));
     r = await add(pK, { email: "pa-dziecko@example.com", people: "2", guardians: "1" });
@@ -561,7 +562,7 @@ try {
     await settle();
     const wanda = bk("pa-g2@example.com");
     check("a waitlist entry moved to a term with free seats and no waitlist gets the seat", wanda.term_id === pE && wanda.status === "awaiting_payment" && !!wanda.payment_due_at
-      && flash(r, "ok").includes("zeszła z listy rezerwowej") && mailsTo("pa-g2@example.com", "booking-changed").some((x) => x.includes("Dane do przelewu")), `${flash(r, "ok")}${flash(r, "err")} ${JSON.stringify(wanda)}`);
+      && flash(r, "ok").includes("zeszła z listy rezerwowej") && mailsTo("pa-g2@example.com", "booking-changed").some((x) => x.includes("Dane do przelewu") && x.includes("Na tym terminie jest dla Ciebie miejsce")), `${flash(r, "ok")}${flash(r, "err")} ${JSON.stringify(wanda)}`);
     // H: its seat freed, its own waitlist not yet given it
     r = await panel(`/panel/termin/${pH}`, { action: "cancel-booking", booking: bk("pa-h1@example.com").id });
     check("setup: H has a free seat and someone waiting", bk("pa-h1@example.com").status === "cancelled" && bk("pa-h2@example.com").status === "waitlist", flash(r, "err"));

@@ -15,6 +15,10 @@ export const prerender = false;
 
 const id = Astro.params.id!;
 const here = `/panel/termin/${id}`;
+// the regulamin says the payment deadline is given by e-mail; when she unticks the mail, she passes it on herself
+const dueToPassOn = (iso: string | null | undefined) => iso
+  ? ` Termin wpłaty: ${new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" })}. Przekaż go, bo mail nie wychodzi.`
+  : "";
 
 // a rejected edit is rendered again in this response, with what was typed, instead of redirecting
 let formError: string | undefined;
@@ -87,10 +91,7 @@ if (Astro.request.method === "POST") {
         // nothing settles money by itself, so a changed total of a paid booking is spelled out
         const total = r.total === r.oldTotal ? "" : ` Kwota zmieniła się z ${pln(r.oldTotal)} na ${pln(r.total)}${r.paid ? ": rozlicz dopłatę albo zwrot." : "."}`;
         const promoted = r.promoted ? " Na nowym terminie były wolne miejsca, więc rezerwacja zeszła z listy rezerwowej i czeka na wpłatę." : "";
-        // the regulamin says the deadline is given by e-mail; without the mail she has to pass it on herself
-        const due = r.newDue && !notify
-          ? ` Nowy termin wpłaty: ${new Date(r.newDue).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" })}. Przekaż go, bo mail nie wychodzi.`
-          : "";
+        const due = notify ? "" : dueToPassOn(r.newDue).replace(" Termin", " Nowy termin");
         ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${shortDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${promoted}${due}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
         break;
       }
@@ -103,7 +104,8 @@ if (Astro.request.method === "POST") {
         const notify = f.get("notify") === "on";
         const r = createBooking(bookingAddFromForm(f, id), { paid: f.get("paid") === "on", notify });
         const where = r.status === "waitlist" ? "na listę rezerwową (termin jest pełny)" : r.status === "confirmed" ? "jako opłacona" : "i czeka na wpłatę";
-        ok = `Rezerwacja ${r.bookingId} dodana ${where}.${notify ? " Wysyłam maila." : ""}`;
+        const due = notify || r.status !== "awaiting_payment" ? "" : dueToPassOn(bookingsForTerm(id).find((b) => b.id === r.bookingId)?.payment_due_at);
+        ok = `Rezerwacja ${r.bookingId} dodana ${where}.${due}${notify ? " Wysyłam maila." : ""}`;
         break;
       }
       default:

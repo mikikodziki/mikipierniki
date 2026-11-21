@@ -261,7 +261,7 @@ export function editBooking(id: string, onTerm: string, edit: BookingEdit, notif
         next.payment_due_at, next.reminded_at, next.overdue_notified_at ?? null, id);
     // what was queued for the old address or date must not go out later
     if (moved || readdressed) dropUnsentMail(b);
-    if (notify) enqueue(bookingChanged(mailData(next), to, status, { moved, previousTotal: b.total }));
+    if (notify) enqueue(bookingChanged(mailData(next), to, status, { moved, previousTotal: b.total, offWaitlist: promoted }));
     return {
       movedTo: moved ? to : null, oldTotal: b.total, total: next.total, paid: !!b.paid_at,
       newDue: due !== b.payment_due_at ? due : null, promoted,
