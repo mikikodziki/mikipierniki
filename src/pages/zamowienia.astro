@@ -33,7 +33,7 @@ const parcelLarge = 20;
 
 const steps = [
   { title: "Zapytanie", text: "Wypełniasz formularz poniżej: okazja, liczba sztuk, termin odbioru i to, co Ci się podoba. Możesz dołączyć zdjęcie inspiracji albo plik z logo." },
-  { title: "Projekt i wycena", text: "Odpisuję z propozycją wzorów i wyceną. Przy własnym kształcie przygotowuję foremkę pod Twój projekt i najpierw potwierdzam z Tobą, jak piernik ma wyglądać." },
+  { title: "Projekt i wycena", text: "Odpisuję z propozycją wzorów i wyceną: ceną, dostawą, terminem i płatnością. Zamówienie jest wiążące, gdy potwierdzisz wycenę. Przy własnym kształcie przygotowuję foremkę pod Twój projekt i najpierw potwierdzam z Tobą, jak piernik ma wyglądać." },
   // DO UZUPEŁNIENIA: zasady przedpłaty przy zamówieniach detalicznych (zadatek 15% dotyczy zamówień firmowych z personalizacją)
   { title: "Potwierdzenie terminu", text: `Zamówienia firmowe z personalizacją rezerwuję po wpłacie zadatku w wysokości ${depositPct}% wyceny. Od tej chwili Twoje pierniki mają swoje miejsce w moim kalendarzu pieczenia.` },
   { title: "Odbiór lub wysyłka", text: `Odbierasz pierniki w mojej pracowni we ${studio.city === 'Wrocław' ? 'Wrocławiu' : studio.city} albo wysyłam je Paczkomatem: mała paczka ${pln(parcelSmall)}, duża ${pln(parcelLarge)}.` },
@@ -197,8 +197,9 @@ const occasions = [
           <li>Minimalne zamówienie detaliczne: <b>{pln(minOrder)}</b>.</li>
           <li>Zamówienia firmowe z personalizacją i własnym kształtem: <b>od {pln(customFrom)}</b>, zadatek {depositPct}%.</li>
           <li>Odbiór osobisty w mojej pracowni we Wrocławiu albo wysyłka Paczkomatem: mała paczka {pln(parcelSmall)}, duża {pln(parcelLarge)}.</li>
-          <li>Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów.</li>
+          <li>Alergeny w piernikach: gluten, jajka, soja, mleko (w tym laktoza). Mogą też zawierać śladowe ilości orzechów. Jeśli masz alergię lub nietolerancję, zadzwoń do mnie, zanim potwierdzisz zamówienie: <a href={site.phoneHref}>{site.phone}</a>.</li>
           <li><b>Złoty lukier jest niejadalny</b> i służy wyłącznie do dekoracji.</li>
+          <li>Pierniki personalizowane (własny kształt, logo, imiona, napisy) robię specjalnie dla Ciebie, więc nie przysługuje przy nich prawo odstąpienia od umowy. Zasady zamówień opisuje <a href="/regulamin#zamowienia">regulamin</a>.</li>
         </ul>
       </div>
     </div>

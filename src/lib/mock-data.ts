@@ -3,6 +3,7 @@
  * Workshop terms are not here: Dominika manages them in /panel (database).
  */
 import type { FaqItem, GalleryItem, Testimonial, Venue } from "./types";
+import { site } from "./site";
 
 export const venues: Venue[] = [
   { id: "pracownia", name: "Pracownia Miki", city: "Wrocław", address: "ul. Długa 55J", coordinates: { lat: 51.123959, lng: 17.013382 } },
@@ -17,14 +18,14 @@ export const faq: FaqItem[] = [
   { topic: "warsztaty", q: "Czy muszę mieć jakieś doświadczenie?", a: "Nie. Warsztaty prowadzę od podstaw, a większość uczestników pierwszy raz trzyma w ręku rękaw cukierniczy." },
   { topic: "warsztaty", q: "Ile pierników zrobię i czy zabieram je do domu?", a: "W czasie warsztatów dekorujesz 6–8 pierników i zabierasz do domu wszystkie, w pudełku. Możesz też wziąć ze sobą lukier, który Ci zostanie." },
   { topic: "warsztaty", q: "Ile trwają warsztaty?", a: "Warsztaty dla dorosłych i wieczorne trwają od 3 do 4 godzin. Warsztaty dla dzieci trwają 2 godziny." },
-  { topic: "warsztaty", q: "Co jest w cenie?", a: "Upieczone przeze mnie pierniki, lukry, rękawy cukiernicze, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo lampka grzanego wina." },
-  { topic: "warsztaty", q: "Od ilu lat dzieci mogą wziąć udział?", a: "Warsztaty dla dzieci są dla grupy 6–12 lat i dziecko przychodzi z rodzicem. Starsze dzieci radzą sobie same i mogą przyjść bez opiekuna." },
-  { topic: "warsztaty", q: "Ile osób jest w grupie?", a: "Od 4 do 10 osób. Przy mniejszej liczbie chętnych termin może zostać odwołany, a wtedy przenoszę zapis na inny termin albo zwracam całą wpłatę." },
-  { topic: "warsztaty", q: "Czy na warsztatach wieczornych jest alkohol?", a: "Tak, lampka grzanego wina jest w cenie, więc te warsztaty są dla osób pełnoletnich. Kto nie pije, dostaje to samo w wersji bezalkoholowej." },
-  { topic: "warsztaty", q: "Czy pierniki są odpowiednie dla alergików?", a: "Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów. Alergie wpisz w formularzu zapisu, a przygotuję się na miejscu." },
-  { topic: "platnosci", q: "Jak mogę zapłacić?", a: "Przelewem w ciągu 3 dni od rezerwacji (dane do przelewu przychodzą mailem) albo kartą podarunkową, jeśli masz voucher." },
-  { topic: "platnosci", q: "Co jeśli nie mogę przyjść?", a: "Do 7 dni przed terminem zwracam całą kwotę albo przenoszę rezerwację na inny termin. Później możesz przekazać swoje miejsce innej osobie." },
-  { topic: "platnosci", q: "Jak działa voucher?", a: "Voucher kosztuje 500 zł i jest ważny rok. Obdarowana osoba zapisuje się na dowolny termin i przy płatności wybiera kartę podarunkową. Wersję PDF wysyłam mailem, drukowaną odbiera się w pracowni." },
+  { topic: "warsztaty", q: "Co jest w cenie?", a: "Upieczone przeze mnie pierniki, lukry, rękawy cukiernicze, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo kubek rozgrzewającego ponczu korzennego (bez alkoholu)." },
+  { topic: "warsztaty", q: "Od ilu lat dzieci mogą wziąć udział?", a: "Warsztaty dla dzieci są dla grupy 6–12 lat. Rodzic lub opiekun zostaje z dzieckiem przez cały czas. Młodzież od 13 do 17 lat może przyjść na warsztaty dla dorosłych bez opiekuna, z pisemną zgodą rodzica i numerem telefonu do niego." },
+  { topic: "warsztaty", q: "Ile osób jest w grupie?", a: "Od 4 do 10 osób. Przy mniejszej liczbie chętnych termin może zostać odwołany, a wtedy przenoszę zapis na inny termin albo w ciągu 14 dni zwracam całą wpłatę." },
+  { topic: "warsztaty", q: "Co pijemy na warsztatach wieczornych?", a: "W cenie jest kubek rozgrzewającego ponczu korzennego (bez alkoholu), a do tego napoje, jak na każdych warsztatach. Warsztaty wieczorne są dla dorosłych." },
+  { topic: "warsztaty", q: "Czy pierniki są odpowiednie dla alergików?", a: `Alergeny w piernikach: gluten, jajka, soja, mleko (w tym laktoza). Mogą też zawierać śladowe ilości orzechów. W formularzu zapisu nie pytam o zdrowie. Jeśli masz alergię lub nietolerancję, zadzwoń do mnie przed warsztatami: ${site.phone}.` },
+  { topic: "platnosci", q: "Jak mogę zapłacić?", a: "Przelewem w ciągu 3 dni od rezerwacji, najpóźniej dzień przed warsztatami (dane do przelewu przychodzą mailem), albo kartą podarunkową, jeśli masz voucher. Zapis wysłany przez formularz jest wiążący." },
+  { topic: "platnosci", q: "Co jeśli nie mogę przyjść?", a: "Do 7 dni przed terminem zwracam całą kwotę albo przenoszę rezerwację na inny termin. Później wpłata nie wraca, ale możesz przekazać swoje miejsce innej osobie. Jeśli Twoje miejsce zajmie ktoś z listy rezerwowej, zwracam całą wpłatę. Zwrot dostajesz w ciągu 14 dni." },
+  { topic: "platnosci", q: "Jak działa voucher?", a: "Voucher kosztuje 500 zł i jest ważny rok. Obdarowana osoba zapisuje się na dowolny termin i przy płatności wybiera kartę podarunkową. Jeśli warsztaty kosztują mniej, reszta zostaje na voucherze do końca jego ważności. Voucher zamawiasz przez formularz na stronie warsztatów. To niewiążąca prośba: odpisuję osobiście i ustalamy szczegóły. Wersję PDF wysyłam mailem, drukowaną odbiera się w pracowni." },
   { topic: "zamowienia", q: "Ile kosztują pierniki na zamówienie?", a: "Cena zależy od wielkości piernika i tego, jak pracochłonne jest zdobienie: mały 15 zł, średni 25 zł, duży 35 zł. Zestaw w pudełku (1 duży, 2 średnie, 3 małe) kosztuje 120 zł. Minimalne zamówienie to 100 zł." },
   { topic: "zamowienia", q: "Czy zrobisz pierniki w niestandardowym kształcie?", a: "Tak. Przy zamówieniach firmowych tworzę foremki pod konkretny projekt, więc piernik może mieć kształt Twojego logo, produktu czy budynku. Wystarczy opis albo zdjęcie inspiracji." },
   { topic: "zamowienia", q: "Do kiedy przyjmujesz zamówienia świąteczne?", a: "Zamówienia detaliczne na święta przyjmuję do 18 grudnia, a firmowe najpóźniej dwa tygodnie przed odbiorem. W szczycie sezonu terminy kończą się wcześniej, więc lepiej napisać zawczasu." },

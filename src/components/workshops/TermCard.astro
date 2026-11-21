@@ -1,6 +1,6 @@
 ---
 import type { Term } from "@/lib/types";
-import { venueById } from "@/lib/api";
+import { bookingClosed, venueById } from "@/lib/api";
 import { day, LOW_SEATS, month, plural, pln, seatsWord, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
 import Photo from "../Photo.astro";
@@ -12,6 +12,8 @@ const { term } = Astro.props;
 const venue = venueById(term.venueId);
 // a proposed date only collects "this suits me" sign-ups; nothing is booked yet
 const proposed = term.status === "proposed";
+// online booking closes 48 hours before the start
+const closed = !proposed && bookingClosed(term);
 const soldOut = term.seatsLeft === 0;
 const low = !soldOut && term.seatsLeft <= LOW_SEATS;
 const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100);
@@ -37,7 +39,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
           <li>{venue.name}, {venue.city}</li>
           <li>{term.cookies} pierników do zabrania do domu</li>
           {term.type === "dzieci" && <li>Dzieci 6–12 lat z rodzicem</li>}
-          {term.type === "wieczor" && <li>Lampka grzanego wina w cenie</li>}
+          {term.type === "wieczor" && <li>Kubek rozgrzewającego ponczu korzennego (bez alkoholu)</li>}
         </ul>
 
         {proposed ? (
@@ -61,6 +63,8 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
           <span class="price">{pln(term.price)} <small>/ {term.priceUnit === "dziecko" ? "dziecko" : "os."}</small></span>
           {proposed ? (
             <button class="btn btn-primary btn-small" type="button" data-interest={term.id}>Pasuje mi</button>
+          ) : closed ? (
+            <span class="closed">Zapisy zamknięte</span>
           ) : (
             <button class="btn btn-primary btn-small" type="button" data-book={term.id}>
               {soldOut ? "Lista rezerwowa" : "Zapisz się"}
@@ -119,6 +123,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--on-dark); }
+  .closed { font-size: .9rem; font-weight: 600; color: var(--sand); }
   .price small { font-family: var(--body); font-weight: 400; font-size: .8rem; color: color-mix(in srgb, var(--on-dark) 85%, transparent); }
 
   /* touch screens have no hover: keep everything open */

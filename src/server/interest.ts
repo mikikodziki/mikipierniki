@@ -35,7 +35,7 @@ export function registerInterest(req: InterestRequest): { terms: number } {
     if (added.length === 0) return;
     enqueue(
       interestThanks(email, req.name, added, tok),
-      interestNotify(req.name, email, req.phone, req.people, req.notes, added),
+      interestNotify(req.name, email, req.people, added),
     );
   });
   return { terms: terms.length };
@@ -51,8 +51,14 @@ export function interestByToken(tok: string): { term: Term | undefined; withdraw
  * can't be signed up for that date again by someone else.
  */
 export function withdrawInterest(tok: string): number {
-  const r = getDb().prepare("UPDATE interest SET withdrawn_at = ?, phone = NULL, notes = NULL WHERE token = ? AND withdrawn_at IS NULL").run(nowIso(), tok);
-  return Number(r.changes);
+  const db = getDb();
+  return tx(db, () => {
+    const emails = db.prepare("SELECT DISTINCT email FROM interest WHERE token = ? AND withdrawn_at IS NULL").all(tok) as unknown as { email: string }[];
+    const r = db.prepare("UPDATE interest SET withdrawn_at = ?, phone = NULL, notes = NULL WHERE token = ? AND withdrawn_at IS NULL").run(nowIso(), tok);
+    // a "your date is open" mail that hasn't gone out yet is no longer wanted
+    for (const { email } of emails) db.prepare("DELETE FROM outbox WHERE status = 'pending' AND kind = 'term-opened' AND to_addr = ?").run(email);
+    return Number(r.changes);
+  });
 }
 
 export interface InterestRow {

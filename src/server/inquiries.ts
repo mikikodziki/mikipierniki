@@ -5,12 +5,19 @@ import { inquiryAutoreply, inquiryNotify } from "./emails";
 import { enqueue } from "./mail";
 import { normalizeEmail } from "./util";
 
+const AUTOREPLY_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 export function saveInquiry(req: InquiryRequest): void {
+  const db = getDb();
   const email = normalizeEmail(req.email);
   const details = req.details ?? {};
-  getDb().prepare("INSERT INTO inquiries (kind, name, email, phone, message, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+  db.prepare("INSERT INTO inquiries (kind, name, email, phone, message, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
     .run(req.kind, req.name, email, req.phone ?? null, req.message, JSON.stringify(details), nowIso());
-  enqueue(inquiryNotify(req.kind, req.name, email, req.phone, req.message, details), inquiryAutoreply(email, req.name, req.kind));
+  const notify = inquiryNotify(req.kind, req.name, email, req.phone, req.message, details);
+  // the auto-reply goes out once per address per day; the inquiry is always saved and the owner always notified
+  const replied = db.prepare("SELECT 1 FROM outbox WHERE kind = 'inquiry-autoreply' AND to_addr = ? AND created_at > ?")
+    .get(email, new Date(Date.now() - AUTOREPLY_INTERVAL_MS).toISOString());
+  enqueue(...(replied ? [notify] : [notify, inquiryAutoreply(email, req.name, req.kind)]));
 }
 
 export interface InquiryRow {

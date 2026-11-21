@@ -4,7 +4,7 @@ export const site = {
   name: "Miki Pierniki",
   owner: "Dominika",
   tagline: "Warsztaty lukrowania pierników i pierniki na zamówienie",
-  email: "dominika.saczynska@gmail.com",
+  email: "mika@mikipierniki.pl",
   phone: "880 122 269",
   phoneHref: "tel:+48880122269",
   instagram: "https://instagram.com/mikipierniki",

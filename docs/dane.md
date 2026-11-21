@@ -62,13 +62,13 @@ Kształty i detale:
   Wyszukiwanie samej nazwy adresu w Google wskazuje numer 55, dlatego nie należy
   zastępować współrzędnych zapytaniem tekstowym. Punkt z miejskiego układu
   EPSG:2177 przeliczono na WGS84 (EPSG:4326).
-- Telefon: 880 122 269. E-mail: dominika.saczynska@gmail.com.
+- Telefon: 880 122 269. E-mail: mika@mikipierniki.pl (od 21.11.2026).
 - Social media: tylko Instagram @mikipierniki. Brak Facebooka i TikToka.
 - Domena: mikipierniki.pl (ustawiona w `astro.config.mjs`, stąd canonical i og:url).
 
 ## Warsztaty otwarte
 - Dla dorosłych: 3–4 godziny, 450 zł/os.
-- Wieczorne z winem: 3–4 godziny, 500 zł/os. Lampka grzanego wina w cenie, warsztat od 18 lat.
+- Wieczorne: 3–4 godziny, 500 zł/os., dla dorosłych. Kubek rozgrzewającego ponczu korzennego (bez alkoholu) w cenie (od 21.11.2026 bez wina).
 - Dla dzieci: 2 godziny, 200 zł za dziecko. Dzieci 6–12 lat z rodzicem, starsze mogą być same.
   W sezonie tylko dwa takie terminy.
 - Grupa: minimum 4 osoby, maksimum 10.

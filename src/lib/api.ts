@@ -53,6 +53,16 @@ export function bookingTotal(term: Pick<Term, "price">, people: number): number 
   return people * term.price;
 }
 
+/* ---------- booking window (shared by UI and backend) ---------- */
+
+/** Online booking closes this many hours before a term starts. */
+export const BOOKING_CLOSES_HOURS_BEFORE = 48;
+
+/** True once less than 48 hours are left before the term starts (or it has started). */
+export function bookingClosed(term: Pick<Term, "startsAt">, now = Date.now()): boolean {
+  return new Date(term.startsAt).getTime() - now < BOOKING_CLOSES_HOURS_BEFORE * 60 * 60 * 1000;
+}
+
 /* ---------- client-side writes ---------- */
 
 /** The server's own message, safe to show next to the form. */

@@ -2,7 +2,7 @@
  * Bookings on open terms. Payment is a bank transfer or a gift card for now; Dominika marks
  * bookings as paid in the panel. Seats count bookings that are confirmed or awaiting payment.
  */
-import { bookingTotal } from "@/lib/api";
+import { bookingClosed, bookingTotal } from "@/lib/api";
 import { plural, seatsWord } from "@/lib/format";
 import type { BookingRequest, BookingResult, BookingStatus, Term } from "@/lib/types";
 import { bookingBlockers } from "./config";
@@ -16,8 +16,11 @@ import { enqueue } from "./mail";
 import { getTerm } from "./terms";
 import { bookingRef, normalizeEmail } from "./util";
 
+const HOUR = 60 * 60 * 1000;
 const PAYMENT_DAYS = 3;
-const dueDate = () => new Date(Date.now() + PAYMENT_DAYS * 24 * 60 * 60 * 1000).toISOString();
+/** Transfers are due 3 days after the booking, but no later than the day before the workshop. */
+const dueDate = (t: Pick<Term, "startsAt">) =>
+  new Date(Math.min(Date.now() + PAYMENT_DAYS * 24 * HOUR, new Date(t.startsAt).getTime() - 24 * HOUR)).toISOString();
 
 export interface BookingRow {
   id: string; term_id: string; status: BookingStatus; name: string; email: string; phone: string; people: number;
@@ -28,7 +31,7 @@ export interface BookingRow {
 
 const mailData = (b: BookingRow): BookingMailData => ({
   id: b.id, name: b.name, email: b.email, phone: b.phone, people: b.people, guardians: b.guardians, notes: b.notes,
-  payment: b.payment, voucherCode: b.voucher_code, total: b.total,
+  payment: b.payment, voucherCode: b.voucher_code, total: b.total, paymentDueAt: b.payment_due_at,
 });
 
 function seatsTaken(termId: string): number {
@@ -41,6 +44,9 @@ export function createBooking(req: BookingRequest): BookingResult {
   const term = getTerm(req.termId);
   if (!term || term.status !== "open" || new Date(term.startsAt).getTime() <= Date.now()) {
     throw new UserError("Ten termin nie przyjmuje już zapisów. Odśwież stronę i wybierz inny.", 409);
+  }
+  if (bookingClosed(term)) {
+    throw new UserError("Zapisy online na ten termin są już zamknięte. Zadzwoń do mnie, może znajdzie się miejsce.", 409);
   }
   if (bookingBlockers().length) {
     throw new UserError("Zapisy chwilowo nie działają. Napisz do mnie albo zadzwoń, a zarezerwuję miejsce ręcznie.", 503);
@@ -67,7 +73,7 @@ export function createBooking(req: BookingRequest): BookingResult {
       id, term_id: term.id, status, name: req.name, email, phone: req.phone, people: req.people,
       guardians: term.type === "dzieci" ? (req.guardians ?? 0) : null, notes: req.notes ?? null, payment,
       voucher_code: payment === "voucher" ? (req.voucherCode ?? null) : null, total: bookingTotal(term, req.people),
-      created_at: nowIso(), payment_due_at: status === "awaiting_payment" && payment === "przelew" ? dueDate() : null,
+      created_at: nowIso(), payment_due_at: status === "awaiting_payment" && payment === "przelew" ? dueDate(term) : null,
       paid_at: null, cancelled_at: null, reminded_at: null,
     };
     db.prepare(`INSERT INTO bookings (id, term_id, status, name, email, phone, people, guardians, notes, payment, voucher_code, total, created_at, payment_due_at)
@@ -113,8 +119,9 @@ export function admitFromWaitlist(id: string): void {
     if (b.status !== "waitlist") throw new UserError("Ta osoba nie jest na liście rezerwowej.");
     const left = t.capacity - seatsTaken(t.id);
     if (left < b.people) throw new UserError(`Wolnych miejsc: ${left}, a ta rezerwacja potrzebuje ${b.people}.`);
-    db.prepare("UPDATE bookings SET status = 'awaiting_payment', payment_due_at = ? WHERE id = ?").run(dueDate(), id);
-    enqueue(bookingAwaitingTransfer(mailData(b), t, `zwolniło się miejsce na warsztatach ${whenInText(t)}! Rezerwacja czeka na Ciebie.`));
+    const due = dueDate(t);
+    db.prepare("UPDATE bookings SET status = 'awaiting_payment', payment_due_at = ? WHERE id = ?").run(due, id);
+    enqueue(bookingAwaitingTransfer({ ...mailData(b), paymentDueAt: due }, t, `zwolniło się miejsce na warsztatach ${whenInText(t)}! Rezerwacja czeka na Ciebie.`));
   });
 }
 

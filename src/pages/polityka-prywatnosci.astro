@@ -5,13 +5,13 @@ import DraftNote from "@/components/pages/DraftNote.astro";
 import { legal, site } from "@/lib/site";
 
 /*
- * DRAFT: to be verified by a lawyer before launch.
- * Company data comes from `legal` in src/lib/site.ts; [bracketed] notes left in the text are for
- * the lawyer. Keep the "odbiorcy" list in sync
- * with the real providers. Today the site, database and e-mail all run on one seohost hosting account,
- * and the nightly database backups go to AWS S3 in Stockholm;
- * add the payment operator here when online payments arrive.
- * The retention periods in section 5 are enforced by src/server/tick.ts (cleanup).
+ * Privacy policy. It stays marked as a draft (DraftNote) while `legal.draft` is true; owner and
+ * business data come from `legal` in src/lib/site.ts, and [bracketed] values are placeholders.
+ * Keep the "odbiorcy" list (section 4) in sync with the real providers: today the site, the
+ * database and the mailbox run on one SEOHOST hosting account, and the nightly database backups
+ * go to AWS S3 in Stockholm. Add the payment operator there when online payments arrive.
+ * The retention periods in section 5 are applied by src/server/tick.ts (cleanup).
+ * src/pages/kontakt.astro refers to section 7 (the map), so keep that number.
  */
 ---
 <Base
@@ -28,55 +28,61 @@ import { legal, site } from "@/lib/site";
         <p>Dbam o Twoje dane tak samo starannie jak o lukier na piernikach. Poniżej wyjaśniam, jakie dane zbieram, po co i jak długo je przechowuję, oraz jakie masz prawa zgodnie z RODO (rozporządzenie Parlamentu Europejskiego i Rady (UE) 2016/679).</p>
 
         <h2 id="administrator">1. Administrator danych</h2>
-        <p>Administratorką Twoich danych osobowych jest {legal.owner}{legal.business && <>, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}</>}.</p>
+        <p>Administratorką Twoich danych osobowych jest {legal.owner}{legal.business && <>, prowadząca działalność gospodarczą pod firmą {legal.business}</>}{legal.address && <>, adres: {legal.address}</>}{legal.nip && <>, NIP {legal.nip}</>}{legal.regon && <>, REGON {legal.regon}</>}.</p>
         <p>Pracownia, w której prowadzę warsztaty, mieści się we Wrocławiu.</p>
         <p>We wszystkich sprawach dotyczących danych osobowych możesz napisać na <a href={`mailto:${site.email}`}>{site.email}</a> lub zadzwonić: <a href={site.phoneHref}>{site.phone}</a>.</p>
 
-        <h2 id="zakres">2. Jakie dane zbieram</h2>
+        <h2 id="zakres">2. Jakie dane zbieram i po co</h2>
         <ul>
-          <li><strong>Zgłoszenie na proponowany termin</strong> („pasuje mi ten termin”): imię i nazwisko, adres e-mail, opcjonalnie numer telefonu, liczba osób, wybrane terminy oraz uwagi.</li>
-          <li><strong>Zapis na warsztaty:</strong> imię i nazwisko, adres e-mail, numer telefonu, liczba uczestników (dorosłych i dzieci), wybrana metoda płatności oraz uwagi, np. informacje o alergiach.</li>
-          <li><strong>Zapytania i formularz kontaktowy</strong> (zamówienia, warsztaty dla firm, vouchery): imię i nazwisko, e-mail, opcjonalnie telefon, treść wiadomości i dodatkowe szczegóły, np. okazja, liczba sztuk, termin, wielkość grupy, a także zdjęcia, które dosyłasz e-mailem.</li>
-          <li><strong>Powiadomienia o nowych terminach (newsletter):</strong> adres e-mail oraz daty zapisu i potwierdzenia.</li>
-          {legal.business && <li><strong>Faktury:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP).</li>}
-          <li><strong>Zdjęcia z warsztatów:</strong> wizerunek na zdjęciach, jeśli zgodzisz się na ich publikację.</li>
+          <li><strong>Zgłoszenie na proponowany termin</strong> („Który termin Ci pasuje?”): imię i nazwisko, adres e-mail, opcjonalnie numer telefonu, liczba osób, zaznaczone terminy oraz uwagi. Używam ich, żeby skontaktować się z Tobą w sprawie tych terminów i wysłać Ci e-mail z ceną i linkiem do rezerwacji, gdy któryś z nich się potwierdzi. Podstawa: działania na Twoje żądanie przed zawarciem umowy (art. 6 ust. 1 lit. b RODO).</li>
+          <li><strong>Zapis na warsztaty:</strong> imię i nazwisko, adres e-mail, numer telefonu, liczba uczestników, metoda płatności (przelew albo voucher z jego kodem), kwota, informacja o wpłacie oraz uwagi. Używam ich, żeby przyjąć rezerwację, wysłać Ci dane do przelewu, potwierdzenie i przypomnienie dzień przed zajęciami oraz przeprowadzić warsztaty. Podstawa: wykonanie umowy (art. 6 ust. 1 lit. b RODO).</li>
+          <li><strong>Zapytania</strong> (pierniki na zamówienie, warsztaty dla firm i grup, vouchery, formularz kontaktowy): imię i nazwisko, adres e-mail, opcjonalnie numer telefonu, treść wiadomości i szczegóły z formularza, np. okazja, liczba sztuk, data odbioru, wielkość grupy, termin. Używam ich, żeby odpowiedzieć, przygotować ofertę i zrealizować zamówienie. Podstawa: działania na Twoje żądanie przed zawarciem umowy i wykonanie umowy (art. 6 ust. 1 lit. b RODO).</li>
+          <li><strong>E-mail i telefon:</strong> gdy piszesz lub dzwonisz do mnie bezpośrednio, przetwarzam dane, które mi podajesz, np. adres e-mail, numer telefonu, treść wiadomości, zdjęcia inspiracji albo adres do wysyłki. Cel i podstawa są takie same jak przy zapytaniach i rezerwacjach.</li>
+          <li><strong>Newsletter</strong> (formularz „Powiadom mnie”): adres e-mail oraz daty zapisu, potwierdzenia i wypisania. Wysyłam na niego e-maile od Miki Pierniki o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Podstawa: Twoja zgoda (art. 6 ust. 1 lit. a RODO). Zapis potwierdzasz, klikając link w pierwszym mailu, a zgodę wycofujesz jednym kliknięciem w linku „wypisz się”, który jest w każdej wiadomości.</li>
+          <li><strong>Zdjęcia z warsztatów:</strong> Twój wizerunek lub wizerunek Twojego dziecka, jeśli wyrazisz na to pisemną zgodę (punkt 8). Podstawa: Twoja zgoda (art. 6 ust. 1 lit. a RODO).</li>
+          {legal.business && <li><strong>Faktury i księgowość:</strong> dane do faktury, jeśli o nią poprosisz (np. nazwa firmy, adres, NIP), oraz dane z dokumentów księgowych. Podstawa: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>}
         </ul>
-        <p>Informacje o alergiach mogą stanowić dane dotyczące zdrowia. Podajesz je dobrowolnie i wykorzystuję je wyłącznie po to, żeby bezpiecznie przygotować warsztaty.</p>
+        <p id="zdrowie"><strong>Dane o zdrowiu.</strong> Nie pytam o dane o zdrowiu. O alergiach porozmawiamy telefonicznie. Jeśli mimo to podasz mi informacje o zdrowiu, w formularzu, mailu albo przez telefon, przetwarzam je na podstawie Twojej wyraźnej zgody, którą wyrażasz, podając je (art. 9 ust. 2 lit. a RODO). Wykorzystuję je wyłącznie po to, żeby bezpiecznie przygotować warsztaty albo zamówienie, i usuwam je razem z rezerwacją, zapytaniem lub wiadomością, w której je podasz (punkt 5).</p>
+        <p id="dzieci"><strong>Dzieci.</strong> Na warsztaty dla dzieci zapisuje rodzic. Podajesz tylko liczbę dzieci i liczbę rodziców na sali. Formularze nie pytają o imiona ani wiek dzieci. Gdy nastolatek od 13 do 17 lat przychodzi na warsztaty sam, rodzic lub opiekun daje mi pisemną zgodę ze swoim numerem telefonu. Przechowuję ją do 30 dni po warsztatach, a potem niszczę.</p>
+        <p id="ochrona-dzieci"><strong>Ochrona dzieci.</strong> Jeśli na warsztatach zdarzy się sytuacja, która może zagrażać dziecku, postępuję według <a href="/standardy-ochrony-maloletnich">Standardów ochrony małoletnich</a>. Zapisuję wtedy w notatce tylko to, co potrzebne do ochrony dziecka, i przekazuję te informacje wyłącznie rodzicowi lub opiekunowi oraz uprawnionym instytucjom (policji, prokuraturze, sądowi). Podstawa: obowiązek prawny wynikający z ustawy z dnia 13 maja 2016 r. o przeciwdziałaniu zagrożeniom przestępczością na tle seksualnym i ochronie małoletnich (art. 6 ust. 1 lit. c i art. 9 ust. 2 lit. g RODO).</p>
 
-        <h2 id="cel">3. Cel i podstawa prawna</h2>
+        <h2 id="cel">3. Inne cele i podstawy prawne</h2>
         <ul>
-          <li>Obsługa rezerwacji i przeprowadzenie warsztatów, realizacja zamówień: wykonanie umowy lub działania przed jej zawarciem (art. 6 ust. 1 lit. b RODO).</li>
-          <li>Zgłoszenie na proponowany termin i wiadomość z linkiem do rezerwacji, gdy termin się potwierdzi: działania na Twoje żądanie przed zawarciem umowy (art. 6 ust. 1 lit. b RODO).</li>
-          <li>Przypomnienie e-mailem dzień przed warsztatami i informacje organizacyjne: wykonanie umowy (art. 6 ust. 1 lit. b RODO).</li>
-          <li>Odpowiedź na zapytanie wysłane przez formularz lub e-mail: mój prawnie uzasadniony interes, czyli kontakt z osobą, która do mnie pisze (art. 6 ust. 1 lit. f RODO).</li>
-          <li>Wysyłka powiadomień o nowych terminach: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą potwierdzasz, klikając link w pierwszym mailu, i którą możesz wycofać w każdej chwili jednym kliknięciem w linku „wypisz się”.</li>
-          <li>Informacje o alergiach: Twoja wyraźna zgoda (art. 9 ust. 2 lit. a RODO).</li>
-          <li>Publikacja zdjęć z warsztatów, na których widać Twój wizerunek: Twoja zgoda (art. 6 ust. 1 lit. a RODO), o którą pytam na miejscu.</li>
-          {legal.business && <li>Wystawianie faktur i prowadzenie księgowości: obowiązek prawny (art. 6 ust. 1 lit. c RODO).</li>}
-          <li>Dochodzenie roszczeń i obrona przed nimi: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
+          <li>Dochodzenie roszczeń i obrona przed nimi: dane opłaconych rezerwacji i związana z nimi korespondencja. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
+          <li>Dowód zgody na newsletter: skrót (hash) adresu e-mail, wersja treści zgody oraz daty zapisu, potwierdzenia i wypisania. Dzięki temu mogę wykazać, że wysyłałam wiadomości za Twoją zgodą. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
+          <li id="logi">Bezpieczeństwo strony: gdy otwierasz stronę, serwer dostawcy hostingu zapisuje w logach Twój adres IP, czas wizyty, adres otwieranej strony i informacje o przeglądarce. Logi służą ochronie strony przed atakami i nadużyciami. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
         </ul>
 
         <h2 id="odbiorcy">4. Komu przekazuję dane</h2>
         <p>Nie sprzedaję Twoich danych. Mogą je otrzymać wyłącznie firmy, które pomagają mi prowadzić działalność, i tylko w niezbędnym zakresie:</p>
         <ul>
-          <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: {legal.hosting},</li>
+          <li>dostawca hostingu, na którego serwerach działają strona, baza zgłoszeń i rezerwacji oraz moja skrzynka e-mail: {legal.hosting},</li>
           <li>dostawca miejsca na zaszyfrowane kopie zapasowe tej bazy (serwery w Sztokholmie, w Szwecji): {legal.backups},</li>
           {legal.accounting && <li>biuro rachunkowe {legal.accounting} – w zakresie danych z faktur,</li>}
-          <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
+          <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników,</li>
+          <li>Google Ireland Limited – tylko jeśli klikniesz „Pokaż mapę” na stronie Kontakt (punkt 7).</li>
+          <li>Meta Platforms Ireland Limited (Instagram) – tylko zdjęcia z warsztatów, na których publikację wyrazisz zgodę (punkt 8).</li>
         </ul>
-        <p>Dane z formularzy, rezerwacji i poczty nie trafiają poza Europejski Obszar Gospodarczy. Jedynym wyjątkiem jest mapa Google opisana w punkcie 7, jeśli ją włączysz.</p>
+        <p>Dane nie trafiają poza Europejski Obszar Gospodarczy. Wyjątki są dwa: mapa Google (jeśli ją włączysz, dane mogą trafić także do Google LLC w USA, punkt 7) i zdjęcia opublikowane za Twoją zgodą na Instagramie (Meta może przekazywać je do USA, punkt 8).</p>
 
         <h2 id="okres">5. Jak długo przechowuję dane</h2>
         <ul>
-          <li>Dane z rezerwacji i zamówień: przez czas realizacji umowy, a potem do upływu terminu przedawnienia roszczeń z nią związanych.</li>
-          <li>Dane z zapytań, które nie zakończyły się zamówieniem: 12 miesięcy od wysłania formularza.</li>
-          <li>Zgłoszenia na proponowane terminy: do 30 dni po dacie terminu. Jeśli wycofasz zgłoszenie linkiem z maila, przestaję pisać w sprawie tego terminu i od razu usuwam telefon oraz uwagi. Adres e-mail z informacją o wycofaniu zostaje do 30 dni po terminie, żeby nikt nie mógł zapisać Cię na ten termin ponownie bez Twojej wiedzy.</li>
-          <li>Adres e-mail w powiadomieniach o terminach: do czasu wypisania się lub wycofania zgody; po wypisaniu usuwam go w ciągu doby. Adresy, których nikt nie potwierdził, usuwam po 30 dniach.</li>
-          <li>Informacje o alergiach: do 30 dni po warsztatach.</li>
-          <li>Kopie wiadomości e-mail wysłanych ze strony: 30 dni od wysłania.</li>
-          <li>Kopie zapasowe bazy: 30 dni. Dane usunięte z bazy znikają z kopii najpóźniej po tym czasie.</li>
+          <li>Rezerwacje nieopłacone (czekające na wpłatę, z listy rezerwowej, anulowane przed wpłatą): 30 dni po warsztatach.</li>
+          <li>Rezerwacje opłacone: 6 lat po warsztatach, ze względu na termin przedawnienia roszczeń.</li>
+          {legal.business && <li>Dokumenty księgowe: tak długo, jak wymagają tego przepisy podatkowe.</li>}
+          <li>Uwagi do rezerwacji: 30 dni po warsztatach.</li>
+          <li>Pisemna zgoda rodzica na samodzielny udział nastolatka: 30 dni po warsztatach.</li>
+          <li>Zgłoszenia na proponowane terminy: do 30 dni po dacie terminu. Jeśli wycofasz zgłoszenie linkiem z maila, przestaję pisać w sprawie tego terminu i od razu usuwam telefon oraz uwagi. Imię i nazwisko oraz adres e-mail zostają do 30 dni po terminie, żeby nikt nie mógł zapisać Cię na ten termin ponownie bez Twojej wiedzy.</li>
+          <li>Zapytania z formularzy: 12 miesięcy od wysłania.</li>
+          <li>Adres e-mail w newsletterze: do czasu wypisania się. Po wypisaniu usuwam go w ciągu dwóch dni. Adresy, których nikt nie potwierdził, usuwam po 30 dniach.</li>
+          <li>Dowód zgody na newsletter (skrót adresu e-mail, wersja treści zgody, daty zapisu, potwierdzenia i wypisania): 3 lata od wygaśnięcia zgody, np. od wypisania się.</li>
+          <li>Informacje o zdrowiu, jeśli mimo wszystko je podasz: razem z miejscem, w którym je podasz, czyli w uwagach do rezerwacji 30 dni po warsztatach, a w zapytaniach i korespondencji w terminach podanych wyżej.</li>
+          <li>Kopie e-maili wysłanych ze strony: 30 dni.</li>
+          <li>Korespondencja e-mail w mojej skrzynce: 12 miesięcy od zakończenia sprawy, a jeśli dotyczy rezerwacji lub zamówienia, tak długo jak dane tej rezerwacji lub zamówienia.</li>
+          <li>Kopie zapasowe bazy: do 35 dni. Dane usunięte z bazy znikają z kopii najpóźniej po tym czasie.</li>
+          <li>Logi serwera: przez okres, który ustala dostawca hostingu.</li>
           <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
-          {legal.business && <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>}
+          <li>Notatki dotyczące ochrony dziecka: tak długo, jak to potrzebne do ochrony dziecka i do zakończenia sprawy przed policją, prokuraturą lub sądem.</li>
         </ul>
 
         <h2 id="prawa">6. Twoje prawa</h2>
@@ -86,24 +92,25 @@ import { legal, site } from "@/lib/site";
           <li>sprostowania danych, które są nieprawidłowe,</li>
           <li>usunięcia danych („prawo do bycia zapomnianym”),</li>
           <li>ograniczenia przetwarzania,</li>
-          <li>przenoszenia danych,</li>
-          <li>wniesienia sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie,</li>
+          <li>przenoszenia danych, które przetwarzam na podstawie zgody lub umowy,</li>
+          <li>wniesienia sprzeciwu wobec przetwarzania opartego na moim prawnie uzasadnionym interesie,</li>
           <li>wycofania zgody w dowolnym momencie, bez wpływu na zgodność z prawem przetwarzania przed jej wycofaniem,</li>
-          <li>wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).</li>
+          <li>wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stanisława Moniuszki 1A, 00-014 Warszawa).</li>
         </ul>
-        <p>Żeby skorzystać ze swoich praw, napisz na <a href={`mailto:${site.email}`}>{site.email}</a>. Podanie danych jest dobrowolne, ale bez nich nie mogę przyjąć rezerwacji, zamówienia ani odpowiedzieć na wiadomość.</p>
+        <p>Żeby skorzystać ze swoich praw, napisz na <a href={`mailto:${site.email}`}>{site.email}</a>. Z newslettera wypiszesz się też jednym kliknięciem w każdej wiadomości.</p>
+        <p>Podanie danych jest dobrowolne, ale bez nich nie mogę przyjąć rezerwacji ani zamówienia, odpowiedzieć na wiadomość ani wysyłać newslettera.</p>
         <p>Nie podejmuję wobec Ciebie decyzji w sposób zautomatyzowany ani nie profiluję Twoich danych.</p>
 
         <h2 id="cookies">7. Pliki cookies i usługi zewnętrzne</h2>
-        <p>Strona nie zapisuje w Twojej przeglądarce plików cookies i nie korzysta z narzędzi analitycznych ani reklamowych.</p>
+        <p>Strona sama nie zapisuje w Twojej przeglądarce plików cookies ani nie korzysta z jej pamięci lokalnej (localStorage). Nie używam narzędzi analitycznych ani reklamowych.</p>
         <p>Czcionki są wczytywane z tego samego serwera co strona, więc przy ich ładowaniu Twoja przeglądarka nie łączy się z Google ani innymi zewnętrznymi serwisami.</p>
-        <p>Na stronie Kontakt możesz włączyć mapę dojazdu z usługi Google Maps (Google Ireland Limited). Mapa wczytuje się dopiero po kliknięciu „Pokaż mapę”, więc wcześniej Twoja przeglądarka nie łączy się z Google. Po kliknięciu serwery Google otrzymują m.in. Twój adres IP i mogą zapisać własne pliki cookies, a dane mogą trafić także do Google LLC w USA. Więcej informacji znajdziesz w <a href="https://policies.google.com/privacy?hl=pl" rel="noopener">polityce prywatności Google</a>.</p>
-        <p>Formularze wysyłają dane prosto na mój serwer. Nie korzystam z zewnętrznych narzędzi do formularzy, newslettera ani płatności online.</p>
+        <p>Na stronie Kontakt możesz włączyć mapę dojazdu z usługi Google Maps (Google Ireland Limited). Mapa wczytuje się dopiero po kliknięciu „Pokaż mapę”, więc wcześniej Twoja przeglądarka nie łączy się z Google. Po kliknięciu serwery Google otrzymują m.in. Twój adres IP i dopiero wtedy mogą zapisać własne pliki cookies, a dane mogą trafić także do Google LLC w USA. Więcej informacji znajdziesz w <a href="https://policies.google.com/privacy?hl=pl" rel="noopener">polityce prywatności Google</a>.</p>
+        <p>Formularze wysyłają dane prosto na serwer strony. Nie korzystam z zewnętrznych narzędzi do formularzy, newslettera ani płatności online.</p>
         <p>Link do mojego profilu na Instagramie ({site.instagramHandle}) prowadzi do serwisu zewnętrznego, który ma własne zasady prywatności. Nie korzystam z innych mediów społecznościowych.</p>
 
         <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>
-        <p>Na warsztatach robię zdjęcia pierników i przebiegu zajęć. Zanim opublikuję zdjęcie, na którym widać Twój wizerunek lub wizerunek Twojego dziecka, zawsze pytam o zgodę. Zgoda jest dobrowolna, a jej brak nie wpływa na udział w warsztatach.</p>
-        <p>Zgodę możesz wycofać w każdej chwili, pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>. Wtedy usunę zdjęcie ze strony i z Instagrama.</p>
+        <p>Na warsztatach robię zdjęcia pierników. Zdjęcia, na których widać Ciebie lub Twoje dziecko, robię i publikuję tylko za Twoją pisemną zgodą. Zgodę wyrażasz na karcie, którą podpisujesz na miejscu. Za dziecko podpisuje ją rodzic. Zgoda jest dobrowolna, a jej brak nie wpływa na udział w warsztatach.</p>
+        <p>Zgodę możesz wycofać w każdej chwili, pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>. Wtedy usunę zdjęcia ze strony i z Instagrama.</p>
 
         <h2 id="zmiany">9. Zmiany polityki</h2>
         <p>Jeśli zmienię zasady przetwarzania danych, zaktualizuję ten dokument i datę na górze strony. Polityka obowiązuje od {legal.privacyFrom}.</p>
@@ -113,5 +120,5 @@ import { legal, site } from "@/lib/site";
 </Base>
 
 <style>
-  .prose h2 { scroll-margin-top: 96px; }
+  .prose [id] { scroll-margin-top: 96px; }
 </style>

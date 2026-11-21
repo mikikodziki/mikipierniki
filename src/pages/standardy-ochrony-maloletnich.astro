@@ -1,0 +1,200 @@
+---
+import Base from "@/layouts/Base.astro";
+import PageHead from "@/components/PageHead.astro";
+import DraftNote from "@/components/pages/DraftNote.astro";
+import { legal, site } from "@/lib/site";
+
+/*
+ * DRAFT: to be verified by a lawyer before launch (legal.draft shows the note).
+ * Child-protection standards ("standardy ochrony małoletnich") required by art. 22b and 22c of the act
+ * of 13 May 2016 on counteracting sexual crime and protecting minors (consolidated text Dz.U. 2026
+ * poz. 110, as amended), written for a one-person studio. The sections cover the elements listed in
+ * art. 22c ust. 1, 2 and 4; #dla-dzieci is the short version for children (art. 22c ust. 7).
+ * The adoption date is legal.regulaminFrom: the standards take effect with the site.
+ */
+const adopted = legal.regulaminFrom;
+---
+<Base
+  title="Standardy ochrony małoletnich"
+  description="Standardy ochrony małoletnich w pracowni Miki Pierniki: zasady bezpiecznych relacji z dziećmi, zdjęcia, reagowanie na krzywdzenie i gdzie szukać pomocy."
+>
+  <PageHead eyebrow="Dokumenty" title="Standardy ochrony małoletnich">
+    <DraftNote updated={adopted} />
+  </PageHead>
+
+  <section class="section legal">
+    <div class="wrap">
+      <div class="prose">
+        <p>Na moje warsztaty przychodzą też dzieci i nastolatki. Chcę, żeby każde z nich było u mnie bezpieczne i traktowane z szacunkiem. Poniżej opisuję, jakich zasad przestrzegam, co robię, gdy podejrzewam, że dziecku dzieje się krzywda, i gdzie można szukać pomocy.</p>
+        <p>Standardy przyjmuję na podstawie art. 22b i 22c ustawy z dnia 13 maja 2016 r. o przeciwdziałaniu zagrożeniom przestępczością na tle seksualnym i ochronie małoletnich. Małoletni to każda osoba, która nie skończyła 18 lat; w tekście piszę o nich „dzieci” albo „nastolatki”. Krótka wersja dla dzieci jest <a href="#dla-dzieci">na końcu strony</a>.</p>
+
+        <h2 id="kto-odpowiada">1. Kto odpowiada za standardy</h2>
+        <ol>
+          <li>Warsztaty w mojej pracowni we Wrocławiu prowadzę sama. Nie zatrudniam nikogo i nie powierzam dzieci opiece innych osób. Za stosowanie tych standardów odpowiadam ja, {legal.owner}.</li>
+          <li>To ja przyjmuję zgłoszenia o wszystkim, co zagraża dziecku, i udzielam mu pierwszego wsparcia. Możesz mi to powiedzieć osobiście, zadzwonić pod numer <a href={site.phoneHref}>{site.phone}</a> albo napisać na <a href={`mailto:${site.email}`}>{site.email}</a>.</li>
+          <li>Nie musisz niczego zgłaszać najpierw mnie. Zawsze możesz zwrócić się prosto do policji, prokuratury, sądu rodzinnego albo pod numery z <a href="#zgloszenia">punktu 11</a>. Dotyczy to także sytuacji, w której zastrzeżenia budzi moje własne zachowanie.</li>
+          <li>Jeśli ktoś miałby mi kiedyś pomagać przy warsztatach z udziałem dzieci lub nastolatków, także bez wynagrodzenia, zanim go do tego dopuszczę: sprawdzę go w Rejestrze Sprawców Przestępstw na Tle Seksualnym, poproszę o informację z Krajowego Rejestru Karnego i inne dokumenty, których wymaga art. 21 ustawy, a potem dam mu do przeczytania te standardy i poproszę o podpisane potwierdzenie, że je zna i będzie je stosować. Te dokumenty przechowuję razem z dokumentacją standardów.</li>
+        </ol>
+
+        <h2 id="udzial">2. Udział dzieci i nastolatków</h2>
+        <ol>
+          <li>Warsztaty dla dzieci są przeznaczone dla dzieci w wieku od 6 do 12 lat. Rodzic lub opiekun jest obecny przez cały czas warsztatów i to on opiekuje się swoim dzieckiem.</li>
+          <li>Nastolatki od 13 do 17 lat mogą przyjść na warsztaty dla dorosłych bez opiekuna, jeśli przed warsztatami dostanę pisemną zgodę rodzica lub opiekuna z numerem telefonu, pod którym będzie dostępny w czasie warsztatów. Bez takiej zgody nastolatek nie zostaje na warsztatach sam.</li>
+          <li>Pod ten numer dzwonię, gdy nastolatek źle się czuje, gdy warsztaty kończą się o innej porze niż zapowiedziana albo gdy coś mnie niepokoi.</li>
+          <li>Na warsztatach nie podaję alkoholu. Nie prowadzę zajęć pod wpływem alkoholu ani innych środków odurzających i nie wpuszczam na warsztaty osób pod ich wpływem.</li>
+          <li>Dzieci i nastolatki jedzą i piją u mnie tylko to, co jest częścią warsztatów: pierniki, lukier i napoje. O alergiach rodzic mówi mi telefonicznie przed warsztatami. Nikogo nie namawiam do jedzenia ani próbowania.</li>
+        </ol>
+
+        <h2 id="relacje">3. Bezpieczne relacje z dziećmi</h2>
+        <ol>
+          <li>Każde dziecko traktuję z szacunkiem i tak samo życzliwie. Mówię spokojnie, tłumaczę i chwalę za starania, nie tylko za efekt.</li>
+          <li>Szanuję granice dziecka. Zanim pokażę, jak trzymać rękaw cukierniczy, pytam, czy mogę. Dziecko może powiedzieć „nie” i to wystarczy.</li>
+          <li>Dotykam dziecka tylko wtedy, gdy to naprawdę konieczne: przy pierwszej pomocy albo żeby uchronić je przed niebezpieczeństwem.</li>
+          <li>Z dziećmi przebywam zawsze przy ich rodzicach lub innych uczestnikach. Do toalety dziecko idzie ze swoim rodzicem lub opiekunem.</li>
+          <li>W sprawach warsztatów kontaktuję się z rodzicem lub opiekunem. Gdy nastolatek napisze do mnie sam, odpowiadam krótko, tylko w sprawach warsztatów, i proszę, żeby dalsze ustalenia prowadził jego rodzic.</li>
+          <li>Gdy dziecko chce mi coś powiedzieć, słucham go i traktuję to poważnie.</li>
+        </ol>
+
+        <h2 id="niedozwolone">4. Zachowania niedozwolone</h2>
+        <p>Tych zachowań nie dopuszczam ani u siebie, ani u innych dorosłych na warsztatach:</p>
+        <ul>
+          <li>przebywanie z dzieckiem sam na sam, bez jego rodzica lub opiekuna; wyjątkiem jest nagła sytuacja, w której trzeba chronić zdrowie dziecka, i wtedy od razu zawiadamiam rodzica,</li>
+          <li>prywatny kontakt z dzieckiem, także w internecie: zapraszanie do znajomych, obserwowanie jego prywatnych kont, prywatne wiadomości, proszenie o numer telefonu lub zdjęcia,</li>
+          <li>umawianie się z dzieckiem poza warsztatami, zabieranie go gdziekolwiek, odwożenie do domu,</li>
+          <li>sekrety z dzieckiem i proszenie, żeby czegoś nie mówiło rodzicom,</li>
+          <li>obdarowywanie wybranych dzieci prezentami i faworyzowanie ich,</li>
+          <li>krzyczenie, zawstydzanie, ośmieszanie, straszenie, porównywanie dzieci ze sobą, komentowanie ich wyglądu i ciała,</li>
+          <li>jakakolwiek przemoc fizyczna: szarpanie, popychanie, klapsy,</li>
+          <li>dotyk, który nie jest konieczny, a zawsze dotyk w miejscach intymnych,</li>
+          <li>żarty o zabarwieniu seksualnym, wulgaryzmy, pokazywanie treści nieodpowiednich do wieku,</li>
+          <li>częstowanie alkoholem, papierosami, e-papierosami lub innymi substancjami,</li>
+          <li>fotografowanie i nagrywanie dziecka bez zgody opisanej w <a href="#zdjecia">punkcie 6</a>.</li>
+        </ul>
+
+        <h2 id="miedzy-uczestnikami">5. Relacje między dziećmi i nastolatkami</h2>
+        <ol>
+          <li>Na warsztatach traktujemy się życzliwie. Nie wolno bić, popychać, przezywać, wyśmiewać, wykluczać, niszczyć cudzych pierników ani dotykać kogoś, kto tego nie chce.</li>
+          <li>Nie wolno fotografować ani nagrywać innych uczestników bez ich zgody, a dzieci bez zgody ich rodziców. Nie wolno też wysyłać ani publikować takich zdjęć.</li>
+          <li>Gdy widzę takie zachowanie, od razu je przerywam, spokojnie rozmawiam z dziećmi i mówię o tym ich rodzicom. Na warsztatach dla dzieci robię to razem z rodzicami.</li>
+          <li>Jeśli zachowanie jednego dziecka wobec drugiego jest poważne, np. chodzi o przemoc albo zachowania seksualne, postępuję według <a href="#interwencja">punktów 10</a> i <a href="#zgloszenia">11</a>.</li>
+        </ol>
+
+        <h2 id="zdjecia">6. Zdjęcia</h2>
+        <ol>
+          <li>Zdjęcia i filmy, na których widać dziecko lub nastolatka, robię wyłącznie za pisemną zgodą rodzica lub opiekuna. Rodzic daje ją na karcie zgody, którą podpisuje na miejscu.</li>
+          <li>Jeśli nastolatek przychodzi bez rodzica, nie robię zdjęć, na których go widać.</li>
+          <li>Nawet przy zgodzie rodzica nie fotografuję dziecka, które tego nie chce.</li>
+          <li>Bez zgody fotografuję tylko pierniki, tak żeby nie było widać uczestników.</li>
+          <li>Przy zdjęciach nie podaję imion, nazwisk ani informacji, po których można rozpoznać dziecko lub ustalić, gdzie bywa. Nie publikuję zdjęć, które mogłyby dziecko zawstydzić.</li>
+          <li>Zgodę można w każdej chwili wycofać, pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>. Usuwam wtedy zdjęcia z moich kanałów.</li>
+          <li>Rodziców proszę, żeby fotografowali tylko własne dzieci, a zdjęć, na których widać inne dzieci, nie publikowali bez zgody ich rodziców.</li>
+        </ol>
+
+        <h2 id="urzadzenia">7. Telefony, internet i szkodliwe treści</h2>
+        <ol>
+          <li>Nie udostępniam dzieciom ani nastolatkom mojego telefonu, komputera ani internetu w pracowni.</li>
+          <li>Na warsztatach dla dzieci dziecko korzysta z telefonu tylko pod opieką swojego rodzica. Nastolatki mogą mieć telefon przy sobie, ale obowiązuje ich zakaz fotografowania i nagrywania innych bez zgody z <a href="#miedzy-uczestnikami">punktu 5</a>.</li>
+          <li>Na warsztatach pokazuję tylko wzory pierników i zdjęcia inspiracji. Muzyka w pracowni nie ma wulgarnych tekstów.</li>
+          <li>Jeśli zobaczę, że dziecko ogląda lub dostaje szkodliwe treści, np. przemoc, pornografię albo hejt, spokojnie to przerywam, nie zawstydzając dziecka, i mówię o tym rodzicowi.</li>
+          <li>Jeśli treść może być nielegalna, np. przedstawia seksualne wykorzystywanie dziecka, nie kopiuję jej i nie przesyłam dalej. Zapisuję tylko, gdzie ją widziałam (adres strony, nazwę konta), i zgłaszam ją policji albo zespołowi Dyżurnet.pl przez formularz na <a href="https://dyzurnet.pl" rel="noopener">dyzurnet.pl</a>. Tak samo postępuję z treściami w innej formie, np. wydrukowanymi zdjęciami czy nagraniami.</li>
+        </ol>
+
+        <h2 id="potrzeby">8. Dzieci z niepełnosprawnościami i specjalnymi potrzebami</h2>
+        <ol>
+          <li>Proszę rodzica, żeby przed warsztatami, najlepiej telefonicznie, powiedział mi o szczególnych potrzebach dziecka, np. w komunikacji, poruszaniu się albo wrażliwości na hałas i dotyk. Dostosowuję do nich tempo, miejsce przy stole i sposób tłumaczenia.</li>
+          <li>Pamiętam, że dziecku z niepełnosprawnością może być trudniej powiedzieć o krzywdzie. Dlatego zwracam uwagę także na jego zachowanie, a gdy coś mnie niepokoi, rozmawiam z rodzicem albo postępuję według <a href="#interwencja">punktu 10</a>.</li>
+        </ol>
+
+        <h2 id="rozpoznawanie">9. Jak rozpoznaję, że dziecku może dziać się krzywda</h2>
+        <p>Krzywdzenie to każde zachowanie lub zaniedbanie, które szkodzi dziecku: przemoc fizyczna, psychiczna i seksualna, zaniedbanie, a także przemoc ze strony innych dzieci i w internecie. Niepokoją mnie zwłaszcza:</p>
+        <ul>
+          <li>ślady na ciele, których nikt nie umie lub nie chce wyjaśnić,</li>
+          <li>wyraźny lęk przed rodzicem lub innym dorosłym, kulenie się przy dotyku, nagłe wycofanie albo agresja,</li>
+          <li>wiedza lub zachowania seksualne nieodpowiednie do wieku dziecka,</li>
+          <li>oznaki zaniedbania, np. głód albo ubranie nieodpowiednie do pogody,</li>
+          <li>słowa dziecka, że ktoś je krzywdzi, oraz to, co sama widzę i słyszę na warsztatach, np. bicie czy poniżanie dziecka.</li>
+        </ul>
+        <p>Pojedynczy sygnał nie musi oznaczać krzywdy, ale zawsze traktuję go poważnie.</p>
+
+        <h2 id="interwencja">10. Jak reaguję</h2>
+        <ol>
+          <li><strong>Bezpieczeństwo.</strong> Gdy życie lub zdrowie dziecka jest zagrożone, dzwonię pod 112 i zostaję przy dziecku, dopóki nie przyjedzie pomoc.</li>
+          <li><strong>Wysłuchanie.</strong> Gdy dziecko mi coś mówi, słucham spokojnie, w miejscu, gdzie inni nas nie słyszą, ale widzą. Nie wypytuję o szczegóły, nie podsuwam odpowiedzi i nie oceniam. Mówię dziecku, że dobrze zrobiło, że powiedziało, i że to nie jego wina. Nie obiecuję tajemnicy: mówię, że poproszę o pomoc dorosłych, którzy umieją pomóc.</li>
+          <li><strong>Notatka.</strong> Jak najszybciej zapisuję, co się stało, według <a href="#dokumentowanie">punktu 13</a>.</li>
+          <li><strong>Rodzic.</strong> Informuję rodzica lub opiekuna dziecka, chyba że to on może je krzywdzić. Wtedy z nim o tym nie rozmawiam i od razu zawiadamiam policję lub sąd rodzinny.</li>
+          <li><strong>Zgłoszenie.</strong> Zawiadamiam instytucję właściwą dla sytuacji według <a href="#zgloszenia">punktu 11</a>. Gdy nie mam pewności, jak postąpić, radzę się pod numerem 800 100 100.</li>
+          <li><strong>Krzywda ze strony innego uczestnika.</strong> Gdy dziecko krzywdzi ktoś na warsztatach, przerywam to, oddzielam tę osobę od dziecka, proszę ją o opuszczenie warsztatów i informuję rodzica dziecka. Gdy podejrzewam przestępstwo, zawiadamiam policję.</li>
+        </ol>
+
+        <h2 id="zgloszenia">11. Gdzie zgłaszam</h2>
+        <p>Zawiadomienia składam ja, jako osoba prowadząca warsztaty. Rodzic, dziecko i każda inna osoba mogą też zgłosić sprawę samodzielnie.</p>
+        <ul>
+          <li><strong>112</strong>: gdy zagrożone jest życie lub zdrowie dziecka i potrzebna jest natychmiastowa pomoc.</li>
+          <li><strong>Policja lub prokuratura</strong>: gdy podejrzewam, że wobec dziecka popełniono przestępstwo, np. przemoc fizyczną lub seksualną. Zawiadomienie składam ustnie albo na piśmie.</li>
+          <li><strong>Sąd rodzinny (opiekuńczy)</strong>: gdy dobro dziecka jest zagrożone, ale nie podejrzewam przestępstwa, np. przy zaniedbaniu. Składam wtedy wniosek o wgląd w sytuację dziecka do sądu rodzinnego właściwego dla miejsca zamieszkania dziecka.</li>
+          <li><strong>116 111</strong>: Telefon Zaufania dla Dzieci i Młodzieży, także czat i wiadomości na <a href="https://116111.pl" rel="noopener">116111.pl</a>. Ten numer podaję każdemu dziecku, które potrzebuje rozmowy.</li>
+          <li><strong>800 12 12 12</strong>: Dziecięcy Telefon Zaufania Rzecznika Praw Dziecka, przeznaczony tylko dla dzieci i nastolatków.</li>
+          <li><strong>800 100 100</strong>: telefon Fundacji Dajemy Dzieciom Siłę dla dorosłych, którzy martwią się o bezpieczeństwo dziecka.</li>
+          <li><strong>Dyżurnet.pl</strong>: nielegalne treści w internecie, zobacz <a href="#urzadzenia">punkt 7</a>.</li>
+        </ul>
+        <p>Procedury „Niebieskie Karty” nie wszczynam, bo nie mam takiego uprawnienia. W sprawach przemocy domowej zawiadamiam policję.</p>
+
+        <h2 id="wsparcie">12. Wsparcie dziecka po ujawnieniu krzywdy</h2>
+        <ol>
+          <li>Gdy krzywda wyjdzie na jaw, ustalam z rodzicem lub opiekunem, który nie krzywdzi dziecka, czego dziecko potrzebuje na moich warsztatach: np. żeby nie spotykało tam osoby, która je skrzywdziła, żeby nikt go nie wypytywał albo żeby mogło przyjść z wybraną osobą.</li>
+          <li>Mówię rodzicowi, gdzie dziecko i rodzina mogą dostać fachową pomoc, np. w Telefonie Zaufania 116 111, w telefonie dla dorosłych 800 100 100 albo w poradni psychologiczno-pedagogicznej.</li>
+          <li>Współpracuję z policją, prokuraturą, sądem i ośrodkiem pomocy społecznej, gdy o to poproszą.</li>
+          <li>Ustalenia zapisuję w notatce i trzymam się ich, gdy dziecko znów przychodzi na warsztaty.</li>
+        </ol>
+
+        <h2 id="dokumentowanie">13. Dokumentowanie i ochrona informacji</h2>
+        <ol>
+          <li>Każde zgłoszenie i każdą niepokojącą sytuację zapisuję jak najszybciej w notatce: datę, godzinę i miejsce, co zobaczyłam lub usłyszałam (słowa dziecka dosłownie), kto był obecny, co zrobiłam oraz komu i kiedy to zgłosiłam. Notatkę podpisuję.</li>
+          <li>Notatki przechowuję tak, żeby nikt poza mną nie miał do nich dostępu: papierowe w zamykanej szafce, elektroniczne w zaszyfrowanym pliku. Nie trzymam ich w systemie zapisów na warsztaty.</li>
+          <li>Informacje o zdarzeniu przekazuję tylko tym, którzy muszą je znać: rodzicowi lub opiekunowi (chyba że to on krzywdzi dziecko), policji, prokuraturze, sądowi i innym uprawnionym instytucjom. Nie rozmawiam o nich z innymi uczestnikami.</li>
+          <li>W notatce zapisuję tylko dane potrzebne do ochrony dziecka. Przechowuję ją tak długo, jak jest to potrzebne do ochrony dziecka i do zakończenia sprawy przed policją, prokuraturą lub sądem, a potem ją niszczę.</li>
+        </ol>
+
+        <h2 id="udostepnianie">14. Jak udostępniam standardy</h2>
+        <ol>
+          <li>Pełna wersja standardów i wersja dla dzieci są na tej stronie. Link do niej jest w stopce każdej strony.</li>
+          <li>Obie wersje wiszą wydrukowane w widocznym miejscu w mojej pracowni.</li>
+          <li>Na początku warsztatów, w których biorą udział dzieci lub nastolatki, krótko mówię im najważniejsze zasady z wersji dla dzieci: że mogą powiedzieć „nie”, że zawsze mogą powiedzieć, gdy coś je niepokoi, i do kogo mogą się zwrócić.</li>
+          <li>Rodziców i opiekunów proszę, żeby przed warsztatami przeczytali te standardy i omówili z dzieckiem wersję dla dzieci.</li>
+          <li>Na pytania o standardy odpowiadam osobiście, telefonicznie i e-mailem.</li>
+        </ol>
+
+        <h2 id="przeglad">15. Przegląd i zmiany</h2>
+        <ol>
+          <li>Co najmniej raz w roku sprawdzam, czy standardy pasują do tego, jak prowadzę warsztaty, i czy są zgodne z aktualnymi przepisami. Robię to także po każdym zgłoszonym zdarzeniu, po zmianie przepisów i przed wprowadzeniem nowego rodzaju zajęć z udziałem dzieci.</li>
+          <li>Wnioski z każdego przeglądu zapisuję na piśmie i przechowuję razem z dokumentacją standardów.</li>
+          <li>Uwagi od rodziców, dzieci i nastolatków są dla mnie ważne. Można je przekazać osobiście albo na <a href={`mailto:${site.email}`}>{site.email}</a>.</li>
+          <li>Zmienioną wersję publikuję na tej stronie z datą aktualizacji i wywieszam w pracowni.</li>
+          <li>Standardy obowiązują od {adopted}.</li>
+        </ol>
+
+        <div class="kids">
+          <h2 id="dla-dzieci">Standardy w skrócie: dla dzieci</h2>
+          <p>Cześć! Jestem Dominika i prowadzę warsztaty lukrowania pierników. Chcę, żeby było Ci u mnie dobrze i bezpiecznie. Oto nasze zasady:</p>
+          <ul>
+            <li>Każdy jest tu ważny. Traktujemy się życzliwie.</li>
+            <li>Twoje ciało należy do Ciebie. Możesz powiedzieć „nie”, gdy ktoś chce Cię dotknąć.</li>
+            <li>Zanim pokażę Ci, jak trzymać rękaw z lukrem, zapytam, czy mogę.</li>
+            <li>Na warsztatach dla dzieci Twój rodzic lub opiekun jest z Tobą przez cały czas.</li>
+            <li>Nie zrobię Ci zdjęcia bez zgody Twojego rodzica. Jeśli nie chcesz zdjęcia, powiedz mi, a go nie zrobię.</li>
+            <li>Nie piszę do dzieci prywatnie w internecie. Jeśli jakiś dorosły pisze do Ciebie, prosi o sekret albo o zdjęcia, powiedz o tym rodzicowi.</li>
+            <li>Nie bijemy się, nie przezywamy, nie wyśmiewamy i nie niszczymy cudzych pierników. Nie robimy innym zdjęć bez pytania.</li>
+            <li>Jeśli coś Cię martwi albo ktoś Cię krzywdzi, tutaj albo gdziekolwiek indziej, powiedz o tym mnie, rodzicowi albo innemu dorosłemu, któremu ufasz. To nigdy nie jest Twoja wina.</li>
+            <li>Możesz też za darmo zadzwonić pod numer <strong>116 111</strong> albo napisać na 116111.pl. Gdy dzieje się coś groźnego, dzwoń pod <strong>112</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .prose h2 { scroll-margin-top: 96px; }
+  .kids { display: grid; gap: 16px; margin-top: 16px; padding: 4px 24px 24px; border-radius: var(--radius); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .kids ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+</style>

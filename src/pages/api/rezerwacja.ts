@@ -6,6 +6,8 @@ import { flushOutbox } from "@/server/mail";
 
 export const prerender = false;
 
+const VOUCHER_CODE = /^[A-Za-z0-9-]{3,40}$/;
+
 const schema = z
   .object({
     termId: z.string().max(60),
@@ -16,7 +18,8 @@ const schema = z
     phone: fields.phone,
     notes: fields.notes,
     payment: z.enum(["przelew", "voucher"]),
-    voucherCode: z.string().trim().max(40).optional(),
+    // empty is left to the check below, which asks for a number
+    voucherCode: z.string().trim().refine((v) => v === "" || VOUCHER_CODE.test(v), "Numer vouchera to litery, cyfry i myślniki (3–40 znaków).").optional(),
     acceptedTerms: z.literal(true, "Zaznacz akceptację regulaminu, żeby zarezerwować miejsce."),
   })
   .refine((d) => d.payment !== "voucher" || !!d.voucherCode, "Wpisz numer vouchera albo wybierz przelew.");

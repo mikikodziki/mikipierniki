@@ -37,7 +37,7 @@ const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pl-P
   <section class="box">
     <p><b>{active.length}</b> potwierdzonych adresów · {pending} czeka na kliknięcie w link · {all.length - active.length - pending} wypisanych</p>
     <p class="note">Adres trafia na listę dopiero po kliknięciu w link z maila potwierdzającego. Każda wiadomość ma link do wypisania się.</p>
-    <div><a class="btn btn-ghost btn-small" href="/panel/eksport?co=newsletter">Pobierz CSV</a></div>
+    <div><a class="btn btn-ghost btn-small" href="/panel/eksport?co=newsletter">Pobierz CSV (potwierdzone adresy)</a></div>
   </section>
 
   <section class="box">

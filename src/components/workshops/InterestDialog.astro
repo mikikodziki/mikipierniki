@@ -50,12 +50,12 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
           <input class="input" type="tel" id="in-phone" name="phone" autocomplete="tel" pattern="[0-9 +\(\)\-]{9,}" />
         </label>
       </div>
-      <label class="field" for="in-notes">Uwagi <span class="hint">opcjonalnie</span>
+      <label class="field" for="in-notes">Uwagi <span class="hint">opcjonalnie, bez informacji o zdrowiu (o alergiach porozmawiamy telefonicznie)</span>
         <textarea class="input" id="in-notes" name="notes" rows="2" maxlength="2000"></textarea>
       </label>
       <div class="hp" aria-hidden="true"><label for="in-website">Strona www</label><input type="text" id="in-website" name="website" tabindex="-1" autocomplete="off" /></div>
       <label class="check" for="in-consent"><input type="checkbox" id="in-consent" name="consent" required />
-        <span>Zgadzam się na kontakt w sprawie tych terminów zgodnie z <a href="/polityka-prywatnosci" target="_blank">polityką prywatności</a>.</span>
+        <span>Proszę o kontakt w sprawie zaznaczonych terminów, także o e-mail z ceną i linkiem do rezerwacji, gdy któryś z nich się potwierdzi. Szczegóły w <a href="/polityka-prywatnosci" target="_blank">polityce prywatności</a>.</span>
       </label>
       <p class="form-error" id="in-error" role="alert" hidden></p>
       <button class="btn btn-primary" type="submit" id="in-submit">Daj mi znać</button>
@@ -107,7 +107,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         if (Number(people.value) > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
         return null;
       }
-      if (el.id === "in-consent") return (el as HTMLInputElement).checked ? null : "Zaznacz zgodę na kontakt, żebym mogła dać Ci znać.";
+      if (el.id === "in-consent") return (el as HTMLInputElement).checked ? null : "Zaznacz prośbę o kontakt, żebym mogła dać Ci znać.";
       return messageFor(el);
     }
 
