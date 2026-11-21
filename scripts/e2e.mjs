@@ -60,9 +60,12 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const settle = () => sleep(400); // flushOutbox runs right after the request
 const BROWSER = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
 const PHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0";
-/** A raw request with exactly these headers (fetch adds its own Sec-Fetch-Mode, so the statistics checks use node:http). */
+/**
+ * A raw request with exactly these headers and this target, unnormalised ("/./x", "//x" and
+ * "http://host/x" go out as typed). fetch adds its own Sec-Fetch-Mode, so the statistics checks use node:http.
+ */
 const raw = (method, p, headers, body) => new Promise((resolve, reject) => {
-  const req = httpRequest(BASE + p, { method, headers }, (res) => {
+  const req = httpRequest({ host: "127.0.0.1", port: PORT, path: p, method, headers }, (res) => {
     let text = "";
     res.setEncoding("utf8");
     res.on("data", (c) => (text += c));
@@ -927,10 +930,17 @@ try {
     check("/do/mapa redirects to Google Maps", r.status === 302 && r.headers.location?.startsWith("https://www.google.com/maps/search/?api=1&query="), r.headers.location);
     const unknownOut = await Promise.all(["/do/https%3A%2F%2Fevil.example", "/do/nieznany", "/do/constructor", "/do/toString", "/do/valueOf", "/do/__proto__"].map(async (u) => (await visit(u)).status));
     check("/do/<unknown> → 404, no open redirect, no inherited names", unknownOut.every((st) => st === 404), unknownOut.join(","));
+    // a trailing slash gets a redirect first; neither that nor a made-up name may add a row
+    const slashed = await Promise.all(["/do/instagram/", "/do/kup-tanio-spam-example/"].map(async (u) => (await visit(u)).status));
+    // private pages in unusual forms, and a full address instead of a path
+    for (const u of ["/./zapis/wypisz?t=tajny-token", "/%2e/zapis/wypisz?t=tajny-token", "/faq/../zapis/wypisz?t=tajny-token", "//zapis/wypisz?t=tajny-token", "/ZAPIS/wypisz?t=tajny-token", "http://evil.example/panel"]) await visit(u);
+    await visit("/kontakt", { referer: "http://192.168.1.10/strona" });
     // a form sent from a page opened with a utm link, and one rejected
     r = await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/warsztaty?utm_source=instagram", "user-agent": BROWSER }, JSON.stringify({ email: "statystyki@example.com" }));
     check("form post with a referer still works", r.status === 200, r.text);
     await raw("POST", "/api/zapytanie", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/kontakt", "user-agent": BROWSER }, JSON.stringify({ kind: "kontakt" }));
+    // a form whose Referer names a private page (forged, or the panel): the page is not kept
+    await raw("POST", "/api/zapytanie", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/panel/termin/t-abc", "user-agent": BROWSER }, JSON.stringify({ kind: "kontakt" }));
 
     html = await (await statsPage()).text();
     const rows = q("SELECT * FROM stats_views ORDER BY path, source");
@@ -944,6 +954,12 @@ try {
     check("unknown address → one (404) bucket", row("(404)", "(bezpośrednio)").length === 1 && !rows.some((x) => x.path.includes("nie-ma-takiej")));
     check("odd utm value → (inne)", rows.some((x) => x.path === "/faq" && x.utm_source === "(inne)"));
     check("outbound clicks counted under /do/*", row("/do/instagram", "").length === 1 && row("/do/mapa", "").length === 1, JSON.stringify(rows.filter((x) => x.path.startsWith("/do"))));
+    check("/do/<name>/ redirects without a row; a click counts once", slashed.every((st) => st >= 300 && st < 400) && rows.filter((x) => x.path.startsWith("/do/")).length === 2
+      && sumViews("path = '/do/instagram'").v === 1, `${slashed} ${JSON.stringify(rows.filter((x) => x.path.startsWith("/do")))}`);
+    check("private pages in unusual forms are not counted", !rows.some((x) => /panel|zapis|newsletter|wypisz/.test(x.path)), JSON.stringify(rows.map((x) => x.path)));
+    check("a bare IP address as the referring site → (inne)", row("/kontakt", "(inne)").length === 1 && !JSON.stringify(rows).includes("192.168"), JSON.stringify(row("/kontakt", "(inne)")));
+    const lastAt = q("SELECT value FROM stats_meta WHERE key = 'last_view_at'")[0]?.value ?? "";
+    check("last counted visit kept to the minute", /:00\.000Z$/.test(lastAt) && Date.now() - Date.parse(lastAt) < 5 * 60000, lastAt);
     check("not counted: no Sec-Fetch, bots, prefetch, panel, token pages", sumViews("path = '/faq'").v === 3 && !rows.some((x) => /panel|zapis|newsletter/.test(x.path)), JSON.stringify(sumViews("path = '/faq'")));
     check("nothing personal stored (no tokens, IPs or browser strings)", !/tajny|sekret|127\.0\.0\.1|Mozilla|Safari/.test(JSON.stringify(q("SELECT * FROM stats_views")) + JSON.stringify(q("SELECT * FROM stats_forms"))));
     const hours = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_hours")[0].v;
@@ -952,6 +968,7 @@ try {
     const formRows = q("SELECT * FROM stats_forms");
     check("sent form counted with its page and utm_source", formRows.some((x) => x.form === "newsletter" && x.page === "/warsztaty" && x.utm_source === "instagram" && x.outcome === "wyslane" && x.count === 1), JSON.stringify(formRows));
     check("rejected form counted as rejected", formRows.some((x) => x.form === "zapytanie" && x.page === "/kontakt" && x.outcome === "odrzucone"));
+    check("form sent from a private page: page unknown", formRows.some((x) => x.form === "zapytanie" && x.page === "(nieznana)") && !formRows.some((x) => /panel|t-abc/.test(x.page)), JSON.stringify(formRows));
     check("stats tab shows sources, pages, clicks and forms", html.includes("Instagram") && html.includes("Galeria") && html.includes("Kliknięcia: mapa Google") && html.includes("Powiadom mnie") && html.includes("Ostatnie zliczone wejście"));
     check("stats tab: every range renders", (await Promise.all(["7", "30", "90", "365", "all", "x"].map(async (k) => (await get(`/panel/statystyki?okres=${k}`, { authorization: auth })).status))).every((st) => st === 200));
     check("stats tab needs the password", (await get("/panel/statystyki")).status === 401);
@@ -962,6 +979,21 @@ try {
     await statsPage();
     check("form rows are capped per day", q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = 'zmyslona-strona' OR page = '/zmyslona-strona'")[0].n === 0 && q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = '(inne)' AND utm_source = '(inne)'")[0].n === 1);
     { const d = db(); d.prepare("DELETE FROM stats_forms WHERE page LIKE '/wypelniacz-%'").run(); d.close(); }
+    // the view rows are counted as they are added: one batch of forged sources can't run past the limit
+    {
+      const d = db();
+      const have = d.prepare("SELECT COUNT(*) AS n FROM stats_views WHERE day = ?").get(today).n;
+      const add = d.prepare("INSERT INTO stats_views VALUES (?, '/faq', ?, '', '', '', 'komputer', 1, 1)");
+      for (let i = have; i < 995; i++) add.run(today, `wypelniacz-${i}.example`);
+      d.close();
+    }
+    await statsPage();
+    for (let i = 0; i < 20; i++) await visit("/faq", { referer: `https://spam-${i}.example/` });
+    await statsPage();
+    const spamRows = q("SELECT COUNT(*) AS n FROM stats_views WHERE day = ? AND source LIKE 'spam-%'", today)[0].n;
+    const spamOther = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_views WHERE day = ? AND path = '/faq' AND source = '(inne)' AND device = 'komputer'", today)[0].v;
+    check("view rows are capped per day, also within one batch", spamRows === 5 && spamOther >= 15 && q("SELECT COUNT(*) AS n FROM stats_views WHERE day = ?", today)[0].n <= 1001, `${spamRows} named, ${spamOther} in (inne)`);
+    { const d = db(); d.prepare("DELETE FROM stats_views WHERE source LIKE 'wypelniacz-%' OR source LIKE 'spam-%'").run(); d.close(); }
     const ts = q(`SELECT * FROM term_stats WHERE term_id = ?`, t1)[0];
     check("term totals for the stats tab", ts && ts.booked_people > 0 && ts.frozen === 0, JSON.stringify(ts));
   }
@@ -1000,6 +1032,8 @@ try {
     const booking = (id, termId, status, paid) => d.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, ?, ?, 'N', 'n@example.com', '500600700', 1, 'przelew', 450, ?, ?)")
       .run(id, termId, status, ago(900), paid ? ago(899) : null);
     term("old", 31); term("recent", 29); term("y5", 5 * 366); term("y7", 7 * 365);
+    // a date typed in the past by mistake: nobody signed up, so nothing is frozen
+    term("empty", 31);
     // just inside and just outside 6 calendar years (about 2191 days)
     term("y6in", 6 * 365 - 10); term("y6out", 6 * 366 + 10);
     booking("u-old", "old", "awaiting_payment", false); booking("w-old", "old", "waitlist", false); booking("c-old", "old", "cancelled", false); booking("p-old", "old", "confirmed", true);
@@ -1034,6 +1068,8 @@ try {
     check("clean-up keeps the term's totals from before it deleted the sign-ups", frozen && frozen.frozen === 1 && frozen.booked_people === 2 && frozen.paid_people === 1 && frozen.revenue === 450 && frozen.waitlist_people === 1 && frozen.cancelled_people === 1, JSON.stringify(frozen));
     const recent = d2.prepare("SELECT frozen FROM term_stats WHERE term_id = 'recent'").get();
     check("terms still within 30 days are not frozen", recent && recent.frozen === 0, JSON.stringify(recent));
+    const empty = d2.prepare("SELECT frozen FROM term_stats WHERE term_id = 'empty'").get();
+    check("an ended term nobody signed up for stays live (its date can still be corrected)", !empty || empty.frozen === 0, JSON.stringify(empty));
     check("no errors from the clean-up server", !/Error/.test(rlog), rlog.slice(0, 500));
     d2.close();
   }

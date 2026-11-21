@@ -20,8 +20,13 @@ const RANGES = [
 ] as const;
 const range = RANGES.find((r) => r.key === Astro.url.searchParams.get("okres")) ?? RANGES[1];
 
-// count what the server has seen since the last minute's collection, so the numbers are current
-collectHits();
+// count what the server has seen since the last minute's collection, so the numbers are current;
+// if that fails the tab still shows what is saved, and the notes wait for the next minute
+try {
+  collectHits();
+} catch (e) {
+  console.error("[stats]", e);
+}
 
 const DAY = 86_400_000;
 const today = localDay(Date.now()).day;
@@ -383,7 +388,9 @@ const yearTotals = years.map((year) => {
   .two { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); align-items: start; }
   h3 { font-size: 1.05rem; margin-bottom: 6px; }
   code { font-size: .85em; overflow-wrap: anywhere; }
-  .tbl td { font-variant-numeric: tabular-nums; }
+  .tbl td { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  /* keeps the hidden screen-reader labels inside the scrolling box, so the page itself never scrolls sideways */
+  .scroll { position: relative; }
 
   /* a thin bar under the label: one hue, proportional to the largest row */
   .bars td:first-child { position: relative; padding-bottom: 14px; }

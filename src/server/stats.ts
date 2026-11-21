@@ -7,6 +7,7 @@
  * The IP address and the full browser string are never stored, and nothing ties two page views
  * to one person, so the sums hold no personal data and are kept without a time limit.
  */
+import { outbound } from "@/lib/outbound";
 import { config } from "./config";
 import { getDb, tx } from "./db";
 
@@ -23,8 +24,12 @@ export interface RawHit {
 }
 
 const BUFFER = Symbol.for("mikipierniki.hits");
+/** The buffer limit in deploy/start.mjs */
+const BUFFER_MAX = 10_000;
 /** Past this many distinct rows a day, new sources and tags are counted as "(inne)" (keeps the file small). */
-const MAX_ROWS_PER_DAY = 3000;
+const MAX_ROWS_PER_DAY = 1000;
+/** The same private pages deploy/start.mjs skips; checked again here, also for the page a form was sent from */
+const PRIVATE = /^\/(panel|zapis|newsletter)(\/|\.|$)/i;
 
 const SITE_HOSTS = new Set([new URL(config.siteUrl).host, `www.${new URL(config.siteUrl).host}`]);
 
@@ -52,6 +57,7 @@ const SOURCES: [RegExp, string][] = [
 ];
 export const DIRECT = "(bezpośrednio)";
 export const OTHER = "(inne)";
+const UNKNOWN_PAGE = "(nieznana)";
 
 /** Forms counted by the API path they post to */
 export const FORMS = ["zainteresowanie", "rezerwacja", "zapytanie", "newsletter"] as const;
@@ -87,8 +93,12 @@ function pagePath(rawPath: string, status: number): string | null {
     return null;
   }
   p = p.toLowerCase().replace(/\.html$/, "").replace(/\/index$/, "/").replace(/\/+$/, "") || "/";
-  // redirects (e.g. a trailing slash) are counted where they lead; only our outbound links count here
-  if (status >= 300 && status !== 304 && !p.startsWith("/do/")) return null;
+  if (PRIVATE.test(p)) return null;
+  // an outbound click is the redirect itself, and only for a name on our list; any other /do/
+  // address (e.g. "/do/anything/", which gets a trailing-slash redirect) is not counted
+  if (p.startsWith("/do/")) return status === 302 && Object.hasOwn(outbound, p.slice(4)) ? p : null;
+  // other redirects (e.g. a trailing slash) are counted where they lead
+  if (status >= 300 && status !== 304) return null;
   return /^\/[a-z0-9/-]{0,60}$/.test(p) ? p : null;
 }
 
@@ -110,7 +120,8 @@ function sourceOf(referer: string | undefined): string | null {
   const named = SOURCES.find(([re]) => re.test(host));
   if (named) return named[1];
   const bare = host.replace(/^www\./, "").replace(/:\d+$/, "");
-  return /^[a-z0-9.-]{1,60}$/.test(bare) ? bare : OTHER;
+  // a site's name, not a bare IP address
+  return /^[a-z0-9.-]{1,60}$/.test(bare) && !/^[\d.]+$/.test(bare) ? bare : OTHER;
 }
 
 function outcomeOf(status: number): Outcome | null {
@@ -139,7 +150,20 @@ export function collectHits(): number {
   const buffer = (globalThis as Record<symbol, RawHit[] | undefined>)[BUFFER];
   if (!buffer?.length) return 0;
   const batch = buffer.splice(0, buffer.length);
+  const sums = sumUp(batch);
+  try {
+    save(sums);
+  } catch (e) {
+    // the database refused (e.g. locked): put the notes back for the next minute, within the limit
+    buffer.unshift(...batch.slice(0, Math.max(0, BUFFER_MAX - buffer.length)));
+    throw e;
+  }
+  return batch.length;
+}
 
+interface Sums { views: Map<string, ViewRow>; hours: Map<string, HourRow>; forms: Map<string, FormRow>; lastView: number }
+
+function sumUp(batch: RawHit[]): Sums {
   const views = new Map<string, ViewRow>();
   const hours = new Map<string, HourRow>();
   const forms = new Map<string, FormRow>();
@@ -179,14 +203,17 @@ export function collectHits(): number {
       // the page the form was sent from, and the utm_source it was opened with
       const ref = parseUrl(h.referer);
       const internal = ref && SITE_HOSTS.has(ref.host.toLowerCase());
-      const page = (internal && pagePath(ref.pathname, 200)) || "(nieznana)";
+      const page = (internal && pagePath(ref.pathname, 200)) || UNKNOWN_PAGE;
       const us = internal ? tag(ref.searchParams.get("utm_source")) : "";
       const k = [day, form, page, us, outcome].join("\u0000");
       const had = forms.get(k);
       if (had) had.count++; else forms.set(k, { day, form, page, us, outcome, count: 1 });
     }
   }
+  return { views, hours, forms, lastView };
+}
 
+function save({ views, hours, forms, lastView }: Sums): void {
   const db = getDb();
   tx(db, () => {
     const rowsToday = db.prepare("SELECT COUNT(*) AS n FROM stats_views WHERE day = ?");
@@ -194,13 +221,18 @@ export function collectHits(): number {
     const addView = db.prepare(`INSERT INTO stats_views (day, path, source, utm_source, utm_medium, utm_campaign, device, views, entries)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT DO UPDATE SET views = views + excluded.views, entries = entries + excluded.entries`);
-    const full = new Map<string, boolean>();
+    // rows per day, counted as new ones are added, so one batch can't run past the limit either
+    const viewRows = new Map<string, number>();
+    const known = (v: string) => (v === "" || v === DIRECT || SOURCES.some(([, name]) => name === v) ? v : OTHER);
     for (const r of views.values()) {
-      if (!full.has(r.day)) full.set(r.day, (rowsToday.get(r.day) as { n: number }).n >= MAX_ROWS_PER_DAY);
-      if (full.get(r.day) && !exists.get(r.day, r.path, r.source, r.us, r.um, r.uc, r.device)) {
-        const known = (v: string) => (v === "" || v === DIRECT || SOURCES.some(([, name]) => name === v) ? v : OTHER);
-        r.source = known(r.source);
-        r.us = r.us && OTHER; r.um = r.um && OTHER; r.uc = r.uc && OTHER;
+      if (!viewRows.has(r.day)) viewRows.set(r.day, (rowsToday.get(r.day) as { n: number }).n);
+      if (!exists.get(r.day, r.path, r.source, r.us, r.um, r.uc, r.device)) {
+        if (viewRows.get(r.day)! >= MAX_ROWS_PER_DAY) {
+          // past the limit only the page, a named source and the device stay apart
+          r.source = known(r.source);
+          r.us = r.us && OTHER; r.um = r.um && OTHER; r.uc = r.uc && OTHER;
+        }
+        if (!exists.get(r.day, r.path, r.source, r.us, r.um, r.uc, r.device)) viewRows.set(r.day, viewRows.get(r.day)! + 1);
       }
       addView.run(r.day, r.path, r.source, r.us, r.um, r.uc, r.device, r.views, r.entries);
     }
@@ -211,21 +243,24 @@ export function collectHits(): number {
     const formExists = db.prepare("SELECT 1 FROM stats_forms WHERE day = ? AND form = ? AND page = ? AND utm_source = ? AND outcome = ?");
     const addForm = db.prepare(`INSERT INTO stats_forms (day, form, page, utm_source, outcome, count) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT DO UPDATE SET count = count + excluded.count`);
-    const formsFull = new Map<string, boolean>();
+    const formRows = new Map<string, number>();
     for (const r of forms.values()) {
-      if (!formsFull.has(r.day)) formsFull.set(r.day, (formRowsToday.get(r.day) as { n: number }).n >= MAX_ROWS_PER_DAY);
-      if (formsFull.get(r.day) && !formExists.get(r.day, r.form, r.page, r.us, r.outcome)) {
-        r.page = OTHER;
-        r.us = r.us && OTHER;
+      if (!formRows.has(r.day)) formRows.set(r.day, (formRowsToday.get(r.day) as { n: number }).n);
+      if (!formExists.get(r.day, r.form, r.page, r.us, r.outcome)) {
+        if (formRows.get(r.day)! >= MAX_ROWS_PER_DAY) {
+          r.page = OTHER;
+          r.us = r.us && OTHER;
+        }
+        if (!formExists.get(r.day, r.form, r.page, r.us, r.outcome)) formRows.set(r.day, formRows.get(r.day)! + 1);
       }
       addForm.run(r.day, r.form, r.page, r.us, r.outcome, r.count);
     }
     if (lastView) {
+      // to the minute: enough to see that counting works after a deploy
       db.prepare("INSERT INTO stats_meta (key, value) VALUES ('last_view_at', ?) ON CONFLICT DO UPDATE SET value = excluded.value")
-        .run(new Date(lastView).toISOString());
+        .run(new Date(lastView - (lastView % 60_000)).toISOString());
     }
   });
-  return batch.length;
 }
 
 /* ---------- reports for the panel ---------- */

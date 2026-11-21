@@ -15,13 +15,20 @@ const MAX = 10_000;
 const hits = (globalThis[Symbol.for("mikipierniki.hits")] ??= []);
 // pages opened from a mail link (/zapis, /newsletter) carry a personal token; the panel is private
 const PRIVATE = /^\/(panel|zapis|newsletter)(\/|\.|$)/i;
+// a buffered note keeps only what the statistics read, so a full buffer stays a few MB
+const cut = (v, n) => (typeof v === "string" ? v.slice(0, n) : undefined);
 
 const http = started?.server?.server;
 if (typeof http?.prependListener === "function") {
   http.prependListener("request", (req, res) => {
-    let path = (req.url ?? "").split("?")[0];
+    const target = req.url ?? "";
+    const raw = target.split("?")[0];
+    let path;
     try {
-      path = decodeURIComponent(path);
+      // only addresses already in their plain form (no "/./", "//", "%2e" or "http://host/" targets),
+      // so the private test below sees the page the server will actually answer
+      if (new URL(target, "http://localhost").pathname !== raw) return;
+      path = decodeURIComponent(raw);
     } catch {
       return;
     }
@@ -34,8 +41,8 @@ if (typeof http?.prependListener === "function") {
     res.once("finish", () => {
       if (hits.length >= MAX) return;
       hits.push({
-        at, method: req.method, url: req.url, status: res.statusCode,
-        referer: h.referer, ua: h["user-agent"], purpose: h["sec-purpose"] ?? h.purpose, mobile: h["sec-ch-ua-mobile"],
+        at, method: req.method, url: cut(target, 1024), status: res.statusCode,
+        referer: cut(h.referer, 512), ua: cut(h["user-agent"], 400), purpose: cut(h["sec-purpose"] ?? h.purpose, 40), mobile: cut(h["sec-ch-ua-mobile"], 8),
       });
     });
   });
