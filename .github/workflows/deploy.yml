@@ -1,7 +1,9 @@
-# Builds on every push to main and ships the release to the VPS over SSH.
-# Each release gets its own folder; "current" is switched only after its packages are installed,
-# so the running server never sees half-copied files.
-# Secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY (private key), DEPLOY_KNOWN_HOSTS (ssh-keyscan output).
+# Builds on every push to main, runs the end-to-end test and ships the build to seohost over SSH.
+# The site runs as a CloudLinux "Node.js App" in ~/mikipierniki (see deploy/README.md). The new build
+# is uploaded next to the running one and swapped in just before the restart; the previous build
+# stays as dist.prev and comes back if the site doesn't answer afterwards.
+# Secrets: DEPLOY_SSH_KEY (private key, used only for deploys), DEPLOY_KNOWN_HOSTS (ssh-keyscan -p <port> <host>),
+# DEPLOY_HOST, DEPLOY_PORT, DEPLOY_USER (from the seohost SSH e-mail; secrets so public logs mask them).
 name: Deploy
 
 on:
@@ -22,6 +24,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
+      - run: npm run test:e2e
 
       - name: SSH setup
         run: |
@@ -29,30 +32,42 @@ jobs:
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host seohost
+            HostName ${{ secrets.DEPLOY_HOST }}
+            Port ${{ secrets.DEPLOY_PORT }}
+            User ${{ secrets.DEPLOY_USER }}
+            IdentityFile ~/.ssh/id_ed25519
+            IdentitiesOnly yes
+            BatchMode yes
+          EOF
 
-      - name: Upload release
-        env:
-          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
-          RELEASE: /srv/mikipierniki/releases/${{ github.sha }}
+      - name: Upload build
         run: |
-          ssh "$TARGET" "mkdir -p $RELEASE"
-          rsync -az dist package.json package-lock.json "$TARGET:$RELEASE/"
+          ssh seohost 'mkdir -p mikipierniki/.upload && rm -rf mikipierniki/dist.next'
+          rsync -az dist/ seohost:mikipierniki/dist.next/
+          rsync -az package.json package-lock.json deploy/start.mjs seohost:mikipierniki/.upload/
 
-      - name: Install, switch and restart
-        env:
-          TARGET: ${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}
-          RELEASE: /srv/mikipierniki/releases/${{ github.sha }}
+      - name: Swap, restart and check
         run: |
-          ssh "$TARGET" "set -e
-            cd $RELEASE
-            npm ci --omit=dev --no-audit --no-fund
-            PREVIOUS=\$(readlink /srv/mikipierniki/current || true)
-            ln -sfn $RELEASE /srv/mikipierniki/current
-            sudo /usr/bin/systemctl restart mikipierniki
-            sleep 3
-            if ! curl -fsS -o /dev/null http://127.0.0.1:4390/warsztaty; then
-              echo 'Health check failed, rolling back to' \$PREVIOUS
-              if [ -n \"\$PREVIOUS\" ]; then ln -sfn \$PREVIOUS /srv/mikipierniki/current && sudo /usr/bin/systemctl restart mikipierniki; fi
-              exit 1
+          ssh seohost 'set -e
+            cd ~/mikipierniki
+            selector() { cloudlinux-selector "$@" --json --interpreter nodejs --app-root mikipierniki | grep -q "\"success\""; }
+            cp .upload/package.json .upload/start.mjs .
+            if ! cmp -s package-lock.json .upload/package-lock.json; then
+              cp .upload/package-lock.json .
+              selector install-modules
             fi
-            cd /srv/mikipierniki/releases && ls -1t | grep -vx \"\$(basename $RELEASE)\" | tail -n +3 | xargs -r rm -rf"
+            rm -rf dist.prev
+            mv dist dist.prev
+            mv dist.next dist
+            selector restart || echo "Restart reported an error; the check below decides"
+            for i in 1 2 3 4 5 6 7 8 9 10; do
+              if curl -fsS -m 10 -A mikipierniki-deploy -o /dev/null https://mikipierniki.pl/warsztaty; then exit 0; fi
+              sleep 3
+            done
+            echo "Health check failed, restoring the previous build"
+            rm -rf dist
+            mv dist.prev dist
+            selector restart
+            exit 1'

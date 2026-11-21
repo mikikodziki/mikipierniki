@@ -1,5 +1,5 @@
 /**
- * Data contract shared by the frontend and the booking backend (src/server, SQLite on the VPS).
+ * Data contract shared by the frontend and the booking backend (src/server, SQLite on the server).
  * Client scripts only talk to `src/lib/api.ts`; server-rendered pages read terms through `src/server/terms.ts`.
  */
 

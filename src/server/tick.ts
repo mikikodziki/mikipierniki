@@ -1,7 +1,7 @@
 /**
  * Background work: send queued e-mail, day-before reminders and the retention clean-up promised
  * in the privacy policy. Runs every minute inside the server process, and /api/cron triggers it
- * too (a systemd timer calls it, so it also runs after a restart with no visitors).
+ * too (cron calls it via deploy/cron.sh, so it also runs after a restart with no visitors).
  */
 import { notifyOverdue, sendReminders } from "./bookings";
 import { getDb } from "./db";

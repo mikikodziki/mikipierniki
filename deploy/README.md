@@ -1,100 +1,100 @@
-# Wdrożenie na VPS (seohost)
+# Wdrożenie na seohost (hosting z DirectAdmin)
 
-Strona działa jako jeden proces Node (Astro + adapter `@astrojs/node`) za nginx.
-Statyczne podstrony serwuje nginx prosto z dysku; `/`, `/warsztaty`, formularze (`/api/*`)
-i panel (`/panel`) renderuje Node. Dane są w jednym pliku SQLite, poczta wychodzi
-przez serwer pocztowy, który już działa na tym VPS dla `@mikipierniki.pl`.
+Strona działa jako „Node.js App” (CloudLinux) za serwerem LiteSpeed na hostingu współdzielonym
+seohost. LiteSpeed uruchamia `start.mjs`, który wczytuje ustawienia i startuje serwer Astro
+(`dist/server/entry.mjs`). Ten sam proces serwuje strony statyczne, `/`, `/warsztaty`, formularze
+(`/api/*`) i panel (`/panel`). Dane są w jednym pliku SQLite. Poczta `@mikipierniki.pl` jest na tym
+samym hostingu, a DNS domeny w OVH.
 
 ```
-/srv/mikipierniki/releases/<commit>/   kolejne wydania (dist/, node_modules/)
-/srv/mikipierniki/current -> releases/<commit>
-/var/lib/mikipierniki/mikipierniki.sqlite  baza (poza wydaniami)
-/var/lib/mikipierniki/backups/             nocne kopie, 30 dni
-/etc/mikipierniki.env                      hasła i ustawienia (deploy/env.example)
+~/mikipierniki/                      aplikacja: dist/, start.mjs, package*.json,
+                                     node_modules -> ~/nodevenv/mikipierniki/24/lib/node_modules
+~/mikipierniki/dist.prev/            poprzednie wydanie (do cofnięcia)
+~/mikipierniki/stderr.log            błędy aplikacji
+~/mikipierniki-data/.env             hasła i ustawienia, chmod 600 (wzór: deploy/env.example)
+~/mikipierniki-data/mikipierniki.sqlite   baza
+~/mikipierniki-data/backups/         nocne kopie, 30 dni
+~/mikipierniki-data/cron.sh, backup.sh    skrypty z crontaba (kopie z deploy/)
+~/domains/mikipierniki.pl/public_html/.htaccess   konfiguracja aplikacji (pisze ją panel) + przekierowania
 ```
 
-## 0. Rozpoznanie (przed zmianami)
+Adres serwera, port i użytkownika SSH podaje mail od seohost po włączeniu „Dostęp SSH”
+(Panel Klienta → Serwery → usługa). Logowanie tylko kluczem, dodanym w DirectAdmin
+(Funkcje zaawansowane → Klucze SSH).
 
-Na VPS nic nie może przeszkodzić poczcie. Najpierw sprawdź, co tam jest:
+## Jednorazowa konfiguracja (zrobiona 21.11.2026)
 
-```sh
-cat /etc/os-release
-ss -tlnp                        # kto słucha na 80/443 (webmail? panel?), 25/587 (poczta)
-ls /usr/local/directadmin /usr/local/hestia 2>/dev/null   # panel administracyjny?
-systemctl status postfix exim dovecot 2>/dev/null | grep -E "Loaded|Active"
-which node nginx sqlite3 certbot
-dig +short TXT mikipierniki.pl; dig +short TXT default._domainkey.mikipierniki.pl   # SPF, DKIM
-```
+1. **DirectAdmin:** dodaj domenę `mikipierniki.pl`. Usuń z `public_html` domyślny `index.html`
+   seohost, bo zasłania stronę główną. Załóż skrzynkę `mika@mikipierniki.pl`.
+2. **Dane i ustawienia:**
+   ```sh
+   mkdir -p ~/mikipierniki-data/backups && chmod 700 ~/mikipierniki-data
+   # ~/mikipierniki-data/.env według deploy/env.example, potem: chmod 600 ~/mikipierniki-data/.env
+   ```
+   Zmiennych środowiskowych nie ustawiaj w panelu „Node.js App”: panel wpisuje je do
+   `public_html/.htaccess`. Hasła trzyma tylko `.env`.
+3. **Aplikacja:** wgraj `dist/`, `package.json`, `package-lock.json` i `deploy/start.mjs`
+   do `~/mikipierniki/`, potem:
+   ```sh
+   cloudlinux-selector create --json --interpreter nodejs --domain mikipierniki.pl \
+     --app-root mikipierniki --app-uri / --version 24 --app-mode production --startup-file start.mjs
+   cloudlinux-selector install-modules --json --interpreter nodejs --app-root mikipierniki
+   cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
+   ```
+4. **Cron i kopie:** skopiuj `deploy/cron.sh` i `deploy/backup.sh` do `~/mikipierniki-data/`
+   (`chmod 700`) i dopisz do `crontab -e`:
+   ```
+   */5 * * * * $HOME/mikipierniki-data/cron.sh
+   30 3 * * * $HOME/mikipierniki-data/backup.sh
+   ```
+5. **Certyfikat:** DirectAdmin → Certyfikaty SSL/TLS. ACME (Let's Encrypt) wystawia i odnawia
+   go sam, gdy domena wskazuje na serwer. Przekierowanie http → https robi serwer.
+6. **`www` → bez `www`** (formularze działają tylko z `https://mikipierniki.pl`): na końcu
+   `public_html/.htaccess`, poza blokami CloudLinux:
+   ```
+   RewriteEngine On
+   RewriteCond %{HTTP_HOST} ^www\.mikipierniki\.pl$ [NC]
+   RewriteRule ^ https://mikipierniki.pl%{REQUEST_URI} [R=301,L]
+   ```
 
-Jeśli działa panel (DirectAdmin, HestiaCP itp.), stronę i certyfikat lepiej dodać przez panel,
-a z tego katalogu wziąć tylko blok `location` i proxy do Node.
+## DNS w OVH
 
-## 1. Jednorazowa konfiguracja
+Strefa zostaje w OVH (domena ma włączony DNSSEC). Rekordy:
 
-```sh
-# Node 24 (node:sqlite), nginx, sqlite3, certbot
-curl -fsSL https://deb.nodesource.com/setup_24.x | sudo bash - && sudo apt install -y nodejs nginx sqlite3 certbot python3-certbot-nginx
+| Subdomena | Typ | Wartość |
+|---|---|---|
+| `@`, `www`, `mail` | A | IP serwera seohost |
+| `@` | MX | `10 mail.mikipierniki.pl.` |
+| `@` | TXT | SPF z DirectAdmin (Zarządzanie DNS) |
+| `x._domainkey` | TXT | DKIM z DirectAdmin (Zarządzanie DNS) |
+| `_dmarc` | TXT | `v=DMARC1; p=none` (po teście poczty można zaostrzyć) |
 
-# użytkownik, który wgrywa wydania i uruchamia serwer
-sudo useradd --system --create-home --shell /bin/bash mikipierniki
-sudo mkdir -p /srv/mikipierniki/releases /var/lib/mikipierniki
-sudo chown -R mikipierniki: /srv/mikipierniki /var/lib/mikipierniki
-sudo -u mikipierniki mkdir -p ~mikipierniki/.ssh   # tu klucz publiczny z GitHub Actions (authorized_keys)
+## Wydania
 
-# jedyne sudo, jakiego potrzebuje deploy
-echo 'mikipierniki ALL=(root) NOPASSWD: /usr/bin/systemctl restart mikipierniki' | sudo tee /etc/sudoers.d/mikipierniki
+Każdy push na `main` uruchamia `.github/workflows/deploy.yml`: build, test E2E, wgranie do
+`~/mikipierniki/dist.next`, podmiana i restart, sprawdzenie `/warsztaty`. Jeśli strona nie odpowie,
+wraca poprzednie wydanie. Ustawienia repozytorium (Settings → Secrets and variables → Actions):
 
-# ustawienia
-sudo cp deploy/env.example /etc/mikipierniki.env && sudo chmod 600 /etc/mikipierniki.env && sudo nano /etc/mikipierniki.env
-
-# usługi
-sudo cp deploy/systemd/* /etc/systemd/system/
-sudo install -m 755 -o mikipierniki deploy/backup.sh /srv/mikipierniki/backup.sh
-sudo systemctl daemon-reload
-sudo systemctl enable mikipierniki mikipierniki-cron.timer mikipierniki-backup.timer
-
-# nginx + certyfikat (najpierw rekordy A w OVH, patrz niżej).
-# Pełna konfiguracja wymaga istniejącego certyfikatu, więc najpierw tymczasowa, tylko port 80:
-sudo mkdir -p /var/www/letsencrypt
-sudo cp deploy/nginx/acme-bootstrap.conf /etc/nginx/sites-available/mikipierniki.pl.conf
-sudo ln -s ../sites-available/mikipierniki.pl.conf /etc/nginx/sites-enabled/
-sudo nginx -t && sudo systemctl reload nginx
-sudo certbot certonly --webroot -w /var/www/letsencrypt -d mikipierniki.pl -d www.mikipierniki.pl
-# teraz właściwa konfiguracja (odnawianie certyfikatu działa dalej przez ten sam katalog)
-sudo cp deploy/nginx/mikipierniki.pl.conf /etc/nginx/sites-available/mikipierniki.pl.conf
-sudo nginx -t && sudo systemctl reload nginx
-```
-
-Pierwsze wydanie wgrywa GitHub Action (`.github/workflows/deploy.yml`) po pushu na `main`.
-Sekrety w repozytorium: `DEPLOY_HOST`, `DEPLOY_USER` (`mikipierniki`), `DEPLOY_SSH_KEY`
-(klucz prywatny, osobny tylko do deployu), `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan <host>`).
-Zaraz po pierwszym wydaniu: `sudo systemctl start mikipierniki-cron.timer mikipierniki-backup.timer`.
-
-## 2. Poczta: warsztaty@mikipierniki.pl
-
-- Załóż skrzynkę `warsztaty@mikipierniki.pl` w serwerze pocztowym na VPS. Z niej wychodzą
-  wszystkie maile ze strony i do niej wracają odpowiedzi uczestników.
-- `SMTP_HOST` to nazwa, na którą wystawiony jest certyfikat serwera pocztowego (np. `mail.mikipierniki.pl`),
-  port 587, login i hasło tej skrzynki.
-- Sprawdź, czy rekord SPF obejmuje IP VPS i czy domena ma DKIM. Jeśli brakuje DKIM albo DMARC,
-  Gmail może odkładać maile do spamu. **Istniejących rekordów MX/SPF/DKIM/DMARC w OVH nie zmieniaj
-  bez sprawdzenia, czego używa poczta.**
-- Test: zapisz się na powiadomienia na stronie i sprawdź wynik na mail-tester.com
-  (wyślij do adresu, który poda serwis).
-
-## 3. DNS w OVH
-
-Tylko dwa rekordy A (i AAAA, jeśli VPS ma IPv6): `mikipierniki.pl` i `www` → IP VPS.
-Najpierw obniż TTL, potem zmień. Rekordów pocztowych nie ruszaj.
+- sekrety: `DEPLOY_SSH_KEY` (klucz prywatny tylko do wdrożeń; publiczny w DirectAdmin → Klucze SSH),
+  `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan -p <port> <host>`),
+  oraz `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER` (też jako sekrety, bo logi publicznego repo nie maskują zwykłych zmiennych).
 
 ## Codzienna obsługa
 
 ```sh
-journalctl -u mikipierniki -f                 # logi serwera (błędy wysyłki maili też)
-sudo systemctl restart mikipierniki
-sqlite3 /var/lib/mikipierniki/mikipierniki.sqlite "select status, count(*) from outbox group by 1"
-ln -sfn /srv/mikipierniki/releases/<poprzedni> /srv/mikipierniki/current && sudo systemctl restart mikipierniki   # cofnięcie wydania
+tail -f ~/mikipierniki/stderr.log                     # błędy (też wysyłki maili)
+cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
+sqlite3 ~/mikipierniki-data/mikipierniki.sqlite "select status, count(*) from outbox group by 1"
+# cofnięcie wydania:
+cd ~/mikipierniki && mv dist dist.bad && mv dist.prev dist && cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
 ```
 
-Kopie bazy leżą na tym samym dysku. Raz na jakiś czas (albo automatycznie) ściągnij je
-na inny komputer, np. `rsync -a mikipierniki@<host>:/var/lib/mikipierniki/backups/ ~/kopie-mikipierniki/`.
+Kopie bazy leżą na tym samym koncie. Raz na jakiś czas ściągnij je na inny komputer:
+`rsync -a <ssh>:mikipierniki-data/backups/ ~/kopie-mikipierniki/`.
+
+## Warto wiedzieć
+
+- Za LiteSpeedem aplikacja widzi adres jako `http://`, więc formularze przechodzą tylko z
+  `https://mikipierniki.pl` (stała `site` w `astro.config.mjs`). Stąd przekierowanie z `www`.
+- Ochrona przed botami na serwerze odpowiada 429 klientom wyglądającym na skrypty (np. `curl`
+  z zewnątrz). Przeglądarki i zapytania z samego serwera (cron, deploy) przechodzą.

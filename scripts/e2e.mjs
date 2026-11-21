@@ -111,7 +111,7 @@ try {
   let m = lastMails(2);
   check("two mails after interest (thanks + notify)", mails().length === before + 2);
   check("thanks mail lists both terms and a withdraw link", m.some((x) => x.includes("To: anna@example.com") && x.includes("Świąteczne klasyki") && x.includes("Zawieszki") && x.includes("/zapis/wypisz?t=")));
-  check("notify mail goes to warsztaty@ with Reply-To", m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Reply-To: anna@example.com")));
+  check("notify mail goes to mika@ with Reply-To", m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes("Reply-To: anna@example.com")));
   const annaRow = () => db().prepare("SELECT name, phone, people, token FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t1);
   const annaBefore = annaRow();
   const beforeRepeat = mails().length;
@@ -156,7 +156,7 @@ try {
   check("booking by transfer → awaiting_payment, total 1350", r.status === 200 && b1.status === "awaiting_payment" && b1.total === 1350, JSON.stringify(b1));
   m = lastMails(2);
   check("transfer mail has account, recipient, ref and the studio address", m.some((x) => x.includes("12 3456 7890") && x.includes("Dominika Testowa") && x.includes(b1.bookingId) && x.includes("ul. Testowa 1")));
-  check("booking notify to Dominika", m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Rezerwacja (przelew)")));
+  check("booking notify to Dominika", m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes("Rezerwacja (przelew)")));
   r = await book({ people: 1 });
   check("second booking with the same e-mail → 409", r.status === 409 && (await r.json()).error.includes("Masz już rezerwację"));
   r = await book({ people: 8, email: "osiem@example.com" });
@@ -277,7 +277,7 @@ try {
   r = await api("/api/zapytanie", { kind: "kontakt", name: "http://spam.example", email: "ofiara@example.com", message: "Kliknij http://spam.example" });
   await settle();
   check("autoreply greeting drops a name that isn't a name", lastMails(2).some((x) => x.includes("To: ofiara@example.com") && x.includes("Cześć,") && !x.includes("spam.example")));
-  check("inquiry → notify (Reply-To customer) + autoreply", r.status === 200 && m.some((x) => x.includes("To: warsztaty@mikipierniki.pl") && x.includes("Reply-To: irena@example.com") && x.includes("liczba sztuk: 100")) && m.some((x) => x.includes("To: irena@example.com")));
+  check("inquiry → notify (Reply-To customer) + autoreply", r.status === 200 && m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes("Reply-To: irena@example.com") && x.includes("liczba sztuk: 100")) && m.some((x) => x.includes("To: irena@example.com")));
 
   // ---------- CSV + misc ----------
   r = await get(`/panel/eksport?termin=${t1}`, { authorization: auth });

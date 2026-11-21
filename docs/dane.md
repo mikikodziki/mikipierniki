@@ -86,7 +86,7 @@ Kształty i detale:
   (plan: `docs/platnosci-online.md`).
 - Rezygnacja: zwrot całej kwoty albo przeniesienie do 7 dni przed terminem, później można
   przekazać miejsce innej osobie (potwierdzone 12.10.2026).
-- E-maile do uczestników wychodzą z warsztaty@mikipierniki.pl i tam wracają odpowiedzi.
+- E-maile do uczestników wychodzą z mika@mikipierniki.pl i tam wracają odpowiedzi (zmiana z warsztaty@, 21.11.2026).
 - Przebieg warsztatu w ośmiu krokach: powitanie; konsystencje lukrów; trzymanie
   rękawa i prowadzenie linii; kontury i kolejność lukrowania; wypełnianie lukrem
   rzadkim; mokre na mokrym i detale; pakowanie; pytania i barwienie lukrów.

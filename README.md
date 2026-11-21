@@ -2,7 +2,7 @@
 
 Strona warsztatów lukrowania pierników i pierników na zamówienie. Astro 7 z adapterem Node:
 podstrony są statyczne, a terminy, formularze i panel Dominiki (`/panel`) działają na serwerze
-z bazą SQLite. Wdrożenie na VPS: `deploy/README.md`.
+z bazą SQLite. Wdrożenie na hosting seohost: `deploy/README.md`.
 
 ## Wersja do publikacji
 
@@ -57,7 +57,7 @@ src/
   layouts/Panel.astro   układ panelu
   components/home/      sekcje strony głównej
   pages/                podstrony; api/ (formularze), panel/, newsletter/ i zapis/ (linki z maili)
-deploy/                 nginx, systemd, kopie zapasowe, instrukcja wdrożenia
+deploy/                 instrukcja wdrożenia (seohost), start.mjs, cron i kopie zapasowe
 scripts/e2e.mjs         test całego przepływu na zbudowanej wersji
 docs/szkic.html         zatwierdzony szkic wizualny
 ```

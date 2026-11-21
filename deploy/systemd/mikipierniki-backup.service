@@ -1,8 +1,0 @@
-# /etc/systemd/system/mikipierniki-backup.service
-[Unit]
-Description=Miki Pierniki database backup
-
-[Service]
-Type=oneshot
-User=mikipierniki
-ExecStart=/srv/mikipierniki/backup.sh

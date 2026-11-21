@@ -1,5 +1,5 @@
 /**
- * Server settings. Values come from the environment (on the VPS: /etc/mikipierniki.env,
+ * Server settings. Values come from the environment (on seohost: ~/mikipierniki-data/.env, loaded by start.mjs;
  * locally: .env). Nothing here ends up in the browser.
  */
 import {
@@ -19,9 +19,9 @@ export const config = {
   /** Without SMTP, e-mails go to files only in development or when asked; in production they fail loudly */
   mailToFiles: import.meta.env.DEV || MAIL_TO_FILES === "1",
   /** Sender of every e-mail; replies land in the same inbox */
-  mailFrom: clean(MAIL_FROM) ?? "Miki Pierniki <warsztaty@mikipierniki.pl>",
+  mailFrom: clean(MAIL_FROM) ?? "Miki Pierniki <mika@mikipierniki.pl>",
   /** Where Dominika gets notified about new sign-ups and inquiries */
-  mailNotify: clean(MAIL_NOTIFY) ?? "warsztaty@mikipierniki.pl",
+  mailNotify: clean(MAIL_NOTIFY) ?? "mika@mikipierniki.pl",
   panelPassword: clean(PANEL_PASSWORD),
   cronToken: clean(CRON_TOKEN),
   bankAccount: clean(BANK_ACCOUNT),
