@@ -70,28 +70,33 @@ if (Astro.request.method === "POST") {
         if (!deleteTerm(id)) throw new UserError("Ten termin ma już zgłoszenia, więc można go tylko odwołać.");
         return back("/panel", { ok: "Termin usunięty." });
       case "paid":
-        markPaid(booking);
+        markPaid(booking, id);
         ok = `Rezerwacja ${booking} potwierdzona, wysyłam potwierdzenie z adresem.`;
         break;
       case "admit":
-        admitFromWaitlist(booking);
+        admitFromWaitlist(booking, id);
         ok = `Wysyłam dane do przelewu osobie z listy rezerwowej (${booking}).`;
         break;
       case "cancel-booking":
-        cancelBooking(booking, f.get("notify") === "on");
+        cancelBooking(booking, f.get("notify") === "on", id);
         ok = `Rezerwacja ${booking} anulowana.`;
         break;
       case "edit-booking": {
         const notify = f.get("notify") === "on";
-        const r = editBooking(booking, bookingEditFromForm(f), notify);
+        const r = editBooking(booking, id, bookingEditFromForm(f), notify);
         // nothing settles money by itself, so a changed total of a paid booking is spelled out
         const total = r.total === r.oldTotal ? "" : ` Kwota zmieniła się z ${pln(r.oldTotal)} na ${pln(r.total)}${r.paid ? ": rozlicz dopłatę albo zwrot." : "."}`;
-        ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${shortDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
+        const promoted = r.promoted ? " Na nowym terminie były wolne miejsca, więc rezerwacja zeszła z listy rezerwowej i czeka na wpłatę." : "";
+        // the regulamin says the deadline is given by e-mail; without the mail she has to pass it on herself
+        const due = r.newDue && !notify
+          ? ` Nowy termin wpłaty: ${new Date(r.newDue).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" })}. Przekaż go, bo mail nie wychodzi.`
+          : "";
+        ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${shortDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${promoted}${due}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
         break;
       }
       case "delete-booking":
         if (f.get("confirm") !== "on") throw new UserError("Zaznacz potwierdzenie, żeby usunąć rezerwację.");
-        deleteBooking(booking);
+        deleteBooking(booking, id);
         ok = `Rezerwacja ${booking} usunięta.`;
         break;
       case "add-booking": {
@@ -295,26 +300,26 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                   <tr class="edit-row">
                     <td colspan="8">
                       <form method="post" class="edit-grid booking-edit">
-                      <input type="hidden" name="action" value="edit-booking" /><input type="hidden" name="booking" value={b.id} />
-                      <label class="field" for={`ed-name-${b.id}`}>Imię i nazwisko<input class="input" id={`ed-name-${b.id}`} name="name" required minlength="2" maxlength="120" value={b.name} /></label>
-                      <label class="field" for={`ed-email-${b.id}`}>E-mail<input class="input" type="email" id={`ed-email-${b.id}`} name="email" required maxlength="200" value={b.email} /></label>
-                      <label class="field" for={`ed-phone-${b.id}`}>Telefon<input class="input" type="tel" id={`ed-phone-${b.id}`} name="phone" required pattern={PHONE} value={b.phone} /></label>
-                      <label class="field" for={`ed-people-${b.id}`}>{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"}<input class="input" type="number" id={`ed-people-${b.id}`} name="people" required min="1" max={site.bookingMax} value={b.people} /></label>
-                      {kidsPossible && (
-                        <label class="field" for={`ed-guardians-${b.id}`}>Rodziców <span class="hint">tylko dzieci</span><input class="input" type="number" id={`ed-guardians-${b.id}`} name="guardians" min="0" max={site.bookingMax} value={b.guardians ?? ""} /></label>
-                      )}
-                      <label class="field wide" for={`ed-notes-${b.id}`}>Uwagi<textarea class="input" id={`ed-notes-${b.id}`} name="notes" rows="2" maxlength="2000">{b.notes ?? ""}</textarea></label>
-                      {moveTargets.length > 0 ? (
-                        <label class="field wide" for={`ed-term-${b.id}`}>Termin
-                          <select class="input" id={`ed-term-${b.id}`} name="termId">
-                            <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
-                            {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
-                          </select>
-                        </label>
-                      ) : <input type="hidden" name="termId" value={term.id} />}
-                      <label class="check wide" for={`ed-notify-${b.id}`}><input type="checkbox" id={`ed-notify-${b.id}`} name="notify" checked /><span>wyślij maila z poprawioną rezerwacją</span></label>
-                      <div class="wide"><button class="btn btn-primary btn-small">Zapisz poprawki</button></div>
-                    </form>
+                        <input type="hidden" name="action" value="edit-booking" /><input type="hidden" name="booking" value={b.id} />
+                        <label class="field" for={`ed-name-${b.id}`}>Imię i nazwisko<input class="input" id={`ed-name-${b.id}`} name="name" required minlength="2" maxlength="120" value={b.name} /></label>
+                        <label class="field" for={`ed-email-${b.id}`}>E-mail<input class="input" type="email" id={`ed-email-${b.id}`} name="email" required maxlength="200" value={b.email} /></label>
+                        <label class="field" for={`ed-phone-${b.id}`}>Telefon<input class="input" type="tel" id={`ed-phone-${b.id}`} name="phone" required pattern={PHONE} value={b.phone} /></label>
+                        <label class="field" for={`ed-people-${b.id}`}>{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"}<input class="input" type="number" id={`ed-people-${b.id}`} name="people" required min="1" max={site.bookingMax} value={b.people} /></label>
+                        {kidsPossible && (
+                          <label class="field" for={`ed-guardians-${b.id}`}>Rodziców <span class="hint">tylko dzieci</span><input class="input" type="number" id={`ed-guardians-${b.id}`} name="guardians" min="0" max={site.bookingMax} value={b.guardians ?? ""} /></label>
+                        )}
+                        <label class="field wide" for={`ed-notes-${b.id}`}>Uwagi<textarea class="input" id={`ed-notes-${b.id}`} name="notes" rows="2" maxlength="2000">{b.notes ?? ""}</textarea></label>
+                        {moveTargets.length > 0 ? (
+                          <label class="field wide" for={`ed-term-${b.id}`}>Termin
+                            <select class="input" id={`ed-term-${b.id}`} name="termId">
+                              <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
+                              {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
+                            </select>
+                          </label>
+                        ) : <input type="hidden" name="termId" value={term.id} />}
+                        <label class="check wide" for={`ed-notify-${b.id}`}><input type="checkbox" id={`ed-notify-${b.id}`} name="notify" checked /><span>wyślij maila z poprawioną rezerwacją</span></label>
+                        <div class="wide"><button class="btn btn-primary btn-small">Zapisz poprawki</button></div>
+                      </form>
                     </td>
                   </tr>
                 )}
