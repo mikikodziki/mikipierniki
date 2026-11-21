@@ -1,12 +1,13 @@
 /** Actions behind the /panel forms. */
+import { z } from "astro/zod";
 import { termPhotos } from "@/lib/api";
-import { workshopDefaults } from "@/lib/site";
+import { site, workshopDefaults } from "@/lib/site";
 import type { TermStatus, WorkshopType } from "@/lib/types";
-import { bookingsForTerm, cancelAllForTerm } from "./bookings";
+import { bookingsForTerm, cancelAllForTerm, type BookingEdit, type NewBooking } from "./bookings";
 import { bookingBlockers } from "./config";
 import { getDb, tx } from "./db";
 import { termDropped } from "./emails";
-import { UserError } from "./http";
+import { fields, UserError } from "./http";
 import { interestForTerm } from "./interest";
 import { enqueue } from "./mail";
 import { getTerm, setTermStatus, type TermInput } from "./terms";
@@ -40,6 +41,46 @@ export function termFromForm(f: FormData): TermInput {
     priceUnit: type === "dzieci" ? "dziecko" : "osoba", capacity,
     cookies: get("cookies") || workshopDefaults[type].cookies, photo: photo.photo, photoAlt: photo.alt,
   };
+}
+
+/** The same rule as the online booking form (src/pages/api/rezerwacja.ts) */
+const VOUCHER_CODE = /^[A-Za-z0-9-]{3,40}$/;
+
+/** A booking typed in the panel keeps the public limits and field rules; form numbers arrive as text. */
+const bookingFields = {
+  name: fields.name,
+  email: fields.email,
+  phone: fields.phone,
+  notes: fields.notes,
+  people: z.coerce.number().int().min(1, "Wpisz liczbę osób (co najmniej 1).").max(site.bookingMax, `Jedna rezerwacja to najwyżej ${site.bookingMax} osób, tak jak na stronie.`),
+  guardians: z.coerce.number().int().min(0).max(site.bookingMax, `Rodziców na sali może być najwyżej ${site.bookingMax}.`).optional(),
+};
+const bookingEditSchema = z.object({ ...bookingFields, termId: z.string().min(1).max(60) });
+const bookingAddSchema = z
+  .object({
+    ...bookingFields,
+    payment: z.enum(["przelew", "voucher"]),
+    voucherCode: z.string().trim().refine((v) => v === "" || VOUCHER_CODE.test(v), "Numer vouchera to litery, cyfry i myślniki (3–40 znaków).").optional(),
+  })
+  .refine((d) => d.payment !== "voucher" || !!d.voucherCode, "Wpisz numer vouchera albo wybierz przelew.");
+
+function parseForm<S extends z.ZodType>(schema: S, f: FormData): z.infer<S> {
+  // as in handleJson: messages set in the schema win, Zod's own (English) ones are replaced
+  const parsed = schema.safeParse(Object.fromEntries(f), { error: () => "Sprawdź pola formularza i spróbuj ponownie." });
+  if (!parsed.success) throw new UserError(parsed.error.issues[0]?.message ?? "Sprawdź pola formularza i spróbuj ponownie.");
+  return parsed.data;
+}
+
+/** The "Popraw" form of a booking; a `termId` other than its own moves it. */
+export function bookingEditFromForm(f: FormData): BookingEdit {
+  const d = parseForm(bookingEditSchema, f);
+  return { ...d, notes: d.notes || undefined };
+}
+
+/** The "Dodaj rezerwację" form, for the term whose page it is on. */
+export function bookingAddFromForm(f: FormData, termId: string): NewBooking {
+  const d = parseForm(bookingAddSchema, f);
+  return { ...d, termId, notes: d.notes || undefined, voucherCode: d.voucherCode || undefined };
 }
 
 /** Status changes allowed from each status, as offered in the panel. */

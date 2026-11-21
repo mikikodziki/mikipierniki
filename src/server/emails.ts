@@ -365,3 +365,47 @@ export function inquiryNotify(kind: InquiryKind, name: string, email: string, ph
     ], { signature: false }),
   };
 }
+
+/* ---------- a booking corrected in the panel ---------- */
+
+/**
+ * Dominika corrected or moved a booking: how it stands now and what is left to do. The kind contains no
+ * other kind's name, since mail files and checks match kinds by substring.
+ */
+export function bookingChanged(
+  b: BookingMailData, t: Term, status: "awaiting_payment" | "confirmed" | "waitlist",
+  opts: { moved?: boolean; previousTotal?: number } = {},
+): Mail {
+  const waitlist = status === "waitlist";
+  const intro = waitlist
+    ? (opts.moved ? `przeniosłam Twoje zgłoszenie na listę rezerwową warsztatów ${whenInText(t)}.` : "poprawiłam Twoje zgłoszenie na listę rezerwową.")
+    : (opts.moved ? `przeniosłam Twoją rezerwację na ${whenInText(t)}.` : "poprawiłam Twoją rezerwację.");
+  const totalChanged = opts.previousTotal !== undefined && opts.previousTotal !== b.total;
+  const payment: Block[] = waitlist
+    ? [{ p: "Jesteś na liście rezerwowej. Gdy zwolni się miejsce, napiszę do Ciebie z danymi do wpłaty. Do tego czasu niczego nie płacisz." }]
+    : status === "confirmed"
+    ? [{ p: `Rezerwacja jest opłacona i potwierdzona.${totalChanged ? ` Kwota zmieniła się z ${pln(opts.previousTotal!)} na ${pln(b.total)}. Napiszę osobno, jak rozliczymy różnicę.` : ""}` }]
+    : b.payment === "voucher"
+    ? [
+      { p: `Sprawdzę kod vouchera ${b.voucherCode ?? ""} i potwierdzę rezerwację mailem.` },
+      ...(b.total > site.voucherPrice ? [{ p: `Rezerwacja kosztuje ${pln(b.total)}, więcej niż voucher (${pln(site.voucherPrice)}). W mailu po sprawdzeniu vouchera napiszę, ile i jak dopłacić.` }] : []),
+    ]
+    : [
+      { p: "Dane do przelewu:" },
+      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
+      { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
+    ];
+  return {
+    kind: "booking-changed", to: b.email,
+    subject: `Rezerwacja ${b.id} poprawiona`,
+    ...render([
+      hi(b.name),
+      { p: `${intro} Tak wygląda teraz:` },
+      // no street address for a waitlist place, as in the waitlist mail
+      { details: bookingDetails(b, t, !waitlist) },
+      ...payment,
+      { p: "Coś się nie zgadza (np. liczba osób albo dane)? Odpisz na tego maila, a poprawię rezerwację." },
+      ...bookingInfo(),
+    ]),
+  };
+}

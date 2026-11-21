@@ -3,13 +3,13 @@ import Panel from "@/layouts/Panel.astro";
 import TermForm from "@/components/panel/TermForm.astro";
 import { plural, pln, shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
-import { admitFromWaitlist, bookingsForTerm, cancelBooking, markPaid } from "@/server/bookings";
+import { admitFromWaitlist, bookingsForTerm, cancelBooking, createBooking, deleteBooking, editBooking, markPaid } from "@/server/bookings";
 import { bookingBlockers } from "@/server/config";
 import { UserError } from "@/server/http";
 import { deleteInterestRow, editInterest, interestEditFromForm, interestForTerm, notifyInterested, withdrawInterestRow } from "@/server/interest";
 import { flushOutbox } from "@/server/mail";
-import { back, cancelTerm, changeStatus, formStrings, statusLabel, termFromForm } from "@/server/panel";
-import { deleteTerm, getTerm, updateTerm } from "@/server/terms";
+import { back, bookingAddFromForm, bookingEditFromForm, cancelTerm, changeStatus, formStrings, statusLabel, termFromForm } from "@/server/panel";
+import { deleteTerm, getTerm, publicTerms, updateTerm } from "@/server/terms";
 
 export const prerender = false;
 
@@ -81,6 +81,26 @@ if (Astro.request.method === "POST") {
         cancelBooking(booking, f.get("notify") === "on");
         ok = `Rezerwacja ${booking} anulowana.`;
         break;
+      case "edit-booking": {
+        const notify = f.get("notify") === "on";
+        const r = editBooking(booking, bookingEditFromForm(f), notify);
+        // nothing settles money by itself, so a changed total of a paid booking is spelled out
+        const total = r.total === r.oldTotal ? "" : ` Kwota zmieniła się z ${pln(r.oldTotal)} na ${pln(r.total)}${r.paid ? ": rozlicz dopłatę albo zwrot." : "."}`;
+        ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${shortDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
+        break;
+      }
+      case "delete-booking":
+        if (f.get("confirm") !== "on") throw new UserError("Zaznacz potwierdzenie, żeby usunąć rezerwację.");
+        deleteBooking(booking);
+        ok = `Rezerwacja ${booking} usunięta.`;
+        break;
+      case "add-booking": {
+        const notify = f.get("notify") === "on";
+        const r = createBooking(bookingAddFromForm(f, id), { paid: f.get("paid") === "on", notify });
+        const where = r.status === "waitlist" ? "na listę rezerwową (termin jest pełny)" : r.status === "confirmed" ? "jako opłacona" : "i czeka na wpłatę";
+        ok = `Rezerwacja ${r.bookingId} dodana ${where}.${notify ? " Wysyłam maila." : ""}`;
+        break;
+      }
       default:
         throw new UserError("Nieznana akcja.");
     }
@@ -107,6 +127,13 @@ const blockers = bookingBlockers();
 const now = Date.now();
 const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" }) : "");
 const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpłatę", confirmed: "Opłacona", waitlist: "Lista rezerwowa", cancelled: "Anulowana" };
+// a booking moves only to an open term that hasn't started; the panel ignores the 48-hour online window
+const moveTargets = publicTerms().filter((t) => t.status === "open" && t.id !== term.id);
+// the guardians field is needed whenever the booking is, or may move to, a children's workshop
+const kidsPossible = term.type === "dzieci" || moveTargets.some((t) => t.type === "dzieci");
+const canAdd = term.status === "open" && new Date(term.startsAt).getTime() > now;
+/** The phone rule of the public forms (fields.phone) */
+const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
 ---
 <Panel title={`${shortDate(term.startsAt)} · ${term.title}`}>
   <section class="box">
@@ -245,6 +272,44 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
                           </form>
                         </details>
                       )}
+                      {b.status !== "cancelled" && (
+                        <details>
+                          <summary>Popraw</summary>
+                          <form method="post" class="confirm booking-edit">
+                            <input type="hidden" name="action" value="edit-booking" /><input type="hidden" name="booking" value={b.id} />
+                            <label class="field" for={`ed-name-${b.id}`}>Imię i nazwisko<input class="input" id={`ed-name-${b.id}`} name="name" required minlength="2" maxlength="120" value={b.name} /></label>
+                            <label class="field" for={`ed-email-${b.id}`}>E-mail<input class="input" type="email" id={`ed-email-${b.id}`} name="email" required maxlength="200" value={b.email} /></label>
+                            <label class="field" for={`ed-phone-${b.id}`}>Telefon<input class="input" type="tel" id={`ed-phone-${b.id}`} name="phone" required pattern={PHONE} value={b.phone} /></label>
+                            <label class="field" for={`ed-people-${b.id}`}>{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"}<input class="input" type="number" id={`ed-people-${b.id}`} name="people" required min="1" max={site.bookingMax} value={b.people} /></label>
+                            {kidsPossible && (
+                              <label class="field" for={`ed-guardians-${b.id}`}>Rodziców <span class="hint">tylko dzieci</span><input class="input" type="number" id={`ed-guardians-${b.id}`} name="guardians" min="0" max={site.bookingMax} value={b.guardians ?? ""} /></label>
+                            )}
+                            <label class="field" for={`ed-notes-${b.id}`}>Uwagi<textarea class="input" id={`ed-notes-${b.id}`} name="notes" rows="2" maxlength="2000">{b.notes ?? ""}</textarea></label>
+                            {moveTargets.length > 0 ? (
+                              <label class="field" for={`ed-term-${b.id}`}>Termin
+                                <select class="input" id={`ed-term-${b.id}`} name="termId">
+                                  <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
+                                  {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
+                                </select>
+                              </label>
+                            ) : <input type="hidden" name="termId" value={term.id} />}
+                            <label class="check" for={`ed-notify-${b.id}`}><input type="checkbox" id={`ed-notify-${b.id}`} name="notify" checked /><span>wyślij maila z poprawioną rezerwacją</span></label>
+                            <button class="btn btn-primary btn-small">Zapisz poprawki</button>
+                          </form>
+                        </details>
+                      )}
+                      {b.paid_at ? (
+                        <span class="note">Opłaconej rezerwacji nie usuniesz: zostaje w rozliczeniach przez 6 lat.{b.status !== "cancelled" && " Możesz ją anulować albo poprawić."}</span>
+                      ) : (
+                        <details>
+                          <summary>Usuń</summary>
+                          <form method="post" class="confirm">
+                            <input type="hidden" name="action" value="delete-booking" /><input type="hidden" name="booking" value={b.id} />
+                            <label class="check" for={`del-${b.id}`}><input type="checkbox" id={`del-${b.id}`} name="confirm" required /><span>usuń na stałe, bez maila (np. wpisana przez pomyłkę)</span></label>
+                            <button class="btn btn-ghost btn-small">Usuń rezerwację</button>
+                          </form>
+                        </details>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -255,6 +320,39 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
       </div>
     )}
   </section>
+
+  {canAdd && (
+    <section class="box">
+      <h2>Dodaj rezerwację</h2>
+      <p class="note">Rezerwacja przyjęta telefonicznie albo mailem, także w ostatnich 48 godzinach, gdy zapisy online są już zamknięte. Miejsca liczą się jak na stronie: gdy termin jest pełny, rezerwacja trafia na listę rezerwową.</p>
+      {blockers.length > 0 ? (
+        <p class="note">Najpierw uzupełnij na serwerze: {blockers.join(", ")}.</p>
+      ) : (
+        <form method="post" class="form-grid booking-add">
+          <input type="hidden" name="action" value="add-booking" />
+          <div class="grid3">
+            <label class="field" for="ad-name">Imię i nazwisko<input class="input" id="ad-name" name="name" required minlength="2" maxlength="120" /></label>
+            <label class="field" for="ad-email">E-mail<input class="input" type="email" id="ad-email" name="email" required maxlength="200" /></label>
+            <label class="field" for="ad-phone">Telefon<input class="input" type="tel" id="ad-phone" name="phone" required pattern={PHONE} /></label>
+          </div>
+          <div class="grid3">
+            <label class="field" for="ad-people">{term.priceUnit === "dziecko" ? "Dzieci" : "Osób"} <span class="hint">najwyżej {site.bookingMax}</span><input class="input" type="number" id="ad-people" name="people" required min="1" max={site.bookingMax} value="1" /></label>
+            {term.type === "dzieci" && (
+              <label class="field" for="ad-guardians">Rodziców <span class="hint">co najmniej 1</span><input class="input" type="number" id="ad-guardians" name="guardians" required min="1" max={site.bookingMax} value="1" /></label>
+            )}
+            <label class="field" for="ad-payment">Płatność
+              <select class="input" id="ad-payment" name="payment"><option value="przelew">przelew</option><option value="voucher">voucher</option></select>
+            </label>
+            <label class="field" for="ad-voucher">Kod vouchera <span class="hint">przy voucherze</span><input class="input" id="ad-voucher" name="voucherCode" maxlength="40" /></label>
+          </div>
+          <label class="field" for="ad-notes">Uwagi<textarea class="input" id="ad-notes" name="notes" rows="2" maxlength="2000"></textarea></label>
+          <label class="check" for="ad-notify"><input type="checkbox" id="ad-notify" name="notify" checked /><span>wyślij maila, jak przy zapisie na stronie (dane do przelewu, voucher albo lista rezerwowa)</span></label>
+          <label class="check" for="ad-paid"><input type="checkbox" id="ad-paid" name="paid" /><span>już opłacona (wtedy mailem idzie potwierdzenie z adresem)</span></label>
+          <div><button class="btn btn-primary btn-small">Dodaj rezerwację</button></div>
+        </form>
+      )}
+    </section>
+  )}
 
   {term.status !== "cancelled" && (
     <section class="box">
@@ -279,4 +377,7 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
 
 <style>
   .confirm { display: grid !important; gap: 8px; margin-top: 8px; }
+  /* the correction form opens inside a table cell: wide enough to type in, notes kept short */
+  .booking-edit { min-width: 15rem; }
+  .booking-edit textarea.input, .booking-add textarea.input { min-height: 64px; }
 </style>
