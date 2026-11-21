@@ -148,6 +148,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .field { display: flex; flex-wrap: wrap; align-items: baseline; align-content: start; gap: 6px; font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; }
 .field > .input { flex: 1 0 100%; }
 .field .hint { font-weight: 400; color: var(--ink-soft); font-size: .75rem; letter-spacing: .04em; text-transform: none; }
+/* a hint under the field, so fields side by side start at the same height */
+.field > .hint--below { flex: 1 0 100%; }
 .input {
   font: 400 1rem var(--body); color: var(--ink); background: var(--field);
   border: 0; border-radius: var(--radius); padding: 14px 16px; width: 100%;
@@ -177,6 +179,10 @@ input[type="number"].input::-webkit-inner-spin-button, input[type="number"].inpu
 .form-grid { display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
+/* fields side by side share rows (label, field, hint, error), so the fields start at the same
+   height even when one label wraps; browsers without subgrid just stack each field as before */
+.row2--aligned { row-gap: 6px; }
+.row2--aligned > .field { display: grid; grid-row: span 4; grid-template-rows: subgrid; align-content: start; }
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: var(--radius); cursor: pointer; box-shadow: inset 0 0 0 1px var(--field-line); }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
