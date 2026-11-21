@@ -944,6 +944,9 @@ try {
     // private pages in unusual forms, and a full address instead of a path
     for (const u of ["/./zapis/wypisz?t=tajny-token", "/%2e/zapis/wypisz?t=tajny-token", "/faq/../zapis/wypisz?t=tajny-token", "//zapis/wypisz?t=tajny-token", "/ZAPIS/wypisz?t=tajny-token", "http://evil.example/panel"]) await visit(u);
     await visit("/kontakt", { referer: "http://192.168.1.10/strona" });
+    // mail-link pages send their address (with the token) as Referer to our own pages
+    await visit("/warsztaty", { referer: "https://mikipierniki.pl/newsletter/potwierdz?t=tajny-token" });
+    await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/zapis/wypisz?t=tajny-token", "user-agent": BROWSER }, JSON.stringify({ email: "z-maila@example.com" }));
     // a form sent from a page opened with a utm link, and one rejected
     r = await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/warsztaty?utm_source=instagram", "user-agent": BROWSER }, JSON.stringify({ email: "statystyki@example.com" }));
     check("form post with a referer still works", r.status === 200, r.text);
