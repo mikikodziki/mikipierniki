@@ -51,17 +51,12 @@ Kształty i detale:
 
 ## Kontakt i miejsce
 - Pracownia: Wrocław. Tu odbywają się wszystkie warsztaty otwarte.
-- Adres pracowni: ul. Długa 55J, Wrocław. Na życzenie Dominiki adres jest publiczny:
-  sekcja „Gdzie się spotykamy” na stronie Kontakt zawiera mapę Google z pinezką
-  przy tym adresie. Mapa ma maksymalnie 380 px szerokości, bez osobnego bloku
-  adresu i przycisku do trasy pod tekstem sekcji. Adres jest przy danych kontaktowych
-  i w danych strukturalnych strony Kontakt. Poprzednia zasada ukrywania adresu
-  już nie obowiązuje. Drugiej lokalizacji („Pracownia 2”) nie ma.
-- Pinezka korzysta ze współrzędnych punktu adresowego 55J:
-  `51.123959, 17.013382`. Źródło: [SIP Wrocławia — Długa 55J](https://geoportal.wroclaw.pl/poi/pt/118745/ul.D%C5%82uga/55J).
-  Wyszukiwanie samej nazwy adresu w Google wskazuje numer 55, dlatego nie należy
-  zastępować współrzędnych zapytaniem tekstowym. Punkt z miejskiego układu
-  EPSG:2177 przeliczono na WGS84 (EPSG:4326).
+- Miejsce pracowni na stronie: tylko „Szczepin, Wrocław” (decyzja z 21.11.2026). Ulicy i numeru
+  nie wolno podawać nigdzie: na stronie, w danych strukturalnych, w `llms.txt` ani w repozytorium,
+  bo pod tym adresem nie może być prowadzona działalność.
+- Sekcja „Gdzie się spotykamy” na stronie Kontakt ma mapę Google z zapytaniem „Szczepin,
+  Wrocław”, więc pokazuje dzielnicę, nie budynek. Mapa ma maksymalnie 380 px szerokości.
+  Drugiej lokalizacji („Pracownia 2”) nie ma.
 - Telefon: 880 122 269. E-mail: mika@mikipierniki.pl (od 21.11.2026).
 - Social media: tylko Instagram @mikipierniki. Brak Facebooka i TikToka.
 - Domena: mikipierniki.pl (ustawiona w `astro.config.mjs`, stąd canonical i og:url).

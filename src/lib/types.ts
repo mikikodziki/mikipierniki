@@ -42,8 +42,8 @@ export interface Venue {
   id: string;
   name: string;
   city: string;
-  address?: string;
-  coordinates?: { lat: number; lng: number };
+  /** Only the district: the street address must not appear anywhere on the site (docs/dane.md) */
+  district?: string;
 }
 
 /** Online payment comes later (plan: docs/platnosci-online.md); until then a transfer or a gift card. */
