@@ -375,11 +375,13 @@ export function inquiryNotify(kind: InquiryKind, name: string, email: string, ph
  */
 export function bookingChanged(
   b: BookingMailData, t: Term, status: "awaiting_payment" | "confirmed" | "waitlist",
-  opts: { moved?: boolean; previousTotal?: number } = {},
+  opts: { moved?: boolean; previousTotal?: number; offWaitlist?: boolean } = {},
 ): Mail {
   const waitlist = status === "waitlist";
   const intro = waitlist
     ? (opts.moved ? `przeniosłam Twoje zgłoszenie na listę rezerwową warsztatów ${whenInText(t)}.` : "poprawiłam Twoje zgłoszenie na listę rezerwową.")
+    : opts.offWaitlist
+    ? `przeniosłam Twoje zgłoszenie z listy rezerwowej na ${whenInText(t)}. Na tym terminie jest dla Ciebie miejsce, więc rezerwacja czeka teraz na wpłatę.`
     : (opts.moved ? `przeniosłam Twoją rezerwację na ${whenInText(t)}.` : "poprawiłam Twoją rezerwację.");
   const totalChanged = opts.previousTotal !== undefined && opts.previousTotal !== b.total;
   const payment: Block[] = waitlist
