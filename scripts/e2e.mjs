@@ -120,7 +120,7 @@ try {
   const annaRow = () => db().prepare("SELECT name, phone, people, token FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t1);
   const annaBefore = annaRow();
   const beforeRepeat = mails().length;
-  r = await api("/api/zainteresowanie", { termIds: [t1, t2], people: 9, name: "Ktoś Inny", email: "anna@example.com", phone: "999 999 999", consent: true });
+  r = await api("/api/zainteresowanie", { termIds: [t1, t2], people: 4, name: "Ktoś Inny", email: "anna@example.com", phone: "999 999 999", consent: true });
   await settle();
   check("repeat sign-up answers the same", r.status === 200);
   check("repeat sign-up doesn't overwrite name, phone, people or token", JSON.stringify(annaRow()) === JSON.stringify(annaBefore), JSON.stringify(annaRow()));
@@ -171,18 +171,24 @@ try {
     && x.includes("/regulamin") && !x.includes("NIP:")));
   r = await book({ people: 1 });
   check("second booking with the same e-mail → 409", r.status === 409 && (await r.json()).error.includes("Masz już rezerwację"));
-  r = await book({ people: 8, email: "osiem@example.com" });
-  check("too many people → 409 with seats left", r.status === 409 && (await r.json()).error.includes("7"));
+  r = await book({ people: 6, email: "szesc@example.com" });
+  check("more than 5 people in one booking → 400", r.status === 400 && (await r.json()).error.includes("najwyżej 5"));
+  r = await api("/api/zainteresowanie", { termIds: [t2], people: 6, name: "Sześć Osób", email: "szesc@example.com", consent: true });
+  check("more than 5 people in one date pick → 400", r.status === 400 && (await r.json()).error.includes("najwyżej 5"));
   r = await book({ people: 1, email: "dlugie@example.com", notes: "x".repeat(3000) });
   const longErr = (await r.json()).error;
   check("too-long notes → Polish error, not Zod's English", r.status === 400 && longErr.startsWith("Sprawdź"), longErr);
-  r = await book({ people: 7, payment: "voucher" });
+  r = await book({ people: 5, payment: "voucher" });
   check("voucher without code rejected", r.status === 400);
-  r = await book({ people: 7, payment: "voucher", voucherCode: "MIKI-2026", email: "dorota@example.com", name: "Dorota Voucher" });
+  r = await book({ people: 5, payment: "voucher", voucherCode: "MIKI-2026", email: "dorota@example.com", name: "Dorota Voucher" });
   const b2 = await r.json();
   check("voucher booking → awaiting_payment", b2.status === "awaiting_payment");
   r = await book({ people: 1, payment: "voucher", voucherCode: "zły kod!", email: "kod@example.com" });
   check("voucher code with odd characters rejected", r.status === 400, String(r.status));
+  r = await book({ people: 3, email: "trzy@example.com" });
+  check("too many people → 409 with seats left", r.status === 409 && (await r.json()).error.includes("2"));
+  r = await book({ people: 2, email: "filip@example.com", name: "Filip Dwa" });
+  check("last 2 seats booked", (await r.json()).status === "awaiting_payment");
   await settle();
   check("voucher mail carries the information block", byKind("booking-voucher").some((x) => x.includes("Organizatorka: Dominika Saczyńska") && x.includes("Reklamacje: e-mailem na ") && x.includes("/regulamin")));
   r = await book({ people: 2, email: "ewa@example.com", name: "Ewa Lista" });
@@ -208,11 +214,11 @@ try {
   const due = db().prepare("SELECT payment_due_at FROM bookings WHERE id = ?").get(b3.bookingId);
   check("admitted booking has a new 3-day deadline", due.payment_due_at && new Date(due.payment_due_at) > new Date(Date.now() + 2.9 * 86400000));
 
-  // concurrent last seats: 5 seats left now (10 - 3 - 2); fire 4 bookings of 2 at once → only 2 may get places
+  // concurrent last seats: 3 seats left now (10 - 3 - 2 - 2); fire 4 bookings of 2 at once → only 1 may get a place
   const racers = await Promise.all([1, 2, 3, 4].map((i) => book({ people: 2, email: `race${i}@example.com`, name: `Race ${i}` }).then((x) => x.json())));
   const won = racers.filter((x) => x.status === "awaiting_payment").length;
   const taken = db().prepare("SELECT SUM(people) n FROM bookings WHERE term_id = ? AND status IN ('awaiting_payment','confirmed')").get(t1).n;
-  check("concurrent bookings never overbook", taken <= 10 && won === 2, `won=${won} taken=${taken} ${JSON.stringify(racers)}`);
+  check("concurrent bookings never overbook", taken <= 10 && won === 1, `won=${won} taken=${taken} ${JSON.stringify(racers)}`);
 
   // ---------- overdue transfer → one notice to Dominika ----------
   db().prepare("UPDATE bookings SET payment_due_at = ? WHERE id = ?").run(new Date(Date.now() - 3600000).toISOString(), b3.bookingId);

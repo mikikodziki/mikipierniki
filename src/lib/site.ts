@@ -15,6 +15,8 @@ export const site = {
   /** Group size on open workshops */
   groupMin: 4,
   groupMax: 10,
+  /** Most people (or children) one booking or date pick may cover; larger groups go to closed workshops */
+  bookingMax: 5,
   /** Closed (company / private) workshops: a full workshop for up to this many people; larger groups get shorter cycles */
   closedGroupMax: 12,
 };

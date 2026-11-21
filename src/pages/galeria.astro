@@ -4,19 +4,13 @@ import PageHead from "@/components/PageHead.astro";
 import Cookie from "@/components/Cookie.astro";
 import Photo from "@/components/Photo.astro";
 import Piping from "@/components/Piping.astro";
-import { getGallery } from "@/lib/api";
+import { galleryCategories, getGallery } from "@/lib/api";
 import { site } from "@/lib/site";
 import type { GalleryItem } from "@/lib/types";
 
 const items = await getGallery();
 
-const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [
-  { value: "all", label: "Wszystkie" },
-  { value: "swieta", label: "Święta" },
-  { value: "wielkanoc", label: "Wielkanoc" },
-  { value: "halloween", label: "Halloween" },
-  { value: "okazje", label: "Okazje" },
-];
+const filters: { value: "all" | GalleryItem["category"]; label: string }[] = [{ value: "all", label: "Wszystkie" }, ...galleryCategories];
 ---
 <Base
   title="Galeria pierników"

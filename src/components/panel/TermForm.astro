@@ -3,11 +3,11 @@
  * Add / edit a workshop term in the panel. Without `term` the fields start from the per-type defaults;
  * `values` (the form as just sent) wins over both, so a rejected form comes back as it was typed.
  */
-import { termPhotos } from "@/lib/api";
 import { workshopTypeLabel } from "@/lib/format";
 import { site, workshopDefaults } from "@/lib/site";
 import type { Term, WorkshopType } from "@/lib/types";
 import { warsawParts } from "@/server/util";
+import PhotoPicker from "./PhotoPicker.astro";
 
 interface Props {
   term?: Term;
@@ -25,7 +25,6 @@ const type: WorkshopType = types.find((t) => t === values.type) ?? term?.type ??
 const d = workshopDefaults[type];
 const start = term ? warsawParts(term.startsAt) : undefined;
 const end = term ? warsawParts(term.endsAt) : undefined;
-const photos = termPhotos();
 const photo = values.photo ?? term?.photo;
 const draft = values.status === "draft";
 ---
@@ -63,11 +62,7 @@ const draft = values.status === "draft";
       <input class="input" id="tf-cookies" name="cookies" value={values.cookies ?? term?.cookies ?? d.cookies} />
     </label>
   </div>
-  <label class="field" for="tf-photo">Zdjęcie na karcie
-    <select class="input" id="tf-photo" name="photo">
-      {photos.map((p) => <option value={p.photo} selected={p.photo === photo}>{p.caption}</option>)}
-    </select>
-  </label>
+  <PhotoPicker name="photo" label="Zdjęcie na karcie" value={photo} />
   {withStatus && (
     <fieldset>
       <legend>Jak opublikować</legend>

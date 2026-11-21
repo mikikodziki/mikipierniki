@@ -36,8 +36,10 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
           </label>
         ))}
       </fieldset>
-      <label class="field" for="in-people">Ile osób chcesz zapisać? <span class="hint">na warsztatach dla dzieci liczę dzieci</span>
-        <input class="input" type="number" id="in-people" name="people" min="1" max="10" value="1" inputmode="numeric" />
+      <label class="field" for="in-people">Ile osób chcesz zapisać? <span class="hint">do {site.bookingMax}; na warsztatach dla dzieci liczę dzieci</span>
+        <select class="input" id="in-people" name="people">
+          {Array.from({ length: site.bookingMax }, (_, i) => <option value={i + 1}>{i + 1}</option>)}
+        </select>
       </label>
       <label class="field" for="in-name">Imię i nazwisko
         <input class="input" type="text" id="in-name" name="name" autocomplete="name" maxlength="120" required />
@@ -82,7 +84,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
     const err = $("in-error");
     const submit = $<HTMLButtonElement>("in-submit");
     const boxes = [...form.querySelectorAll<HTMLInputElement>('input[name="termIds"]')];
-    const people = $<HTMLInputElement>("in-people");
+    const people = $<HTMLSelectElement>("in-people");
 
     // ticks survive closing and reopening; after a sent form the next one starts clean
     let sent = false;
@@ -103,9 +105,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
     function check(el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement): string | null {
       if (boxes.includes(el as HTMLInputElement)) return boxes.some((b) => b.checked) ? null : "Zaznacz co najmniej jeden termin.";
       if (el === people) {
-        if (!(Number(people.value) >= 1)) return "Dodaj co najmniej jedną osobę.";
-        if (Number(people.value) > 10) return "Na jeden termin mogę przyjąć najwyżej 10 osób. Większą grupę zapraszam na warsztaty zamknięte.";
-        return null;
+        return Number(people.value) >= 1 ? null : "Dodaj co najmniej jedną osobę.";
       }
       if (el.id === "in-consent") return (el as HTMLInputElement).checked ? null : "Zaznacz prośbę o kontakt, żebym mogła dać Ci znać.";
       return messageFor(el);

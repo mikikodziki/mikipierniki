@@ -42,10 +42,20 @@ export async function getGallery(): Promise<GalleryItem[]> {
 }
 
 /** Photos a term card can use (the panel offers these), with their alt text. */
-export function termPhotos(): { photo: string; alt: string; caption: string }[] {
+export function termPhotos(): { photo: string; alt: string; caption: string; category: GalleryItem["category"] }[] {
   const seen = new Set<string>();
-  return gallery.flatMap((g) => (g.photo && !seen.has(g.photo) && seen.add(g.photo) ? [{ photo: g.photo, alt: g.alt, caption: g.caption }] : []));
+  return gallery.flatMap((g) =>
+    g.photo && !seen.has(g.photo) && seen.add(g.photo) ? [{ photo: g.photo, alt: g.alt, caption: g.caption, category: g.category }] : [],
+  );
 }
+
+/** Gallery categories in the order the gallery filters show them (the panel's photo picker uses the same groups) */
+export const galleryCategories: { value: GalleryItem["category"]; label: string }[] = [
+  { value: "swieta", label: "Święta" },
+  { value: "wielkanoc", label: "Wielkanoc" },
+  { value: "halloween", label: "Halloween" },
+  { value: "okazje", label: "Okazje" },
+];
 
 /* ---------- pricing (shared by UI and backend) ---------- */
 

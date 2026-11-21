@@ -3,6 +3,7 @@ import { z } from "astro/zod";
 import { createBooking } from "@/server/bookings";
 import { fields, handleJson } from "@/server/http";
 import { flushOutbox } from "@/server/mail";
+import { site } from "@/lib/site";
 
 export const prerender = false;
 
@@ -11,8 +12,8 @@ const VOUCHER_CODE = /^[A-Za-z0-9-]{3,40}$/;
 const schema = z
   .object({
     termId: z.string().max(60),
-    people: z.number().int().min(1, "Dodaj co najmniej jedną osobę.").max(10),
-    guardians: z.number().int().min(0).max(10).optional(),
+    people: z.number().int().min(1, "Dodaj co najmniej jedną osobę.").max(site.bookingMax, `Na jedną rezerwację mogę przyjąć najwyżej ${site.bookingMax} osób. Większą grupę zapraszam na warsztaty zamknięte.`),
+    guardians: z.number().int().min(0).max(site.bookingMax).optional(),
     name: fields.name,
     email: fields.email,
     phone: fields.phone,

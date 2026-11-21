@@ -3,12 +3,13 @@ import { z } from "astro/zod";
 import { fields, handleJson } from "@/server/http";
 import { registerInterest } from "@/server/interest";
 import { flushOutbox } from "@/server/mail";
+import { site } from "@/lib/site";
 
 export const prerender = false;
 
 const schema = z.object({
   termIds: z.array(z.string().max(60)).min(1, "Zaznacz co najmniej jeden termin.").max(20),
-  people: z.number().int().min(1, "Dodaj co najmniej jedną osobę.").max(10, "Na jeden termin mogę przyjąć najwyżej 10 osób."),
+  people: z.number().int().min(1, "Dodaj co najmniej jedną osobę.").max(site.bookingMax, `Na jedno zgłoszenie mogę przyjąć najwyżej ${site.bookingMax} osób. Większą grupę zapraszam na warsztaty zamknięte.`),
   name: fields.name,
   email: fields.email,
   phone: fields.phone.optional().or(z.literal("")),
