@@ -131,6 +131,52 @@ const migrations: (string | ((conn: DatabaseSync) => void))[] = [
     const add = conn.prepare("INSERT INTO consent_log (email_hash, consent_version, subscribed_at, confirmed_at) VALUES (?, 'przed-2026-11-21', ?, ?)");
     for (const r of rows) add.run(emailHash(r.email), r.created_at, r.confirmed_at);
   },
+  `
+  -- visit statistics (src/server/stats.ts): daily sums only, no IP addresses, no visitor identifiers
+  CREATE TABLE stats_views (
+    day TEXT NOT NULL,
+    path TEXT NOT NULL,
+    -- '' for a step between our own pages, otherwise where the visit came from
+    source TEXT NOT NULL,
+    utm_source TEXT NOT NULL,
+    utm_medium TEXT NOT NULL,
+    utm_campaign TEXT NOT NULL,
+    device TEXT NOT NULL CHECK (device IN ('telefon','komputer')),
+    views INTEGER NOT NULL DEFAULT 0,
+    entries INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, path, source, utm_source, utm_medium, utm_campaign, device)
+  ) WITHOUT ROWID;
+  CREATE TABLE stats_hours (
+    day TEXT NOT NULL,
+    hour INTEGER NOT NULL,
+    views INTEGER NOT NULL DEFAULT 0,
+    entries INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, hour)
+  ) WITHOUT ROWID;
+  CREATE TABLE stats_forms (
+    day TEXT NOT NULL,
+    form TEXT NOT NULL,
+    page TEXT NOT NULL,
+    utm_source TEXT NOT NULL,
+    outcome TEXT NOT NULL,
+    count INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (day, form, page, utm_source, outcome)
+  ) WITHOUT ROWID;
+  CREATE TABLE stats_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  -- per-term totals (src/server/term-stats.ts); frozen before the clean-up deletes the sign-ups behind them
+  CREATE TABLE term_stats (
+    term_id TEXT PRIMARY KEY,
+    interest_entries INTEGER NOT NULL,
+    interest_people INTEGER NOT NULL,
+    booked_people INTEGER NOT NULL,
+    paid_people INTEGER NOT NULL,
+    revenue INTEGER NOT NULL,
+    waitlist_people INTEGER NOT NULL,
+    cancelled_people INTEGER NOT NULL,
+    frozen INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+  );
+  `,
 ];
 
 let db: DatabaseSync | undefined;

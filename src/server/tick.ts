@@ -6,6 +6,8 @@
 import { notifyOverdue, sendReminders } from "./bookings";
 import { getDb, tx } from "./db";
 import { flushOutbox } from "./mail";
+import { collectHits } from "./stats";
+import { freezeTermStats } from "./term-stats";
 
 const DAY = 24 * 60 * 60 * 1000;
 let lastCleanup = 0;
@@ -35,6 +37,8 @@ function deleteExpired(db: ReturnType<typeof getDb>, now: number): void {
   // bookings that were never paid (awaiting payment, waitlist, cancelled before payment)
   const dropUnpaid = db.prepare("DELETE FROM bookings WHERE term_id = ? AND paid_at IS NULL");
   const dropNotes = db.prepare("UPDATE bookings SET notes = NULL WHERE term_id = ? AND notes IS NOT NULL");
+  // the statistics keep each term's totals (sums only) after its sign-ups are gone
+  freezeTermStats(db, endedBefore(now - 30 * DAY));
   for (const id of endedBefore(now - 30 * DAY)) {
     dropInterest.run(id);
     dropUnpaid.run(id);
@@ -57,6 +61,11 @@ function deleteExpired(db: ReturnType<typeof getDb>, now: number): void {
 }
 
 export async function tick(): Promise<void> {
+  try {
+    collectHits();
+  } catch (e) {
+    console.error("[stats]", e);
+  }
   sendReminders();
   notifyOverdue();
   if (Date.now() - lastCleanup > 60 * 60 * 1000) {
