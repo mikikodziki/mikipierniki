@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 /** Unguessable link token (192 bits) for withdraw/unsubscribe/confirm links. */
 export const token = () => randomBytes(24).toString("base64url");
@@ -14,6 +14,9 @@ export const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 
 export const normalizeEmail = (s: string) => s.trim().toLowerCase();
+
+/** Proof-of-consent key: the address itself isn't kept once the subscriber is gone. */
+export const emailHash = (email: string) => createHash("sha256").update(normalizeEmail(email)).digest("hex");
 
 /** Offset of Europe/Warsaw at a given instant, e.g. "+01:00". */
 function warsawOffset(at: Date): string {

@@ -10,7 +10,7 @@ import FaqList from "@/components/FaqList.astro";
 import TermsList from "@/components/workshops/TermsList.astro";
 import SignupDialog from "@/components/workshops/SignupDialog.astro";
 import InterestDialog from "@/components/workshops/InterestDialog.astro";
-import { getFaq } from "@/lib/api";
+import { bookingClosed, getFaq } from "@/lib/api";
 import { site } from "@/lib/site";
 import { publicTerms } from "@/server/terms";
 
@@ -18,7 +18,8 @@ import { publicTerms } from "@/server/terms";
 export const prerender = false;
 
 const terms = publicTerms();
-const upcoming = terms.filter((t) => t.status === "proposed" || t.seatsLeft > 0).slice(0, 3);
+// the nearest dates someone can still sign up for online
+const upcoming = terms.filter((t) => t.status === "proposed" || (t.seatsLeft > 0 && !bookingClosed(t))).slice(0, 3);
 const faq = (await getFaq()).slice(0, 5);
 
 const jsonLd = {

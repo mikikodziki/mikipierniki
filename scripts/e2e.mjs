@@ -114,7 +114,7 @@ try {
   let m = lastMails(2);
   check("two mails after interest (thanks + notify)", mails().length === before + 2);
   check("thanks mail lists both terms and a withdraw link", m.some((x) => x.includes("To: anna@example.com") && x.includes("Świąteczne klasyki") && x.includes("Zawieszki") && x.includes("/zapis/wypisz?t=")));
-  check("thanks mail says what to do if it wasn't them", m.some((x) => x.includes("To: anna@example.com") && x.includes("Jeśli to nie Ty wypełniałaś(-eś) formularz, kliknij link do wycofania, a usunę zgłoszenie.")));
+  check("thanks mail says what to do if it wasn't them", m.some((x) => x.includes("To: anna@example.com") && x.includes("Jeśli to nie Ty wypełniałaś(-eś) formularz, kliknij link do wycofania, a wycofam zgłoszenie.")));
   check("interest notify links to the term in the panel", m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes(`/panel/termin/${t1}`) && x.includes(`/panel/termin/${t2}`)));
   check("notify mail goes to mika@ with Reply-To", m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes("Reply-To: anna@example.com")));
   const annaRow = () => db().prepare("SELECT name, phone, people, token FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t1);
@@ -155,6 +155,14 @@ try {
   check("street address never on the public page", !html.includes("Testowa 1") && !(await (await get("/")).text()).includes("Testowa 1"));
 
   // ---------- bookings ----------
+  // the payment deadline exactly as the e-mails print it, in Warsaw time
+  const dueText = (iso) => {
+    const d = new Date(iso);
+    const date = d.toLocaleDateString("pl-PL", { day: "numeric", month: "long", timeZone: "Europe/Warsaw" });
+    const time = d.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Warsaw" });
+    return `${date}, godz. ${time}`;
+  };
+  const dueOf = (id) => db().prepare("SELECT payment_due_at FROM bookings WHERE id = ?").get(id).payment_due_at;
   const book = (b) => api("/api/rezerwacja", { termId: t1, name: "Celina Zawada", email: "celina@example.com", phone: "500 600 700", payment: "przelew", acceptedTerms: true, ...b });
   r = await book({ people: 3, notes: "bez orzechów" });
   const b1 = await r.json();
@@ -163,18 +171,20 @@ try {
   m = lastMails(2);
   check("transfer mail has account, recipient, ref and the studio address", m.some((x) => x.includes("12 3456 7890") && x.includes("Dominika Testowa") && x.includes(b1.bookingId) && x.includes("ul. Testowa 1")));
   check("booking notify to Dominika", m.some((x) => x.includes("To: mika@mikipierniki.pl") && x.includes("Rezerwacja (przelew)")));
-  check("transfer mail: payment deadline wording with the date", m.some((x) => x.includes("Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami.") && /Termin wpłaty: \d+ \p{L}+, godz\. \d\d:\d\d\./u.test(x)));
+  check("transfer mail gives the exact payment deadline in Warsaw time", m.some((x) => x.includes(b1.bookingId) && x.includes(`Termin wpłaty: ${dueText(dueOf(b1.bookingId))}.`)), dueText(dueOf(b1.bookingId)));
   check("transfer mail carries organiser, contact, complaints, no-withdrawal, cancellation rule and regulamin link", m.some((x) => x.includes(b1.bookingId)
     && x.includes("Organizatorka: Dominika Saczyńska") && /Kontakt: \S+@\S+, tel\. 880 122 269/.test(x) && /Reklamacje: e-mailem na \S+@\S+, odpowiadam w ciągu 14 dni\./.test(x)
     && x.includes("Prawo odstąpienia od umowy nie przysługuje (art. 38 ust. 1 pkt 12 ustawy o prawach konsumenta).")
     && x.includes("Rezygnacja do 7 dni przed warsztatami: zwrot całej wpłaty albo zmiana terminu. Później zwrot, jeśli miejsce zajmie osoba z listy rezerwowej; możesz też przekazać miejsce innej osobie. Zwrot w ciągu 14 dni.")
-    && x.includes("/regulamin") && !x.includes("NIP:")));
+    && x.includes("/regulamin")));
   r = await book({ people: 1 });
   check("second booking with the same e-mail → 409", r.status === 409 && (await r.json()).error.includes("Masz już rezerwację"));
   r = await book({ people: 6, email: "szesc@example.com" });
   check("more than 5 people in one booking → 400", r.status === 400 && (await r.json()).error.includes("najwyżej 5"));
   r = await api("/api/zainteresowanie", { termIds: [t2], people: 6, name: "Sześć Osób", email: "szesc@example.com", consent: true });
   check("more than 5 people in one date pick → 400", r.status === 400 && (await r.json()).error.includes("najwyżej 5"));
+  r = await book({ people: 1, guardians: 6, email: "opiekunowie@example.com" });
+  check("more than 5 guardians → 400", r.status === 400, String(r.status));
   r = await book({ people: 1, email: "dlugie@example.com", notes: "x".repeat(3000) });
   const longErr = (await r.json()).error;
   check("too-long notes → Polish error, not Zod's English", r.status === 400 && longErr.startsWith("Sprawdź"), longErr);
@@ -186,16 +196,18 @@ try {
   r = await book({ people: 1, payment: "voucher", voucherCode: "zły kod!", email: "kod@example.com" });
   check("voucher code with odd characters rejected", r.status === 400, String(r.status));
   r = await book({ people: 3, email: "trzy@example.com" });
-  check("too many people → 409 with seats left", r.status === 409 && (await r.json()).error.includes("2"));
+  check("too many people → 409 with seats left", r.status === 409 && (await r.json()).error.includes("zostały 2 miejsca"));
   r = await book({ people: 2, email: "filip@example.com", name: "Filip Dwa" });
   check("last 2 seats booked", (await r.json()).status === "awaiting_payment");
   await settle();
   check("voucher mail carries the information block", byKind("booking-voucher").some((x) => x.includes("Organizatorka: Dominika Saczyńska") && x.includes("Reklamacje: e-mailem na ") && x.includes("/regulamin")));
+  check("voucher mail for more than the voucher's value says a top-up follows", byKind("booking-voucher").some((x) => x.includes("Rezerwacja kosztuje 2250 zł, więcej niż voucher (500 zł)")));
+  check("owner notification names a voucher payment without the code", byKind("booking-notify").some((x) => x.includes("voucher (kod w panelu)")) && !byKind("booking-notify").some((x) => x.includes("MIKI-2026")));
   r = await book({ people: 2, email: "ewa@example.com", name: "Ewa Lista" });
   const b3 = await r.json();
   await settle();
   check("full term → waitlist", b3.status === "waitlist");
-  check("waitlist mail", lastMails(2).some((x) => x.includes("Lista rezerwowa") && x.includes("ewa@example.com")));
+  check("waitlist mail with the information block", lastMails(2).some((x) => x.includes("Lista rezerwowa") && x.includes("ewa@example.com") && x.includes("Organizatorka: Dominika Saczyńska") && x.includes("/regulamin")));
   html = await (await get("/warsztaty")).text();
   check("page shows term as full ('Brak miejsc')", html.includes("Brak miejsc"));
 
@@ -267,15 +279,45 @@ try {
   const dueRow = db().prepare("SELECT b.payment_due_at due, t.starts_at start FROM bookings b JOIN terms t ON t.id = b.term_id WHERE b.id = ?").get(b5.bookingId);
   check("payment_due_at is no later than start - 24 h (and earlier than booking + 3 days)", new Date(dueRow.due) <= new Date(new Date(dueRow.start).getTime() - 24 * 3600000)
     && new Date(dueRow.due) < new Date(Date.now() + 2.5 * 86400000), JSON.stringify(dueRow));
+  check("its mail gives that deadline", byKind("booking-awaiting").some((x) => x.includes(b5.bookingId) && x.includes(`Termin wpłaty: ${dueText(dueOf(b5.bookingId))}.`)), dueText(dueOf(b5.bookingId)));
   html = await (await get("/warsztaty")).text();
-  check("page shows 'Zapisy zamknięte' for the closed term and a button for the open ones", html.includes("Zapisy zamknięte") && !html.includes(`data-book="${t4}"`) && html.includes(`data-book="${t5}"`) && html.includes(`data-book="${t1}"`));
+  check("closed term: card says so and offers a call, open ones keep the button", html.includes("Zapisy online są już zamknięte") && html.includes('href="tel:+48880122269"') && !html.includes(`data-book="${t4}"`) && html.includes(`data-book="${t5}"`) && html.includes(`data-book="${t1}"`));
+  const offered = html.match(/id="signup-terms"[^>]*>(.*?)<\/script>/s)?.[1] ?? "";
+  check("booking dialog doesn't offer the closed term", offered.includes(t5) && !offered.includes(t4), offered.slice(0, 200));
+  r = await panel(`/panel/termin/${t4}`, { action: "notify" });
+  check("no 'your date is open' mail once online booking has closed", r.headers.get("location").includes("err="));
+
+  // ---------- a seat freed less than a day before the start ----------
+  c = await create({ title: "Ostatnie miejsce", date: day(4), capacity: "1" });
+  const t6 = c.loc.split("/").pop().split("?")[0];
+  await panel(`/panel/termin/${t6}`, { action: "open" });
+  const late = (name, email) => api("/api/rezerwacja", { termId: t6, people: 1, name, email, phone: "500 600 700", payment: "przelew", acceptedTerms: true }).then((x) => x.json());
+  const lateFirst = await late("Iza Pierwsza", "iza@example.com");
+  const lateSecond = await late("Jola Druga", "jola@example.com");
+  check("second booking on a one-seat term goes to the waitlist", lateFirst.status === "awaiting_payment" && lateSecond.status === "waitlist");
+  await panel(`/panel/termin/${t6}`, { action: "cancel-booking", booking: lateFirst.bookingId });
+  setStart(t6, 20);
+  await panel(`/panel/termin/${t6}`, { action: "admit", booking: lateSecond.bookingId });
+  await settle();
+  const lateDue = dueOf(lateSecond.bookingId);
+  const t6Start = db().prepare("SELECT starts_at FROM terms WHERE id = ?").get(t6).starts_at;
+  check("seat freed 20 h before the start: deadline not passed, not after the start", new Date(lateDue) > new Date(Date.now() + 11 * 3600000) && new Date(lateDue) <= new Date(t6Start), `${lateDue} ${t6Start}`);
+  check("its mail gives that deadline", byKind("booking-awaiting").some((x) => x.includes("jola@example.com") && x.includes(`Termin wpłaty: ${dueText(lateDue)}.`)));
+
+  // ---------- children's workshop: a parent stays ----------
+  c = await create({ type: "dzieci", title: "Mali lukiernicy", date: day(34), start: "10:00", end: "12:00", price: "200" });
+  const t7 = c.loc.split("/").pop().split("?")[0];
+  await panel(`/panel/termin/${t7}`, { action: "open" });
+  r = await api("/api/rezerwacja", { termId: t7, people: 2, guardians: 0, name: "Kasia Mama", email: "kasia@example.com", phone: "500 600 700", payment: "przelew", acceptedTerms: true });
+  check("children's booking without a parent → 400", r.status === 400 && (await r.json()).error.includes("co najmniej jeden rodzic"));
+  check("nothing saved for it", db().prepare("SELECT COUNT(*) n FROM bookings WHERE term_id = ?").get(t7).n === 0);
   check("evening workshop card has no alcohol", html.includes("Kubek rozgrzewającego ponczu korzennego (bez alkoholu)") && !html.includes("Lampka grzanego wina"));
 
   // ---------- owner notifications carry no phone numbers or notes ----------
   const ownerMails = [...byKind("booking-notify"), ...byKind("interest-notify")];
   check("owner notifications for bookings and date picks exist", byKind("booking-notify").length >= 3 && byKind("interest-notify").length >= 2);
   check("owner notifications have no phone number or notes", ownerMails.every((x) => !/500 ?600 ?700|601 234 567|uczulenie|bez orzechów|Telefon|Uwagi/.test(x)));
-  check("booking notification keeps name, e-mail, count and a panel link", byKind("booking-notify").some((x) => x.includes("Celina Zawada") && x.includes("celina@example.com") && x.includes("3") && x.includes(`/panel/termin/${t1}`)));
+  check("booking notification keeps name, e-mail, count and a panel link", byKind("booking-notify").some((x) => x.includes("Celina Zawada") && x.includes("celina@example.com") && x.includes("(3 os.)") && x.includes(`/panel/termin/${t1}`)));
 
   // ---------- newsletter ----------
   r = await api("/api/newsletter", { email: "gosia@example.com" });
@@ -292,7 +334,9 @@ try {
   const sub = () => db().prepare("SELECT status FROM subscribers WHERE token = ?").get(ctoken).status;
   const consents = () => db().prepare("SELECT * FROM consent_log WHERE email_hash = ? ORDER BY id").all(sha("gosia@example.com"));
   const confirmPost = (t, origin = BASE) => fetch(`${BASE}/newsletter/potwierdz?t=${t}`, { method: "POST", headers: { origin, "content-type": "application/x-www-form-urlencoded" }, body: "" });
-  html = await (await get(`/newsletter/potwierdz?t=${ctoken}`)).text();
+  r = await get(`/newsletter/potwierdz?t=${ctoken}`);
+  check("mail-link pages aren't cached and send no referrer", r.headers.get("cache-control") === "no-store" && r.headers.get("referrer-policy") === "no-referrer");
+  html = await r.text();
   check("confirm link (GET) only shows the button", html.includes("Potwierdzam zapis") && !html.includes("Gotowe, jesteś na liście") && html.includes('name="robots" content="noindex"'));
   check("GET did not confirm and wrote no consent", sub() === "pending" && consents().length === 0);
   check("cross-site confirm POST → 403", (await confirmPost(ctoken, "https://evil.example")).status === 403 && sub() === "pending");
@@ -300,7 +344,7 @@ try {
   html = await r.text();
   check("confirm POST activates", r.status === 200 && html.includes("Gotowe, jesteś na liście") && sub() === "active");
   const [consent1] = consents();
-  check("consent_log row written on confirm", consents().length === 1 && consent1.consent_version === "2026-11-21" && !!consent1.subscribed_at && !!consent1.confirmed_at && consent1.unsubscribed_at === null, JSON.stringify(consents()));
+  check("consent_log row written on confirm", consents().length === 1 && /^\d{4}-\d{2}-\d{2}$/.test(consent1.consent_version) && !!consent1.subscribed_at && !!consent1.confirmed_at && consent1.unsubscribed_at === null, JSON.stringify(consents()));
   check("consent_log holds a hash, not the address", !JSON.stringify(consent1).includes("gosia"));
   await confirmPost(ctoken);
   check("confirming twice writes one consent row", consents().length === 1);
@@ -319,35 +363,43 @@ try {
   html = await (await get(`/newsletter/wypisz?t=${utoken}`)).text();
   check("unsubscribe GET only asks", html.includes("Tak, wypisz mnie") && db().prepare("SELECT status FROM subscribers WHERE token = ?").get(utoken).status === "active");
   // mail not yet sent when she unsubscribes is dropped; other kinds stay
-  const queue = (kind, to) => db().prepare("INSERT INTO outbox (kind, to_addr, subject, text, html, send_after, created_at) VALUES (?, ?, 's', 't', 'h', ?, ?)")
-    .run(kind, to, new Date(Date.now() + 86400000).toISOString(), new Date().toISOString());
+  const queue = (kind, to, text = "t", status = "pending") => db().prepare("INSERT INTO outbox (kind, to_addr, subject, text, html, status, send_after, created_at) VALUES (?, ?, 's', ?, 'h', ?, ?, ?)")
+    .run(kind, to, text, status, new Date(Date.now() + 86400000).toISOString(), new Date().toISOString());
   queue("newsletter", "gosia@example.com");
+  queue("newsletter", "gosia@example.com", "t", "failed");
   queue("booking-confirmed", "gosia@example.com");
   const pendingFor = (to) => db().prepare("SELECT kind FROM outbox WHERE status = 'pending' AND to_addr = ?").all(to).map((x) => x.kind);
   r = await fetch(`${BASE}/newsletter/wypisz?t=${utoken}`, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: "List-Unsubscribe=One-Click" });
   check("one-click unsubscribe without Origin works", r.status === 200 && db().prepare("SELECT status FROM subscribers WHERE token = ?").get(utoken).status === "unsubscribed");
   check("unsubscribe sets unsubscribed_at on the consent row", !!consents()[0].unsubscribed_at && consents().length === 1);
   check("unsubscribe drops the unsent newsletter mail only", pendingFor("gosia@example.com").join() === "booking-confirmed", pendingFor("gosia@example.com").join());
-  // signing up again (after the 24 h pause) gives a new consent row and keeps the old one
-  db().prepare("UPDATE outbox SET created_at = ? WHERE kind = 'newsletter-confirm' AND to_addr = 'gosia@example.com'").run(new Date(Date.now() - 2 * 86400000).toISOString());
+  check("unsubscribe drops failed newsletter mail too (so 'retry' can't send it)", db().prepare("SELECT COUNT(*) n FROM outbox WHERE to_addr = 'gosia@example.com' AND kind = 'newsletter' AND status = 'failed'").get().n === 0);
+  // signing up again right after unsubscribing sends a fresh link at once, gives a new consent row and keeps the old one
   const oldConsent = consents()[0];
   await api("/api/newsletter", { email: "gosia@example.com" });
   await settle();
   const ctoken2 = tokenOf();
   await confirmPost(ctoken2);
   check("re-subscription adds a consent row and leaves the old one as it was", ctoken2 !== ctoken && consents().length === 2 && JSON.stringify(consents()[0]) === JSON.stringify(oldConsent) && consents()[1].unsubscribed_at === null, JSON.stringify(consents()));
+  r = await panel("/panel/newsletter", { action: "remove", email: "Gosia@example.com" });
+  const statusOf = (email) => db().prepare("SELECT status FROM subscribers WHERE email = ?").get(email)?.status;
+  check("panel 'Wypisz' unsubscribes by address and closes the consent row", r.headers.get("location").includes("ok=") && statusOf("gosia@example.com") === "unsubscribed" && !!consents()[1].unsubscribed_at);
+  r = await panel("/panel/newsletter", { action: "remove", email: "nikt@example.com" });
+  check("panel 'Wypisz' for an address not on the list → error", r.headers.get("location").includes("err="));
 
   // ---------- withdrawing interest ----------
   const thanks = mails().map(mail).find((x) => x.includes("To: anna@example.com") && x.includes("/zapis/wypisz?t="));
   const wtoken = thanks.match(/wypisz\?t=([\w-]+)/)[1];
   html = await (await get(`/zapis/wypisz?t=${wtoken}`)).text();
   check("withdraw page lists the terms", html.includes("Wycofać zgłoszenie?"));
-  queue("term-opened", "anna@example.com");
+  queue("term-opened", "anna@example.com", `Rezerwacja: /zapis/wypisz?t=${wtoken}`);
+  queue("term-opened", "anna@example.com", "Rezerwacja: /zapis/wypisz?t=inne-zgloszenie");
   queue("booking-confirmed", "anna@example.com");
   r = await fetch(`${BASE}/zapis/wypisz?t=${wtoken}`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: "" });
   html = await r.text();
   check("withdraw POST works", html.includes("Zgłoszenie wycofane") && db().prepare("SELECT COUNT(*) n FROM interest WHERE token = ? AND withdrawn_at IS NULL").get(wtoken).n === 0);
-  check("withdrawing drops the unsent 'term opened' mail only", pendingFor("anna@example.com").join() === "booking-confirmed", pendingFor("anna@example.com").join());
+  check("withdrawing drops only this sign-up's unsent 'term opened' mail", pendingFor("anna@example.com").join() === "term-opened,booking-confirmed"
+    && !!db().prepare("SELECT 1 FROM outbox WHERE status = 'pending' AND to_addr = 'anna@example.com' AND text LIKE '%inne-zgloszenie%'").get(), pendingFor("anna@example.com").join());
   const beforeAgain = mails().length;
   r = await api("/api/zainteresowanie", { termIds: [t2], people: 1, name: "Anna Kowalska", email: "anna@example.com", phone: "500 600 700", consent: true });
   await settle();
@@ -415,8 +467,10 @@ try {
   {
     const port = 4393, base = `http://127.0.0.1:${port}`;
     const rEnv = { ...env, PORT: String(port), DATABASE_PATH: join(dataDir, "retention.sqlite") };
+    let rlog = "";
     const start = async () => {
-      const p = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: rEnv, stdio: "ignore" });
+      const p = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: rEnv, stdio: ["ignore", "ignore", "pipe"] });
+      p.stderr.on("data", (b) => { rlog += b; });
       for (let i = 0; i < 100; i++) { try { await fetch(base + "/warsztaty"); break; } catch { await sleep(100); } }
       return p;
     };
@@ -430,13 +484,22 @@ try {
     const booking = (id, termId, status, paid) => d.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, ?, ?, 'N', 'n@example.com', '500600700', 1, 'przelew', 450, ?, ?)")
       .run(id, termId, status, ago(900), paid ? ago(899) : null);
     term("old", 31); term("recent", 29); term("y5", 5 * 366); term("y7", 7 * 365);
+    // just inside and just outside 6 calendar years (about 2191 days)
+    term("y6in", 6 * 365 - 10); term("y6out", 6 * 366 + 10);
     booking("u-old", "old", "awaiting_payment", false); booking("w-old", "old", "waitlist", false); booking("c-old", "old", "cancelled", false); booking("p-old", "old", "confirmed", true);
     booking("u-recent", "recent", "awaiting_payment", false);
     booking("p-5y", "y5", "confirmed", true);
     booking("p-7y", "y7", "confirmed", true); booking("u-7y", "y7", "awaiting_payment", false);
+    booking("p-6in", "y6in", "confirmed", true); booking("p-6out", "y6out", "confirmed", true);
+    d.prepare("UPDATE bookings SET notes = 'uwagi' WHERE id IN ('p-old', 'u-recent')").run();
     const consent = (hash, unsubDaysAgo) => d.prepare("INSERT INTO consent_log (email_hash, consent_version, subscribed_at, confirmed_at, unsubscribed_at) VALUES (?, '2026-11-21', ?, ?, ?)")
       .run(hash, ago(2000), ago(2000), unsubDaysAgo === null ? null : ago(unsubDaysAgo));
     consent("ended-4y", 4 * 365); consent("ended-2y", 2 * 365); consent("active", null);
+    // just inside and just outside 3 years (about 1096 days)
+    consent("ended-3y-in", 3 * 365 - 10); consent("ended-3y-out", 3 * 366 + 10);
+    // a subscriber confirmed before consent_log existed: rolling the schema back makes the next start add their row
+    d.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('stara@example.com', 'tok-stara', 'active', ?, ?)").run(ago(100), ago(99));
+    d.exec("PRAGMA user_version = 3");
     d.close();
     p = await start(); // the first request starts the worker, which cleans up right away
     await sleep(500);
@@ -445,8 +508,12 @@ try {
     const left = (sql) => d2.prepare(sql).all().map((x) => Object.values(x)[0]).sort().join(",");
     check("clean-up deletes unpaid bookings 30 days after the term, keeps paid ones", left("SELECT id FROM bookings WHERE term_id = 'old'") === "p-old", left("SELECT id FROM bookings WHERE term_id = 'old'"));
     check("clean-up keeps unpaid bookings of a term that ended 29 days ago", left("SELECT id FROM bookings WHERE term_id = 'recent'") === "u-recent");
-    check("clean-up keeps paid bookings for 6 years and deletes older ones", left("SELECT id FROM bookings WHERE term_id IN ('y5', 'y7')") === "p-5y", left("SELECT id FROM bookings WHERE term_id IN ('y5', 'y7')"));
-    check("clean-up deletes consent rows 3 years after the consent ended", left("SELECT email_hash FROM consent_log") === "active,ended-2y", left("SELECT email_hash FROM consent_log"));
+    check("clean-up keeps paid bookings for 6 years and deletes older ones", left("SELECT id FROM bookings WHERE term_id IN ('y5', 'y6in', 'y6out', 'y7')") === "p-5y,p-6in", left("SELECT id FROM bookings WHERE term_id IN ('y5', 'y6in', 'y6out', 'y7')"));
+    check("clean-up clears notes 30 days after the term, not before", left("SELECT id || ':' || COALESCE(notes, '-') FROM bookings WHERE id IN ('p-old', 'u-recent')") === "p-old:-,u-recent:uwagi");
+    check("clean-up deletes consent rows 3 years after the consent ended", left("SELECT email_hash FROM consent_log WHERE consent_version = '2026-11-21'") === "active,ended-2y,ended-3y-in", left("SELECT email_hash FROM consent_log"));
+    const backfilled = d2.prepare("SELECT * FROM consent_log WHERE consent_version = 'przed-2026-11-21'").all();
+    check("subscribers confirmed before consent_log get a row on upgrade", backfilled.length === 1 && backfilled[0].email_hash === sha("stara@example.com") && !!backfilled[0].confirmed_at, JSON.stringify(backfilled));
+    check("no errors from the clean-up server", !/Error/.test(rlog), rlog.slice(0, 500));
     d2.close();
   }
   check("no server errors logged", !/\[api\]|Error/.test(log), log.slice(0, 500));

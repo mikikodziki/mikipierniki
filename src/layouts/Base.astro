@@ -115,9 +115,14 @@ const ld = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     const label = select.closest("label");
     if (label) {
       // the label wraps the select, so name the button from the label without its options
-      const caption = label.cloneNode(true) as HTMLElement;
-      caption.querySelectorAll("select").forEach((s) => s.remove());
-      btn.setAttribute("aria-label", (caption.textContent || "").replace(/\s+/g, " ").trim());
+      const name = () => {
+        const caption = label.cloneNode(true) as HTMLElement;
+        caption.querySelectorAll("select, .sel, .sel-list, .field-msg").forEach((s) => s.remove());
+        return (caption.textContent || "").replace(/\s+/g, " ").trim();
+      };
+      btn.setAttribute("aria-label", name());
+      // a script may rename the field later, so read the label again whenever the button gets focus
+      btn.addEventListener("focus", () => btn.setAttribute("aria-label", name()));
       // a click on the caption would focus the hidden native select; send it to the button
       label.addEventListener("click", (e) => {
         if (e.target === btn) return;

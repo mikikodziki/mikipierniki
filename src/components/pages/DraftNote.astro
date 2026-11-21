@@ -1,6 +1,6 @@
 ---
-// "Last updated" line for the legal pages, with a visible "draft" banner while legal.draft is true
-// (src/lib/site.ts); set it to false once a lawyer has verified the text.
+// "Last updated" line for the legal pages, with a note about the pending legal review while legal.draft
+// is true (src/lib/site.ts); set it to false once a lawyer has verified the text.
 import { legal } from "@/lib/site";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 const { updated } = Astro.props;
 ---
 <aside class:list={["draft", { "draft--done": !legal.draft }]} role="note">
-  {legal.draft && <p><strong>Wersja robocza.</strong> Ten dokument jest szkicem i wymaga weryfikacji przez prawnika przed publikacją.</p>}
+  {legal.draft && <p><strong>Dokument w trakcie przeglądu prawnego.</strong> Obowiązuje w tej wersji; jeśli po przeglądzie coś się zmieni, opublikuję tu nową wersję z nową datą.</p>}
   <p class="updated">Ostatnia aktualizacja: {updated}</p>
 </aside>
 

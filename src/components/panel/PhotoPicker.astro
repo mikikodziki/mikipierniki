@@ -22,16 +22,18 @@ const groups = [
   { label: "Inne", items: photos.filter((p) => !known.has(p.category)) },
 ].filter((g) => g.items.length);
 const thumb = (photo: string) => `/zdjecia/${photo}-400.webp`;
+const id = `pp-${name}`;
 ---
 <div class="field photo-picker">
-  <span>{label}</span>
+  <span id={`${id}-label`}>{label}</span>
   <details class="pp">
-    <summary class="pp-current">
+    {/* read as "Zdjęcie na karcie, <caption>"; without JS the closed view keeps the photo the page opened with */}
+    <summary class="pp-current" aria-labelledby={`${id}-label ${id}-caption`}>
       <img src={thumb(current.photo)} alt="" width="400" height="300" data-pp-img />
-      <span class="pp-caption" data-pp-caption>{current.caption}</span>
+      <span class="pp-caption" id={`${id}-caption`} data-pp-caption>{current.caption}</span>
       <span class="pp-change" aria-hidden="true">Zmień</span>
     </summary>
-    <div class="pp-panel">
+    <div class="pp-panel" role="radiogroup" aria-labelledby={`${id}-label`}>
       {groups.map((g) => (
         <fieldset class="pp-group">
           <legend>{g.label}</legend>
@@ -55,22 +57,39 @@ const thumb = (photo: string) => `/zdjecia/${photo}-400.webp`;
     const img = picker.querySelector<HTMLImageElement>("[data-pp-img]")!;
     const caption = picker.querySelector<HTMLElement>("[data-pp-caption]")!;
     const summary = picker.querySelector("summary")!;
-    // arrow keys change the choice without closing; a click (or Space) picks and closes
+    const close = () => {
+      picker.open = false;
+      summary.focus();
+    };
     picker.addEventListener("change", (e) => {
       const radio = e.target as HTMLInputElement;
       img.src = radio.nextElementSibling instanceof HTMLImageElement ? radio.nextElementSibling.src : img.src;
       caption.textContent = radio.dataset.caption ?? "";
     });
+    // arrow keys move the choice and leave the panel open (the browser fires a click on the newly
+    // checked radio for them too); a mouse click, Space or Enter picks and closes
+    let arrow = false;
+    picker.addEventListener("pointerdown", () => { arrow = false; });
+    picker.addEventListener("keydown", (e) => {
+      arrow = e.key.startsWith("Arrow");
+      if (e.key === "Escape" && picker.open) close();
+      // Enter on a radio would send the whole term form
+      if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+        e.preventDefault();
+        close();
+      }
+    });
+    // Space on the radio that is already checked fires no click, so it closes here
+    picker.addEventListener("keyup", (e) => {
+      if (e.key === " " && e.target instanceof HTMLInputElement) close();
+    });
     picker.addEventListener("click", (e) => {
       if (!(e.target instanceof HTMLInputElement)) return;
-      picker.open = false;
-      summary.focus();
-    });
-    picker.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && picker.open) {
-        picker.open = false;
-        summary.focus();
+      if (arrow) {
+        arrow = false;
+        return;
       }
+      close();
     });
   }
 </script>
@@ -87,7 +106,7 @@ const thumb = (photo: string) => `/zdjecia/${photo}-400.webp`;
   .pp-current::-webkit-details-marker { display: none; }
   .pp-current:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
   .pp-current img { width: 96px; height: 72px; object-fit: cover; border-radius: calc(var(--radius) - 2px); flex: none; }
-  .pp-caption { flex: 1; color: var(--ink); }
+  .pp-caption { flex: 1; color: var(--ink); font-weight: 400; }
   .pp-change { font-weight: 600; font-size: .9rem; color: var(--ginger-text); }
   .pp[open] .pp-change { visibility: hidden; }
 

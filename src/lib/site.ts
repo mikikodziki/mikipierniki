@@ -57,9 +57,9 @@ export const legal: {
   backups: "Amazon Web Services EMEA SARL, 38 Avenue John F. Kennedy, L-1855 Luksemburg",
   accounting: null,
   lowTurnoutNoticeDays: "7",
-  // the day the site goes live
-  regulaminFrom: "[data]",
-  privacyFrom: "[data]",
+  // the day the current versions were published
+  regulaminFrom: "21 listopada 2026 r.",
+  privacyFrom: "21 listopada 2026 r.",
 };
 
 /** Prices and usual hours per workshop type (docs/dane.md); the panel fills new terms with these. */

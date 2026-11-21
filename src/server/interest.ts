@@ -2,11 +2,12 @@
  * Interest in proposed dates: visitors tick the dates that suit them, Dominika sees the tally
  * in the panel, opens the winners and mails everyone who ticked them.
  */
+import { bookingClosed } from "@/lib/api";
 import type { InterestRequest, Term } from "@/lib/types";
 import { getDb, nowIso, tx } from "./db";
 import { interestNotify, interestThanks, termOpened } from "./emails";
 import { UserError } from "./http";
-import { enqueue } from "./mail";
+import { enqueue, underHourlyCap } from "./mail";
 import { getTerm } from "./terms";
 import { normalizeEmail, token } from "./util";
 
@@ -34,7 +35,7 @@ export function registerInterest(req: InterestRequest): { terms: number } {
     const added = terms.filter((t) => Number(insert.run(tok, t.id, req.name, email, req.phone ?? null, req.people, req.notes ?? null, now).changes) === 1);
     if (added.length === 0) return;
     enqueue(
-      interestThanks(email, req.name, added, tok),
+      ...(underHourlyCap("interest-thanks") ? [interestThanks(email, req.name, added, tok)] : []),
       interestNotify(req.name, email, req.people, added),
     );
   });
@@ -53,10 +54,10 @@ export function interestByToken(tok: string): { term: Term | undefined; withdraw
 export function withdrawInterest(tok: string): number {
   const db = getDb();
   return tx(db, () => {
-    const emails = db.prepare("SELECT DISTINCT email FROM interest WHERE token = ? AND withdrawn_at IS NULL").all(tok) as unknown as { email: string }[];
     const r = db.prepare("UPDATE interest SET withdrawn_at = ?, phone = NULL, notes = NULL WHERE token = ? AND withdrawn_at IS NULL").run(nowIso(), tok);
-    // a "your date is open" mail that hasn't gone out yet is no longer wanted
-    for (const { email } of emails) db.prepare("DELETE FROM outbox WHERE status = 'pending' AND kind = 'term-opened' AND to_addr = ?").run(email);
+    // a "your date is open" mail for this sign-up that hasn't gone out is no longer wanted; the mail
+    // carries this token in its withdraw link, so other sign-ups from the same address keep theirs
+    db.prepare("DELETE FROM outbox WHERE status IN ('pending','failed') AND kind = 'term-opened' AND instr(text, ?) > 0").run(`?t=${tok}`);
     return Number(r.changes);
   });
 }
@@ -74,6 +75,7 @@ export function interestForTerm(termId: string): InterestRow[] {
 export function notifyInterested(termId: string): number {
   const t = getTerm(termId);
   if (!t || t.status !== "open") throw new UserError("Najpierw otwórz zapisy na ten termin.");
+  if (bookingClosed(t)) throw new UserError("Do tego terminu zostało mniej niż 48 godzin, więc zapisy online są już zamknięte. Napisz albo zadzwoń do chętnych sama.");
   const db = getDb();
   return tx(db, () => {
     const rows = db.prepare("SELECT id, token, name, email FROM interest WHERE term_id = ? AND withdrawn_at IS NULL AND notified_at IS NULL")

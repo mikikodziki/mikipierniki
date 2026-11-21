@@ -13,7 +13,7 @@ const whenEmpty: Record<string, string> = {
   email: "Wpisz adres e-mail.",
   phone: "Wpisz numer telefonu.",
   message: "Napisz kilka słów, w czym mogę pomóc.",
-  consent: "Zaznacz zgodę na kontakt, żebym mogła odpisać.",
+  consent: "Zaznacz to pole, żebym mogła odpisać.",
   acceptedTerms: "Zaznacz akceptację regulaminu.",
 };
 

@@ -9,7 +9,7 @@ import TermsList from "@/components/workshops/TermsList.astro";
 import SignupDialog from "@/components/workshops/SignupDialog.astro";
 import InterestDialog from "@/components/workshops/InterestDialog.astro";
 import VoucherCard from "@/components/VoucherCard.astro";
-import { getFaq, venueById } from "@/lib/api";
+import { bookingClosed, getFaq, venueById } from "@/lib/api";
 import { plural, pln } from "@/lib/format";
 import { legal, site, workshopDefaults } from "@/lib/site";
 import type { WorkshopType } from "@/lib/types";
@@ -60,7 +60,7 @@ const jsonLd = terms.filter((t) => t.status === "open").map((t) => {
       "@type": "Offer",
       price: t.price,
       priceCurrency: "PLN",
-      availability: t.seatsLeft > 0 ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
+      availability: t.seatsLeft > 0 && !bookingClosed(t) ? "https://schema.org/InStock" : "https://schema.org/SoldOut",
       url: `${siteUrl}/warsztaty?termin=${t.id}`,
     },
     organizer,
@@ -126,7 +126,7 @@ const closedFacts = [
       <TermsList terms={terms} />
       <ul class="terms-notes">
         {anyProposed && <li>Terminy oznaczone jako propozycja dopiero zbieram. Zaznacz te, które Ci pasują, a gdy zbierze się grupa, potwierdzę termin i napiszę z linkiem do rezerwacji.</li>}
-        <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat. Rodzic lub opiekun zostaje z dzieckiem przez cały czas. Młodzież od 13 do 17 lat może przyjść na warsztaty dla dorosłych bez opiekuna, z pisemną zgodą rodzica i numerem telefonu do niego. Jak dbam o bezpieczeństwo dzieci, opisują moje <a href="/standardy-ochrony-maloletnich">standardy ochrony małoletnich</a>. W sezonie mam tylko dwa terminy dla dzieci.</li>
+        <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat. Rodzic lub opiekun zostaje z dzieckiem przez cały czas. Młodzież od 13 do 17 lat może przyjść na dzienne warsztaty dla dorosłych bez opiekuna, z pisemną zgodą rodzica i numerem telefonu do niego. Jak dbam o bezpieczeństwo dzieci, opisują moje <a href="/standardy-ochrony-maloletnich">standardy ochrony małoletnich</a>. W sezonie mam tylko dwa terminy dla dzieci.</li>
         <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać najpóźniej {legal.lowTurnoutNoticeDays} dni wcześniej. Wtedy w ciągu 14 dni zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
         <li>Zapis wysłany przyciskiem „Rezerwuję z obowiązkiem zapłaty” jest wiążący. Płacisz przelewem w ciągu 3 dni, najpóźniej dzień przed warsztatami. Zapisy przez stronę zamykam 2 dni przed startem. Zasady rezygnacji opisuje <a href="/regulamin#rezygnacja">regulamin</a>.</li>
         <li>Każda osoba dekoruje 6–8 pierników i zabiera do domu wszystkie.</li>
@@ -188,7 +188,7 @@ const closedFacts = [
           id="firmy-form"
           messageLabel="Opowiedz coś więcej o grupie"
           messagePlaceholder="Np. zespół 10 osób, mamy jakieś dwie godziny, chcielibyśmy u nas w biurze."
-          successText="Dziękuję! Odpiszę w ciągu 24 godzin z propozycją terminu i wyceną."
+          successText="Dziękuję! Odpiszę zwykle w ciągu 24 godzin z propozycją terminu i wyceną."
         >
           <div class="row2">
             <label class="field" for="firmy-form-size">Liczba osób <span class="hint">pełny warsztat do {site.closedGroupMax}</span>
@@ -237,14 +237,14 @@ const closedFacts = [
         <VoucherCard />
       </div>
       <div class="form-box voucher-order">
-        <h3>Zamów voucher</h3>
+        <h3>Zapytaj o voucher</h3>
         <InquiryForm
           kind="voucher"
           id="voucher-form"
-          submitLabel="Zamów voucher"
+          submitLabel="Zapytaj o voucher"
           messageLabel="Dla kogo i na jaką okazję?"
           messagePlaceholder="Np. dla mamy na urodziny, najchętniej na warsztaty świąteczne."
-          successText="Dziękuję! Odpiszę osobiście w ciągu 24 godzin i ustalimy szczegóły."
+          successText="Dziękuję! Odpiszę osobiście, zwykle w ciągu 24 godzin, i ustalimy szczegóły."
         >
           <div class="row2">
             <label class="field" for="voucher-form-count">Liczba voucherów

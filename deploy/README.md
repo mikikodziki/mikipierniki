@@ -77,7 +77,8 @@ Strefa zostaje w OVH (domena ma włączony DNSSEC). Rekordy:
 Każdy push na `main` (poza zmianami samej dokumentacji: `docs/`, pliki `.md`) uruchamia
 `.github/workflows/deploy.yml`: build, test E2E, wgranie do
 `~/mikipierniki/dist.next`, podmiana i restart, sprawdzenie `/warsztaty`. Jeśli strona nie odpowie,
-wraca poprzednie wydanie. Ustawienia repozytorium (Settings → Secrets and variables → Actions):
+wraca poprzednie wydanie. Gdy wdrożenie się nie uda, a następny push zmienia tylko dokumentację,
+nic się samo nie powtórzy: uruchom je ręcznie (Actions → Deploy → Run workflow). Ustawienia repozytorium (Settings → Secrets and variables → Actions):
 
 - sekrety: `DEPLOY_SSH_KEY` (klucz prywatny tylko do wdrożeń; publiczny w DirectAdmin → Klucze SSH),
   `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan -p <port> <host>`),

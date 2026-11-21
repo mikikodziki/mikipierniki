@@ -2,7 +2,7 @@
 import Panel from "@/layouts/Panel.astro";
 import { UserError } from "@/server/http";
 import { flushOutbox, retryFailed } from "@/server/mail";
-import { broadcast, subscribers } from "@/server/newsletter";
+import { broadcast, subscribers, unsubscribeEmail } from "@/server/newsletter";
 import { back } from "@/server/panel";
 
 export const prerender = false;
@@ -14,6 +14,12 @@ if (Astro.request.method === "POST") {
       const n = retryFailed();
       void flushOutbox();
       return back("/panel/newsletter", { ok: `Ponawiam wysyłkę ${n} wiadomości.` });
+    }
+    if (f.get("action") === "remove") {
+      // someone asked by e-mail to be taken off the list
+      const email = String(f.get("email") ?? "").trim();
+      if (!unsubscribeEmail(email)) throw new UserError("Tego adresu nie ma na liście (albo już jest wypisany).");
+      return back("/panel/newsletter", { ok: "Adres wypisany. Zniknie z listy w ciągu doby." });
     }
     const subject = String(f.get("subject") ?? "").trim();
     const body = String(f.get("body") ?? "").trim();
@@ -51,6 +57,18 @@ const dt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("pl-P
       </label>
       <label class="check" for="nl-confirm"><input type="checkbox" id="nl-confirm" name="confirm" /><span>Wyślij do {active.length} osób</span></label>
       <div><button class="btn btn-primary" type="submit" disabled={active.length === 0}>Wyślij</button></div>
+    </form>
+  </section>
+
+  <section class="box">
+    <h2>Wypisz adres</h2>
+    <p class="note">Gdy ktoś poprosi mailem o wypisanie: działa tak samo jak link w wiadomości.</p>
+    <form method="post" class="form-grid">
+      <input type="hidden" name="action" value="remove" />
+      <label class="field" for="nl-remove">E-mail
+        <input class="input" type="email" id="nl-remove" name="email" required />
+      </label>
+      <div><button class="btn btn-ghost btn-small" type="submit">Wypisz</button></div>
     </form>
   </section>
 
