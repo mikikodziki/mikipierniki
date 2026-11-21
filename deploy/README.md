@@ -74,7 +74,8 @@ Strefa zostaje w OVH (domena ma włączony DNSSEC). Rekordy:
 
 ## Wydania
 
-Każdy push na `main` uruchamia `.github/workflows/deploy.yml`: build, test E2E, wgranie do
+Każdy push na `main` (poza zmianami samej dokumentacji: `docs/`, pliki `.md`) uruchamia
+`.github/workflows/deploy.yml`: build, test E2E, wgranie do
 `~/mikipierniki/dist.next`, podmiana i restart, sprawdzenie `/warsztaty`. Jeśli strona nie odpowie,
 wraca poprzednie wydanie. Ustawienia repozytorium (Settings → Secrets and variables → Actions):
 
