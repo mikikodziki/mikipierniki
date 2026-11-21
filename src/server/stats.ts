@@ -24,6 +24,11 @@ export interface RawHit {
 }
 
 const BUFFER = Symbol.for("mikipierniki.hits");
+/** How much of the address and the Referer deploy/start.mjs keeps; a parameter at the cut may be shortened */
+const URL_KEPT = 512;
+const REFERER_KEPT = 256;
+/** Drops the last query parameter of a value that was cut, so a shortened utm tag is never stored */
+const uncut = (v: string | undefined, kept: number) => (v && v.length >= kept ? v.replace(/[?&][^?&]*$/, "") : v);
 /** The buffer limit in deploy/start.mjs */
 const BUFFER_MAX = 10_000;
 /** Past this many distinct rows a day, new sources and tags are counted as "(inne)" (keeps the file small). */
@@ -171,7 +176,7 @@ function sumUp(batch: RawHit[]): Sums {
 
   for (const h of batch) {
     if (!h.ua || BOT.test(h.ua)) continue;
-    const url = parseUrl(h.url);
+    const url = parseUrl(uncut(h.url, URL_KEPT));
     if (!url) continue;
     const { day, hour } = localDay(h.at);
 
@@ -201,7 +206,7 @@ function sumUp(batch: RawHit[]): Sums {
       const outcome = outcomeOf(h.status);
       if (!outcome) continue;
       // the page the form was sent from, and the utm_source it was opened with
-      const ref = parseUrl(h.referer);
+      const ref = parseUrl(uncut(h.referer, REFERER_KEPT));
       const internal = ref && SITE_HOSTS.has(ref.host.toLowerCase());
       const page = (internal && pagePath(ref.pathname, 200)) || UNKNOWN_PAGE;
       const us = internal ? tag(ref.searchParams.get("utm_source")) : "";
