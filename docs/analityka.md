@@ -1,10 +1,9 @@
-# Analityka strony: propozycja
+# Analityka strony
 
-Stan na 21.11.2026: strona nie ma żadnej analityki. Polityka prywatności (pkt 7) mówi wprost, że
-strona nie zapisuje cookies ani localStorage i że „Nie używam narzędzi analitycznych ani
-reklamowych”. Dane nie wychodzą poza EOG; wyjątki to mapa Google (po kliknięciu) i Instagram.
-Każde narzędzie, które dotyka odwiedzających, wymaga więc zmiany polityki i zgody Dominiki jako
-administratorki. Nic z tego nie jest jeszcze w kodzie.
+Do 21.11.2026 strona nie miała żadnej analityki, a polityka prywatności (pkt 7) mówiła wprost:
+„Nie używam narzędzi analitycznych ani reklamowych”. Ten dokument porównuje możliwości (punkty
+1–5). Wybraliśmy własne statystyki w panelu, liczone przez serwer, bez cookies i skryptów w
+przeglądarce. Są zrobione na branchu `feat/analityka` (sekcja „Co jest zrobione”).
 
 Do Nowego Roku stronę oglądają głównie znajomi (faza „Pasuje mi”), więc liczby będą małe. Teraz
 warto uruchomić to, co potrzebuje czasu (Search Console), i zebrać punkt odniesienia przed
@@ -12,20 +11,57 @@ płatnymi warsztatami.
 
 ## Decyzje
 
-- [ ] **Ruch na stronie:** A) własne statystyki w panelu (**rekomendacja**), B) Plausible,
-  C) Umami Cloud, albo nic.
-- [ ] **Przy A:** `start.mjs` sam stawia serwer HTTP i liczy wejścia przed handlerem Astro.
-  Strony zostają zbudowane z góry, zmienia się tylko sposób startu aplikacji (punkt 3A).
-- [ ] **Kliknięcia:** wyjścia na Instagram i do Map Google przez nasz adres przekierowujący
-  (bez skryptu, proponuję), skrypt liczący kliknięcia (tylko za zgodą, nie proponuję) albo nic.
-  Ruchów myszy nie proponuję w ogóle (punkt 3A, „Kliknięcia i ruch myszy”).
+- [x] **Ruch na stronie:** A) własne statystyki w panelu (21.11.2026). Plausible i Umami odpadły.
+- [x] **Liczenie przed Astro:** `start.mjs` startuje serwer Astro sam i obserwuje jego zapytania.
+  Strony dalej są budowane z góry.
+- [x] **Kliknięcia:** wyjścia na Instagram i do Map Google przez `/do/instagram` i `/do/mapa`.
+  Bez skryptu liczącego kliknięcia, bez ruchów myszy i bez śledzenia zmian w formularzach
+  (powody w punkcie 3A).
+- [ ] **Tekst polityki prywatności** (pkt 3 „Statystyki odwiedzin”, pkt 5, pkt 7): zatwierdza
+  Dominika, potem prawnik razem z resztą (`legal.draft`). Jeśli merge będzie innego dnia niż
+  21.11.2026, zmienić `privacyFrom` w `src/lib/site.ts`.
+- [ ] **Rejestr czynności przetwarzania** (dokument „Ochrona danych”): dopisać statystyki.
 - [ ] **Search Console:** czyje konto Google (proponuję Dominiki, z dostępem dla Dawida) i jak
   potwierdzić domenę: plik HTML w `public/` (zwykły deploy) albo rekord TXT w OVH (zmiana DNS).
 - [ ] **Monitoring dostępności:** UptimeRobot (darmowe konto).
 - [ ] Opcjonalnie: pole „Skąd o mnie wiesz?” w formularzach.
 - [ ] Opcjonalnie: profil firmy w Google (Google Business Profile). To decyzja Dominiki, m.in. czy
   pokazać adres pracowni.
-- [ ] Tekst polityki prywatności po wyborze: do przeglądu prawnika razem z resztą (`legal.draft`).
+
+## Co jest zrobione (A)
+
+**Zakładka „Statystyki” w panelu** (`src/pages/panel/statystyki.astro`), z okresem 7, 30, 90 dni,
+rok albo od początku:
+- **Liczby:** wizyty, odsłony, wysłane formularze, zgłoszenia na 100 wizyt i kliknięcia
+  w Instagram i mapę Google.
+- **Wykres:** wizyty dziennie, a przy dłuższym okresie tygodniowo.
+- **Źródła:** Instagram, Google, „bezpośrednio” i inne strony, z udziałem procentowym.
+- **Urządzenia:** telefon albo komputer.
+- **Kampanie:** wejścia z linków oznaczonych `utm_*`.
+- **Strony:** odsłony i strony, od których zaczynały się wizyty.
+- **„Kiedy zaglądają”:** dzień tygodnia × godzina, z najlepszą porą na posty.
+- **Formularze:** wysłane, odrzucone i nieaktualne; z której strony i z jakiego linku utm.
+- **Terminy:** sumy za rok i każdy termin osobno: chętni, zarezerwowane i opłacone miejsca,
+  obłożenie, lista rezerwowa, anulowane, wartość opłaconych.
+- **Miesiąc po miesiącu:** formularze, zapisy i wypisania z powiadomień.
+
+**Jak to działa:**
+- **Liczenie:** `deploy/start.mjs` zapisuje notatkę o każdym wejściu przeglądarki i każdym
+  wysłaniu formularza do bufora w pamięci. Notatek o panelu i stronach z tokenem w adresie nie
+  zapisuje wcale.
+- **Sumy:** co minutę `src/server/stats.ts` zamienia notatki na dzienne sumy (tabele `stats_*`).
+  IP, pełny User-Agent i parametry adresu inne niż `utm_*` nie trafiają do bazy.
+- **Sumy terminów:** `src/server/term-stats.ts` liczy je w tabeli `term_stats`. Zamraża je tuż
+  przed tym, jak porządki usuną dane uczestników, więc sezony można porównać po latach.
+- **Ochrona przed zaśmiecaniem bazy:** nieznane adresy liczą się jako jeden „(404)”. Dziwne
+  wartości utm zapisują się jako „(inne)”. Po 3000 różnych wierszy dziennie nowe źródła i
+  oznaczenia też idą do „(inne)”.
+- **Testy:** E2E uruchamia serwer tak jak produkcja (`start.mjs` obok `dist/`) i sprawdza liczenie,
+  pomijanie botów, prefetchu i stron prywatnych, przekierowania, formularze, zakładkę oraz
+  zamrażanie sum terminów.
+
+**Do sprawdzenia po pierwszym wdrożeniu:** czy LiteSpeed przekazuje nagłówki `Sec-Fetch-*` do Node.
+Otwórz stronę z telefonu (także z Instagrama) i zajrzyj do „Ostatnie zliczone wejście” w zakładce.
 
 ## 1. Wyszukiwarka: Google Search Console i Bing Webmaster Tools
 
@@ -82,9 +118,10 @@ liczą się wejścia z innej domeny niż nasza: to przybliżenie odwiedzin bez �
   FAQ, kontakt, zamówienia, strony prawne, 404) wydaje statyczny handler adaptera Node, więc
   middleware Astro ich nie widzi. Ale wydaje je ten sam proces Node, więc liczymy przed nim:
   - Adapter pozwala wyłączyć samodzielny start (`ASTRO_NODE_AUTOSTART=disabled`), a
-    `dist/server/entry.mjs` eksportuje `handler` (pliki statyczne i strony renderowane razem).
-  - `start.mjs` stawia własny `http.createServer`. Każde zapytanie najpierw trafia do licznika,
-    a potem dalej do `handler`.
+    `dist/server/entry.mjs` eksportuje `startServer`. `start.mjs` woła go sam, więc serwer
+    startuje dokładnie tak jak dotąd: ten sam port i ten sam `listen`, który przechwytuje LiteSpeed.
+  - Potem dopina do tego serwera obserwatora zapytań (`prependListener("request")`). Obserwator
+    tylko patrzy, jak skończyła się odpowiedź, i niczego w niej nie zmienia.
   - Licznik zlicza wejścia w pamięci i co minutę zapisuje sumy do SQLite. Koszt na zapytanie to
     mikrosekundy przy TTFB rzędu 30 ms.
   - Strony dalej są gotowymi plikami HTML. Wizyty powrotne też przechodzą przez Node, bo HTML idzie

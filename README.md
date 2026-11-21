@@ -17,7 +17,7 @@ Od 20.11.2026 `main` łączy ten wygląd z zapleczem zapisów, poczty i panelu (
 npm install
 npm run dev      # http://localhost:4321
 npm run build    # astro check + build do dist/ (client/ statyczne, server/ Node)
-MAIL_TO_FILES=1 node dist/server/entry.mjs   # zbudowana wersja, jak na serwerze (HOST, PORT z env)
+MAIL_TO_FILES=1 node dist/server/entry.mjs   # zbudowana wersja (HOST, PORT z env); odwiedziny liczy dopiero deploy/start.mjs
 npm run test:e2e # po buildzie: zapisy, maile, newsletter i panel na tymczasowej bazie
 npm run check:launch # czego jeszcze brakuje w treści przed startem (opinie, dane firmy, prawnik)
 ```

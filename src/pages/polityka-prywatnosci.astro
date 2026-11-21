@@ -11,6 +11,7 @@ import { legal, site } from "@/lib/site";
  * database and the mailbox run on one SEOHOST hosting account, and the nightly database backups
  * go to AWS S3 in Stockholm. Add the payment operator there when online payments arrive.
  * The retention periods in section 5 are applied by src/server/tick.ts (cleanup).
+ * The visit statistics in section 3 are src/server/stats.ts (counted in deploy/start.mjs); keep them in sync.
  * src/pages/kontakt.astro refers to section 7 (the map), so keep that number.
  */
 ---
@@ -51,6 +52,7 @@ import { legal, site } from "@/lib/site";
           <li>Dochodzenie roszczeń i obrona przed nimi: dane opłaconych rezerwacji i związana z nimi korespondencja. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
           <li>Dowód zgody na newsletter: skrót (hash) adresu e-mail, wersja treści zgody oraz daty zapisu, potwierdzenia i wypisania. Dzięki temu mogę wykazać, że wysyłałam wiadomości za Twoją zgodą. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
           <li id="logi">Bezpieczeństwo strony: gdy otwierasz stronę, serwer dostawcy hostingu zapisuje w logach Twój adres IP, czas wizyty, adres otwieranej strony i informacje o przeglądarce. Logi służą ochronie strony przed atakami i nadużyciami. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
+          <li id="statystyki">Statystyki odwiedzin: gdy otwierasz stronę, serwer strony dolicza to wejście do dziennych sum. Zapisuje, która to strona, z jakiej witryny przyszła wizyta (sama nazwa, np. instagram.com), oznaczenie z adresu linku (utm), godzinę oraz to, czy to telefon, czy komputer. Liczy też wysłania formularzy (bez ich treści) i kliknięcia w linki do Instagrama i Map Google. Nie zapisuje Twojego adresu IP ani żadnego identyfikatora i nie używa do tego plików cookies ani skryptów, więc z sum nie da się odczytać, kim jesteś ani co oglądała konkretna osoba. Dzięki temu wiem, które strony i kanały działają. Podstawa: mój prawnie uzasadniony interes (art. 6 ust. 1 lit. f RODO).</li>
         </ul>
 
         <h2 id="odbiorcy">4. Komu przekazuję dane</h2>
@@ -81,6 +83,7 @@ import { legal, site } from "@/lib/site";
           <li>Korespondencja e-mail i powiadomienia ze strony w mojej skrzynce: do 12 miesięcy; wiadomości o opłaconych rezerwacjach i zamówieniach tak długo, jak dane tej rezerwacji lub zamówienia.</li>
           <li>Kopie zapasowe bazy: do 35 dni. Dane usunięte z bazy znikają z kopii najpóźniej po tym czasie.</li>
           <li>Logi serwera: przez okres, który ustala dostawca hostingu.</li>
+          <li>Statystyki (dzienne sumy odwiedzin i wysłanych formularzy oraz liczby zapisów na terminy, bez danych osobowych): bez ograniczenia czasu.</li>
           <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
           <li>Notatki dotyczące ochrony dziecka: tak długo, jak to potrzebne do ochrony dziecka i do zakończenia sprawy przed policją, prokuraturą lub sądem.</li>
         </ul>
@@ -102,7 +105,7 @@ import { legal, site } from "@/lib/site";
         <p>Nie podejmuję wobec Ciebie decyzji w sposób zautomatyzowany ani nie profiluję Twoich danych.</p>
 
         <h2 id="cookies">7. Pliki cookies i usługi zewnętrzne</h2>
-        <p>Strona sama nie zapisuje w Twojej przeglądarce plików cookies ani nie korzysta z jej pamięci lokalnej (localStorage). Nie używam narzędzi analitycznych ani reklamowych.</p>
+        <p>Strona sama nie zapisuje w Twojej przeglądarce plików cookies ani nie korzysta z jej pamięci lokalnej (localStorage). Nie używam zewnętrznych narzędzi analitycznych ani reklamowych. Statystyki odwiedzin liczy sam serwer strony, bez cookies i skryptów (punkt 3).</p>
         <p>Czcionki są wczytywane z tego samego serwera co strona, więc przy ich ładowaniu Twoja przeglądarka nie łączy się z Google ani innymi zewnętrznymi serwisami.</p>
         <p>Na stronie Kontakt możesz włączyć mapę dojazdu z usługi Google Maps (Google Ireland Limited). Mapa wczytuje się dopiero po kliknięciu „Pokaż mapę”, więc wcześniej Twoja przeglądarka nie łączy się z Google. Po kliknięciu serwery Google otrzymują m.in. Twój adres IP i dopiero wtedy mogą zapisać własne pliki cookies, a dane mogą trafić także do Google LLC w USA. Więcej informacji znajdziesz w <a href="https://policies.google.com/privacy?hl=pl" rel="noopener">polityce prywatności Google</a>.</p>
         <p>Formularze wysyłają dane prosto na serwer strony. Nie korzystam z zewnętrznych narzędzi do formularzy, newslettera ani płatności online.</p>
