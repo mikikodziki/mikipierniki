@@ -45,6 +45,20 @@ export function subscribe(rawEmail: string): void {
   enqueue(newsletterConfirm(email, tok));
 }
 
+/**
+ * "Powiadom mnie" ticked in the booking or date-pick form: the same double opt-in as the newsletter
+ * form. Call it only after that form is saved. A failure here is logged and swallowed, so the
+ * booking or sign-up already made stands.
+ */
+export function subscribeAfterSignup(rawEmail: string): void {
+  try {
+    subscribe(rawEmail);
+  } catch (e) {
+    // no address in the log
+    console.error("[newsletter] sign-up ticked in a booking or date-pick form failed:", e);
+  }
+}
+
 /** Confirms the address and records the consent in `consent_log` (each sign-up gets its own row). */
 export function confirmSubscription(tok: string): "ok" | "unknown" {
   const db = getDb();
