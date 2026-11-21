@@ -15,8 +15,10 @@ const MAX = 10_000;
 const hits = (globalThis[Symbol.for("mikipierniki.hits")] ??= []);
 // pages opened from a mail link (/zapis, /newsletter) carry a personal token; the panel is private
 const PRIVATE = /^\/(panel|zapis|newsletter)(\/|\.|$)/i;
-// a buffered note keeps only what the statistics read, so a full buffer stays a few MB
-const cut = (v, n) => (typeof v === "string" ? v.slice(0, n) : undefined);
+// A buffered note keeps only the start of each field, as a real copy: a plain slice would keep the
+// whole header string alive (V8 shares the memory), so 10 000 long requests would hold ~300 MB.
+// Header strings are latin1, so the copy is exact.
+const cut = (v, n) => (typeof v === "string" ? Buffer.from(v.slice(0, n), "latin1").toString("latin1") : undefined);
 
 const http = started?.server?.server;
 if (typeof http?.prependListener === "function") {
@@ -41,8 +43,8 @@ if (typeof http?.prependListener === "function") {
     res.once("finish", () => {
       if (hits.length >= MAX) return;
       hits.push({
-        at, method: req.method, url: cut(target, 1024), status: res.statusCode,
-        referer: cut(h.referer, 512), ua: cut(h["user-agent"], 400), purpose: cut(h["sec-purpose"] ?? h.purpose, 40), mobile: cut(h["sec-ch-ua-mobile"], 8),
+        at, method: req.method, url: cut(target, 512), status: res.statusCode,
+        referer: cut(h.referer, 256), ua: cut(h["user-agent"], 300), purpose: cut(h["sec-purpose"] ?? h.purpose, 40), mobile: cut(h["sec-ch-ua-mobile"], 8),
       });
     });
   });

@@ -56,8 +56,8 @@ rok albo od początku:
 - **Ochrona przed zaśmiecaniem bazy:** nieznane adresy liczą się jako jeden „(404)”, a `/do/*`
   tylko dla nazw z listy. Dziwne wartości utm zapisują się jako „(inne)”, adresy IP w miejscu
   witryny odsyłającej też. Po 1000 różnych wierszy dziennie (liczonych przy każdym dopisaniu) nowe
-  źródła i oznaczenia idą do „(inne)”. Bufor w pamięci trzyma tylko skrócone pola, więc pełny
-  (10 tys. notatek) zajmuje kilka MB.
+  źródła i oznaczenia idą do „(inne)”. Bufor w pamięci trzyma tylko kopie początków pól (adres
+  512 znaków, Referer 256, przeglądarka 300), więc pełny (10 tys. notatek) to około 10 MB.
 - **Strony prywatne:** adresy w nietypowej postaci (`/./zapis`, `//zapis`, `%2e`, pełny adres
   zamiast ścieżki) nie są liczone wcale. Panel i strony z tokenem odpadają też przy sumowaniu,
   także jako strona, z której wysłano formularz.
