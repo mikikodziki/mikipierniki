@@ -84,6 +84,24 @@ nic się samo nie powtórzy: uruchom je ręcznie (Actions → Deploy → Run wor
   `DEPLOY_KNOWN_HOSTS` (`ssh-keyscan -p <port> <host>`),
   oraz `DEPLOY_HOST`, `DEPLOY_PORT`, `DEPLOY_USER` (też jako sekrety, bo logi publicznego repo nie maskują zwykłych zmiennych).
 
+## Statystyki odwiedzin
+
+Zakładka „Statystyki” w panelu (opis i uzasadnienie: `docs/analityka.md`). Odsłony liczy
+`start.mjs`. Startuje on serwer Astro sam, z `ASTRO_NODE_AUTOSTART=disabled`, i podpina się pod
+jego zapytania. Strony zbudowane z góry nie przechodzą przez middleware Astro, więc to jedyne
+miejsce, gdzie widać każde wejście. Notatki o wejściach trafiają do bufora w pamięci, a co minutę
+`src/server/stats.ts` zamienia je na dzienne sumy w bazie. Bez IP, bez identyfikatorów, bez
+skryptów w przeglądarce.
+
+- Wycofanie wydania przywraca tylko `dist/`, a `start.mjs` zostaje nowy. Dlatego `start.mjs` musi
+  działać też ze starszym buildem: wtedy po prostu nic nie liczy.
+- Odsłona liczy się tylko wtedy, gdy przeglądarka wysłała `Sec-Fetch-Dest: document` i
+  `Sec-Fetch-Mode: navigate`. **Po pierwszym wdrożeniu** otwórz stronę z telefonu, potem
+  zakładkę „Statystyki”. „Ostatnie zliczone wejście” powinno pokazać tę chwilę. Jeśli nie, to
+  LiteSpeed nie przekazuje tych nagłówków do Node.
+- Jeśli kiedyś LiteSpeed ma sam wydawać pliki z `dist/client`, to tylko zasoby (`/_astro`,
+  `/fonts`, `/zdjecia`), nie HTML, bo inaczej odwiedziny przestaną się liczyć.
+
 ## Codzienna obsługa
 
 ```sh
