@@ -69,7 +69,7 @@ docs/szkic.html         zatwierdzony szkic wizualny
 - Dane statyczne tylko przez `src/lib/api.ts`, terminy tylko przez `src/server/terms.ts`. Strony nie importują `mock-data.ts`.
 - Kod z `src/server/` nie może trafić do skryptów w przeglądarce (importuje `node:sqlite`).
 - Strony renderowane na serwerze mają `export const prerender = false`. Reszta zostaje statyczna.
-- Strona podaje tylko „Szczepin, Wrocław”: ulicy i numeru pracowni nie wolno wpisywać nigdzie w repozytorium ani na stronie (`docs/dane.md`). Mapa na stronie Kontakt pokazuje dzielnicę. Adres w mailach po rezerwacji bierze się tylko z `STUDIO_ADDRESS` na serwerze.
+- Adres pracowni w mailach bierze się tylko z `STUDIO_ADDRESS` na serwerze (jedno miejsce). Regulamin i polityka go nie podają (decyzja Dominiki); mapa na stronie Kontakt zostaje, jak jest.
 - Treść sezonowa: renderuj wszystkie warianty z `data-for-season="swieta"` itd., CSS pokazuje właściwy.
 - Zdjęcia: do czasu prawdziwych zdjęć `<div class="ph" data-label="zdjęcie: …">` z ilustracją `<Cookie>`.
 - Nowe zdjęcie: `node scripts/zdjecia.mjs <plik> <nazwa>` tworzy w `public/zdjecia` wszystkie szerokości, których używa `<Photo>`.

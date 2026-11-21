@@ -6,10 +6,10 @@ import { venueById } from "./api";
 import { site } from "./site";
 
 const studio = venueById("pracownia");
-/** Where the studio is, as the site may say it: district and city only, never the street */
-export const studioPlace = [studio.district, studio.city].filter(Boolean).join(", ");
-/** Google Maps query for the studio's district, shared by the embedded map on /kontakt and the outbound link */
-export const studioMapQuery = encodeURIComponent(studioPlace);
+// Pin the municipal address point: Google resolves the text "55J" to number 55.
+const destination = studio.coordinates ? `${studio.coordinates.lat},${studio.coordinates.lng}` : `${studio.address}, ${studio.city}`;
+/** Google Maps query for the studio, shared by the embedded map on /kontakt and the outbound link */
+export const studioMapQuery = encodeURIComponent(destination);
 
 export const outbound = {
   instagram: site.instagram,

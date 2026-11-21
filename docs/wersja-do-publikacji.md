@@ -17,7 +17,7 @@ od kolejnych zmian na gałęzi.
 - Galeria z kategorią Halloween i powiększaniem zdjęć po kliknięciu.
 - Aktualny portret Dominiki, zdjęcie przy stoisku i zdjęcia efektów warsztatów.
 - Ośmiopunktowy przebieg warsztatu, poprawione odstępy i kontrast sekcji.
-- Mapa okolicy pracowni (dzielnica Szczepin, bez adresu).
+- Mapa pracowni przy Długiej 55J z dokładnym punktem adresowym.
 - Mniejszy voucher bez szronu, ciemnozielona sekcja zamówienia i jasny formularz.
 
 ## Ważne rozróżnienie przed wdrożeniem
