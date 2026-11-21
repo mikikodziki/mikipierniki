@@ -1,0 +1,427 @@
+---
+/**
+ * Statistics tab: visits counted on the server without cookies or scripts (src/server/stats.ts),
+ * forms sent from the site, and per-term and monthly business numbers (src/server/term-stats.ts).
+ */
+import Panel from "@/layouts/Panel.astro";
+import { pln, plural, shortDate, workshopTypeLabel } from "@/lib/format";
+import { DIRECT, collectHits, formReport, localDay, trafficReport, type FormReport } from "@/server/stats";
+import { statusLabel } from "@/server/panel";
+import { monthStats, subscriberCounts, termStats } from "@/server/term-stats";
+
+export const prerender = false;
+
+const RANGES = [
+  { key: "7", label: "7 dni", days: 7 },
+  { key: "30", label: "30 dni", days: 30 },
+  { key: "90", label: "90 dni", days: 90 },
+  { key: "365", label: "Rok", days: 365 },
+  { key: "all", label: "Od początku", days: null },
+] as const;
+const range = RANGES.find((r) => r.key === Astro.url.searchParams.get("okres")) ?? RANGES[1];
+
+// count what the server has seen since the last minute's collection, so the numbers are current
+collectHits();
+
+const DAY = 86_400_000;
+const today = localDay(Date.now()).day;
+const from = range.days ? localDay(Date.now() - (range.days - 1) * DAY).day : null;
+const traffic = trafficReport(from);
+const forms = formReport(from);
+const terms = termStats(from);
+const months = monthStats();
+const subs = subscriberCounts();
+
+/* ---------- labels ---------- */
+const pageLabel: Record<string, string> = {
+  "/": "Strona główna", "/warsztaty": "Warsztaty", "/zamowienia": "Na zamówienie", "/galeria": "Galeria",
+  "/o-mnie": "O mnie", "/faq": "FAQ", "/kontakt": "Kontakt", "/polityka-prywatnosci": "Polityka prywatności",
+  "/regulamin": "Regulamin", "/standardy-ochrony-maloletnich": "Standardy ochrony małoletnich",
+  "(404)": "Nieistniejące adresy (404)", "(błąd)": "Błąd serwera", "(nieznana)": "nie wiadomo",
+};
+const outLabel: Record<string, string> = { "/do/instagram": "Instagram", "/do/mapa": "mapa Google" };
+const formLabel: Record<string, string> = {
+  zainteresowanie: "Pasuje mi (propozycje terminów)", rezerwacja: "Rezerwacje", zapytanie: "Zapytania", newsletter: "Powiadom mnie",
+};
+const outcomeLabel: Record<string, string> = {
+  wyslane: "Wysłane", odrzucone: "Odrzucone (błędne dane)", nieaktualne: "Nieaktualne (termin pełny, zamknięty albo już zgłoszone)",
+  wylaczone: "Zapisy wyłączone", blad: "Błąd serwera",
+};
+const sourceLabel = (s: string) => (s === DIRECT ? "Bezpośrednio" : s);
+const num = (n: number) => n.toLocaleString("pl-PL");
+const pct = (n: number, of: number) => (of > 0 ? `${Math.round((n / of) * 100)}%` : "–");
+const dayFmt = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short", timeZone: "UTC" });
+const dayLabel = (d: string) => dayFmt.format(new Date(`${d}T12:00:00Z`));
+const monthFmt = new Intl.DateTimeFormat("pl-PL", { month: "long", year: "numeric", timeZone: "UTC" });
+const monthLabel = (m: string) => monthFmt.format(new Date(`${m}-15T12:00:00Z`));
+const dateTime = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
+const WEEKDAYS = ["poniedziałek", "wtorek", "środa", "czwartek", "piątek", "sobota", "niedziela"];
+/** "w piątek", "we wtorek", "w środę" */
+const ON_WEEKDAY = ["w poniedziałek", "we wtorek", "w środę", "w czwartek", "w piątek", "w sobotę", "w niedzielę"];
+
+/* ---------- visits over time: a day per column up to 90 days, a week per column beyond ---------- */
+const start = from ?? traffic.firstDay ?? today;
+const addDays = (d: string, n: number) => new Date(Date.parse(`${d}T12:00:00Z`) + n * DAY).toISOString().slice(0, 10);
+const byDay = new Map(traffic.daily.map((d) => [d.day, d]));
+const span = Math.max(1, Math.round((Date.parse(`${today}T12:00:00Z`) - Date.parse(`${start}T12:00:00Z`)) / DAY) + 1);
+const weekly = span > 92;
+const buckets: { label: string; title: string; entries: number; views: number }[] = [];
+for (let i = 0; i < span; i += weekly ? 7 : 1) {
+  const first = addDays(start, i);
+  const len = weekly ? Math.min(7, span - i) : 1;
+  let entries = 0, views = 0;
+  for (let k = 0; k < len; k++) {
+    const d = byDay.get(addDays(first, k));
+    if (d) { entries += d.entries; views += d.views; }
+  }
+  const label = weekly ? `od ${dayLabel(first)}` : dayLabel(first);
+  buckets.push({ label, title: `${weekly ? `Tydzień ${label}` : label}: ${num(entries)} ${plural(entries, "wizyta", "wizyty", "wizyt")}, ${num(views)} ${plural(views, "odsłona", "odsłony", "odsłon")}`, entries, views });
+}
+
+// column chart geometry (SVG user units; the chart scales to the card width)
+const W = 720, H = 200, PAD_L = 36, PAD_B = 22, PAD_T = 10;
+const plotW = W - PAD_L, plotH = H - PAD_B - PAD_T;
+const maxEntries = Math.max(0, ...buckets.map((b) => b.entries));
+function niceStep(max: number): number {
+  if (max <= 4) return 1;
+  const raw = max / 4, pow = 10 ** Math.floor(Math.log10(raw));
+  return ([1, 2, 5, 10].find((m) => m * pow >= raw) ?? 10) * pow;
+}
+const step = niceStep(maxEntries);
+const top = Math.max(step, Math.ceil(maxEntries / step) * step);
+const ticks = Array.from({ length: Math.round(top / step) + 1 }, (_, i) => i * step);
+const slot = plotW / buckets.length;
+const barW = Math.max(1, Math.min(24, slot - 2));
+const y = (v: number) => PAD_T + plotH - (v / top) * plotH;
+/** a column with a 4px rounded top and a square foot on the baseline */
+function column(x: number, h: number): string {
+  if (h <= 0) return "";
+  const r = Math.min(4, barW / 2, h);
+  const b = PAD_T + plotH, t = b - h;
+  return `M${x},${b} V${t + r} Q${x},${t} ${x + r},${t} H${x + barW - r} Q${x + barW},${t} ${x + barW},${t + r} V${b} Z`;
+}
+const peak = buckets.reduce((best, b, i) => (b.entries > (buckets[best]?.entries ?? -1) ? i : best), 0);
+const xLabels = [...new Set([0, Math.floor((buckets.length - 1) / 2), buckets.length - 1])];
+
+/* ---------- when people visit: weekday × hour ---------- */
+const weekMax = Math.max(0, ...traffic.week.flat());
+const busiest = (() => {
+  let best = { d: 0, h: 0, v: 0 };
+  traffic.week.forEach((row, d) => row.forEach((v, h) => { if (v > best.v) best = { d, h, v }; }));
+  return best;
+})();
+const byWeekday = traffic.week.map((row) => row.reduce((a, b) => a + b, 0));
+const shade = (v: number) => (v === 0 ? undefined : `--v: ${Math.round(12 + (v / weekMax) * 78)}%`);
+
+/* ---------- forms ---------- */
+const sent = (f: FormReport["outcomes"], form?: string) => f.filter((o) => o.outcome === "wyslane" && (!form || o.form === form)).reduce((a, o) => a + o.count, 0);
+const sentAll = sent(forms.outcomes);
+const sentLeads = sentAll - sent(forms.outcomes, "newsletter");
+const formNames = Object.keys(formLabel);
+const outcomeNames = Object.keys(outcomeLabel).filter((o) => forms.outcomes.some((x) => x.outcome === o));
+const cell = (form: string, outcome: string) => forms.outcomes.find((o) => o.form === form && o.outcome === outcome)?.count ?? 0;
+
+/* ---------- pages and outbound links ---------- */
+const pages = traffic.pages.filter((p) => !p.path.startsWith("/do/"));
+const outbound = traffic.pages.filter((p) => p.path.startsWith("/do/"));
+const maxPageViews = Math.max(1, ...pages.map((p) => p.views));
+const maxSource = Math.max(1, ...traffic.sources.map((s) => s.entries));
+
+/* ---------- terms by year (season totals) ---------- */
+const years = [...new Set(terms.map((t) => t.startsAt.slice(0, 4)))];
+const yearTotals = years.map((year) => {
+  const ts = terms.filter((t) => t.startsAt.startsWith(year) && t.status !== "cancelled");
+  // only open terms take bookings, so the fill compares their bookings with their seats
+  const open = ts.filter((t) => t.status === "open");
+  const sum = (list: typeof ts, f: (t: (typeof ts)[number]) => number) => list.reduce((a, t) => a + f(t), 0);
+  return {
+    year, count: ts.length, interest: sum(ts, (t) => t.interestPeople), booked: sum(ts, (t) => t.bookedPeople),
+    paid: sum(ts, (t) => t.paidPeople), revenue: sum(ts, (t) => t.revenue),
+    fill: pct(sum(open, (t) => t.bookedPeople), sum(open, (t) => t.capacity)),
+  };
+});
+---
+<Panel title="Statystyki">
+  <section class="box">
+    <nav class="actions" aria-label="Okres">
+      {RANGES.map((r) => (
+        <a class={`btn btn-small ${r.key === range.key ? "btn-primary" : "btn-ghost"}`} href={`/panel/statystyki?okres=${r.key}`} aria-current={r.key === range.key ? "page" : undefined}>{r.label}</a>
+      ))}
+    </nav>
+    <div class="grid3 tiles">
+      <div class="tile"><span class="tile-label">Wizyty</span><span class="tile-value">{num(traffic.entries)}</span></div>
+      <div class="tile"><span class="tile-label">Odsłony stron</span><span class="tile-value">{num(traffic.views)}</span></div>
+      <div class="tile"><span class="tile-label">Wysłane formularze</span><span class="tile-value">{num(sentAll)}</span></div>
+      <div class="tile">
+        <span class="tile-label">Zgłoszenia i zapytania na 100 wizyt</span>
+        <span class="tile-value">{traffic.entries ? (Math.round((sentLeads / traffic.entries) * 1000) / 10).toLocaleString("pl-PL") : "–"}</span>
+      </div>
+      {outbound.map((o) => (
+        <div class="tile"><span class="tile-label">Kliknięcia: {outLabel[o.path] ?? o.path}</span><span class="tile-value">{num(o.views)}</span></div>
+      ))}
+    </div>
+    <p class="note">
+      {traffic.lastViewAt ? <>Ostatnie zliczone wejście: {dateTime(traffic.lastViewAt)}.</> : <>Nie zliczono jeszcze żadnego wejścia.</>}
+      {" "}Wizyta to wejście na stronę z zewnątrz (z wyszukiwarki, Instagrama, linku albo wpisanego adresu); każda kolejna strona w tej samej wizycie to odsłona. Strona nie używa cookies ani skryptów do statystyk, więc nie rozpoznaje tych samych osób: dwa wejścia jednej osoby to dwie wizyty.
+    </p>
+  </section>
+
+  <section class="box">
+    <h2>Wizyty {weekly ? "tygodniowo" : "dziennie"}</h2>
+    {maxEntries === 0 ? <p>Brak wizyt w tym okresie.</p> : (
+      <figure class="chart">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Wizyty ${weekly ? "tygodniowo" : "dziennie"}; najwięcej ${num(buckets[peak].entries)} (${buckets[peak].label}).`}>
+          {ticks.map((t) => (
+            <g class="grid">
+              <line x1={PAD_L} x2={W} y1={y(t)} y2={y(t)} />
+              <text x={PAD_L - 6} y={y(t) + 4} text-anchor="end">{num(t)}</text>
+            </g>
+          ))}
+          {buckets.map((b, i) => {
+            const x = PAD_L + i * slot + (slot - barW) / 2;
+            return (
+              <g class="col">
+                <title>{b.title}</title>
+                <rect class="hit" x={PAD_L + i * slot} y={PAD_T} width={slot} height={plotH} />
+                <path d={column(x, (b.entries / top) * plotH)} />
+                {i === peak && b.entries > 0 && <text class="peak" x={x + barW / 2} y={y(b.entries) - 5} text-anchor="middle">{num(b.entries)}</text>}
+              </g>
+            );
+          })}
+          {xLabels.map((i) => (
+            <text class="xl" x={PAD_L + i * slot + slot / 2} y={H - 5} text-anchor={i === 0 ? "start" : i === buckets.length - 1 ? "end" : "middle"}>{buckets[i].label}</text>
+          ))}
+        </svg>
+        <details>
+          <summary>Tabela</summary>
+          <div class="scroll">
+            <table class="tbl">
+              <thead><tr><th>{weekly ? "Tydzień" : "Dzień"}</th><th>Wizyty</th><th>Odsłony</th></tr></thead>
+              <tbody>{[...buckets].reverse().map((b) => <tr><td>{b.label}</td><td data-label="Wizyty">{num(b.entries)}</td><td data-label="Odsłony">{num(b.views)}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </details>
+      </figure>
+    )}
+  </section>
+
+  <div class="two">
+    <section class="box">
+      <h2>Skąd przychodzą</h2>
+      {traffic.sources.length === 0 ? <p>Brak danych.</p> : (
+        <table class="tbl bars">
+          <thead><tr><th>Źródło</th><th>Wizyty</th><th>Udział</th></tr></thead>
+          <tbody>
+            {traffic.sources.map((s) => (
+              <tr>
+                <td>{sourceLabel(s.source)}<span class="bar" style={`--w: ${(s.entries / maxSource).toFixed(3)}`} aria-hidden="true"></span></td>
+                <td data-label="Wizyty">{num(s.entries)}</td>
+                <td data-label="Udział">{pct(s.entries, traffic.entries)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <p class="note">„Bezpośrednio” to wpisany adres, zakładka albo aplikacja, która nie mówi, skąd przyszła wizyta (często WhatsApp, Messenger, poczta, czasem Instagram). Żeby to rozróżnić, dawaj linki z oznaczeniem, np. <code>mikipierniki.pl/warsztaty?utm_source=instagram&amp;utm_medium=bio</code>.</p>
+    </section>
+
+    <section class="box">
+      <h2>Urządzenia</h2>
+      {traffic.devices.length === 0 ? <p>Brak danych.</p> : (
+        <table class="tbl">
+          <thead><tr><th>Urządzenie</th><th>Wizyty</th><th>Udział</th></tr></thead>
+          <tbody>{traffic.devices.map((d) => <tr><td>{d.device === "telefon" ? "Telefon lub tablet" : "Komputer"}</td><td data-label="Wizyty">{num(d.entries)}</td><td data-label="Udział">{pct(d.entries, traffic.entries)}</td></tr>)}</tbody>
+        </table>
+      )}
+    </section>
+  </div>
+
+  <section class="box">
+    <h2>Kampanie (linki z utm)</h2>
+    {traffic.campaigns.length === 0 ? <p class="note">W tym okresie nikt nie wszedł z linku oznaczonego utm.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>utm_source</th><th>utm_medium</th><th>utm_campaign</th><th>Wizyty</th></tr></thead>
+          <tbody>{traffic.campaigns.map((c) => <tr><td>{c.source || "–"}</td><td data-label="utm_medium">{c.medium || "–"}</td><td data-label="utm_campaign">{c.campaign || "–"}</td><td data-label="Wizyty">{num(c.entries)}</td></tr>)}</tbody>
+        </table>
+      </div>
+    )}
+    <p class="note">Oznaczenie dopisujesz do linku, który gdzieś publikujesz, np. <code>?utm_source=instagram&amp;utm_medium=story&amp;utm_campaign=swieta</code>. Każdy link w innym miejscu może mieć inne oznaczenie.</p>
+  </section>
+
+  <section class="box">
+    <h2>Strony</h2>
+    {pages.length === 0 ? <p>Brak danych.</p> : (
+      <table class="tbl bars">
+        <thead><tr><th>Strona</th><th>Odsłony</th><th>Wejścia na tę stronę</th></tr></thead>
+        <tbody>
+          {pages.map((p) => (
+            <tr>
+              <td>{pageLabel[p.path] ?? p.path}<span class="bar" style={`--w: ${(p.views / maxPageViews).toFixed(3)}`} aria-hidden="true"></span></td>
+              <td data-label="Odsłony">{num(p.views)}</td>
+              <td data-label="Wejścia">{num(p.entries)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )}
+    <p class="note">„Wejścia na tę stronę” to wizyty, które zaczęły się właśnie od niej (np. link z Instagrama prosto na Warsztaty).</p>
+  </section>
+
+  <section class="box">
+    <h2>Kiedy zaglądają</h2>
+    {weekMax === 0 ? <p>Brak danych.</p> : (
+      <>
+        <p>Najwięcej wizyt: <strong>{WEEKDAYS[busiest.d]}, {busiest.h}:00–{busiest.h + 1}:00</strong>. Najwięcej w ciągu dnia: {ON_WEEKDAY[byWeekday.indexOf(Math.max(...byWeekday))]}. To dobra pora na posty na Instagramie.</p>
+        <div class="scroll">
+          <table class="heat">
+            <caption class="sr-only">Wizyty według dnia tygodnia i godziny</caption>
+            <thead><tr><th scope="col"><span class="sr-only">Dzień</span></th>{Array.from({ length: 24 }, (_, h) => <th scope="col">{h % 3 === 0 ? h : ""}<span class="sr-only">{h % 3 === 0 ? "" : h}:00</span></th>)}<th scope="col">Razem</th></tr></thead>
+            <tbody>
+              {traffic.week.map((row, d) => (
+                <tr>
+                  <th scope="row">{WEEKDAYS[d].slice(0, 3)}</th>
+                  {row.map((v, h) => <td style={shade(v)} title={`${WEEKDAYS[d]}, ${h}:00–${h + 1}:00: ${v} ${plural(v, "wizyta", "wizyty", "wizyt")}`}><span class="sr-only">{v}</span></td>)}
+                  <td class="sum">{num(byWeekday[d])}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Im ciemniejsze pole, tym więcej wizyt. Najedź na pole, żeby zobaczyć liczbę. Godziny polskie.</p>
+      </>
+    )}
+  </section>
+
+  <section class="box">
+    <h2>Formularze</h2>
+    {forms.outcomes.length === 0 ? <p>W tym okresie nikt nie wysłał formularza ze strony.</p> : (
+      <>
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Formularz</th>{outcomeNames.map((o) => <th>{outcomeLabel[o]}</th>)}</tr></thead>
+            <tbody>
+              {formNames.filter((f) => forms.outcomes.some((o) => o.form === f)).map((f) => (
+                <tr><td>{formLabel[f]}</td>{outcomeNames.map((o) => <td data-label={outcomeLabel[o]}>{num(cell(f, o))}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div class="two">
+          <div>
+            <h3>Wysłane z której strony</h3>
+            <table class="tbl">
+              <thead><tr><th>Formularz</th><th>Strona</th><th>Wysłane</th></tr></thead>
+              <tbody>{forms.pages.map((p) => <tr><td>{formLabel[p.form]}</td><td>{pageLabel[p.page] ?? p.page}</td><td>{num(p.count)}</td></tr>)}</tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Wysłane z linków utm</h3>
+            <table class="tbl">
+              <thead><tr><th>Formularz</th><th>utm_source</th><th>Wysłane</th></tr></thead>
+              <tbody>{forms.sources.map((p) => <tr><td>{formLabel[p.form]}</td><td>{p.source || "bez oznaczenia"}</td><td>{num(p.count)}</td></tr>)}</tbody>
+            </table>
+          </div>
+        </div>
+      </>
+    )}
+    <p class="note">Liczone są wysłania (kliknięcie „Wyślij”), także odrzucone. Co ktoś wpisuje przed wysłaniem, nie jest nigdzie zapisywane. Źródło utm jest znane, gdy formularz wysłano z tej samej strony, na którą prowadził oznaczony link. Rezerwacje wpisane w panelu tu nie wchodzą.</p>
+  </section>
+
+  <section class="box">
+    <h2>Terminy</h2>
+    {terms.length === 0 ? <p>Brak terminów w tym okresie.</p> : (
+      <>
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Rok</th><th>Terminy</th><th>Chętni (Pasuje mi)</th><th>Zarezerwowane miejsca</th><th>Opłacone</th><th>Obłożenie</th><th>Wartość opłaconych</th></tr></thead>
+            <tbody>{yearTotals.map((y) => <tr><td>{y.year}</td><td data-label="Terminy">{y.count}</td><td data-label="Chętni">{num(y.interest)}</td><td data-label="Zarezerwowane">{num(y.booked)}</td><td data-label="Opłacone">{num(y.paid)}</td><td data-label="Obłożenie">{y.fill}</td><td data-label="Wartość">{pln(y.revenue)}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <details>
+          <summary>Każdy termin ({terms.length})</summary>
+          <div class="scroll">
+            <table class="tbl">
+              <thead><tr><th>Kiedy</th><th>Warsztaty</th><th>Status</th><th>Chętni</th><th>Zarezerwowane</th><th>Opłacone</th><th>Obłożenie</th><th>Rezerwowa / anulowane</th><th>Wartość opłaconych</th></tr></thead>
+              <tbody>
+                {terms.map((t) => (
+                  <tr class:list={{ muted: t.status === "cancelled" }}>
+                    <td><a href={`/panel/termin/${t.id}`}>{shortDate(t.startsAt)} {t.startsAt.slice(0, 4)}</a></td>
+                    <td>{t.title}<br /><span class="note">{workshopTypeLabel[t.type]}</span></td>
+                    <td><span class={`pill pill--${t.status}`}>{statusLabel[t.status]}</span></td>
+                    <td data-label="Chętni">{t.interestPeople} os. <span class="note">({t.interestEntries} zgł.)</span></td>
+                    <td data-label="Zarezerwowane">{t.bookedPeople} / {t.capacity}</td>
+                    <td data-label="Opłacone">{t.paidPeople}</td>
+                    <td data-label="Obłożenie">{pct(t.bookedPeople, t.capacity)}</td>
+                    <td data-label="Rezerwowa / anulowane">{t.waitlistPeople} / {t.cancelledPeople}</td>
+                    <td data-label="Wartość">{pln(t.revenue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </>
+    )}
+    <p class="note">Terminy z wybranego okresu (według daty warsztatów). Liczby zostają także po tym, jak dane uczestników zostaną usunięte zgodnie z polityką prywatności. Obłożenie roku liczy otwarte terminy; anulowane terminy nie wchodzą do sum.</p>
+  </section>
+
+  <section class="box">
+    <h2>Miesiąc po miesiącu</h2>
+    <p>Powiadomienia (newsletter): <strong>{num(subs.active)}</strong> {plural(subs.active, "osoba zapisana", "osoby zapisane", "osób zapisanych")}{subs.pending > 0 && <>, {num(subs.pending)} czeka na potwierdzenie</>}.</p>
+    {months.length === 0 ? <p class="note">Brak danych.</p> : (
+      <div class="scroll">
+        <table class="tbl">
+          <thead><tr><th>Miesiąc</th><th>Pasuje mi</th><th>Rezerwacje</th><th>Zapytania</th><th>Powiadom mnie</th><th>Potwierdzone zapisy</th><th>Wypisani</th></tr></thead>
+          <tbody>
+            {months.map((m) => (
+              <tr>
+                <td>{monthLabel(m.month)}</td>
+                <td data-label="Pasuje mi">{num(m.interest)}</td>
+                <td data-label="Rezerwacje">{num(m.bookings)}</td>
+                <td data-label="Zapytania">{num(m.inquiries)}</td>
+                <td data-label="Powiadom mnie">{num(m.newsletter)}</td>
+                <td data-label="Potwierdzone">{num(m.confirmed)}</td>
+                <td data-label="Wypisani">{num(m.unsubscribed)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+    <p class="note">Pierwsze cztery kolumny to formularze wysłane ze strony. Potwierdzone zapisy i wypisania pochodzą z rejestru zgód na powiadomienia.</p>
+  </section>
+</Panel>
+
+<style>
+  .tiles { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .tile { display: grid; gap: 2px; padding: 12px 14px; border-radius: var(--radius); background: var(--sheet); }
+  .tile-label { font-size: .85rem; color: var(--ink-soft); }
+  .tile-value { font-size: 1.7rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .two { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+  h3 { font-size: 1.05rem; margin-bottom: 6px; }
+  code { font-size: .85em; overflow-wrap: anywhere; }
+  .tbl td { font-variant-numeric: tabular-nums; }
+
+  /* a thin bar under the label: one hue, proportional to the largest row */
+  .bars td:first-child { position: relative; padding-bottom: 14px; }
+  .bar { position: absolute; left: 10px; bottom: 5px; height: 4px; width: calc((100% - 20px) * var(--w)); border-radius: 0 2px 2px 0; background: var(--dark); }
+
+  .chart { margin: 0; display: grid; gap: 8px; }
+  .chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .chart .grid line { stroke: var(--line); stroke-width: 1; }
+  .chart text { font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .chart .peak { fill: var(--ink); font-weight: 600; }
+  .chart .col path { fill: var(--dark); }
+  .chart .col .hit { fill: transparent; }
+  .chart .col:hover path { fill: var(--umber); }
+  .chart .col:hover .hit { fill: color-mix(in srgb, var(--dark) 8%, transparent); }
+
+  .heat { border-collapse: separate; border-spacing: 2px; font-size: .78rem; }
+  .heat th { font-weight: 500; color: var(--ink-soft); text-align: left; padding: 0 4px; white-space: nowrap; }
+  .heat thead th { text-align: center; min-width: 18px; }
+  .heat td { width: 20px; height: 20px; border-radius: 3px; background: var(--sheet); }
+  .heat td[style] { background: color-mix(in srgb, var(--dark) var(--v), var(--ground)); }
+  .heat td.sum { background: none; padding-left: 8px; width: auto; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+</style>

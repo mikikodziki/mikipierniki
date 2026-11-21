@@ -1,10 +1,12 @@
-// End-to-end check of terms, interest, bookings, e-mail, newsletter and panel against the
-// production build. Starts dist/server/entry.mjs on port 4390 (E2E_PORT, plus the next three) with a throwaway database and
-// test settings; e-mails are written to that folder instead of being sent.
+// End-to-end check of terms, interest, bookings, e-mail, newsletter, statistics and panel against the
+// production build. Starts the server the way production does (deploy/start.mjs next to dist/) on port 4390
+// (E2E_PORT, plus the next three) with a throwaway database and test settings; e-mails are written to that
+// folder instead of being sent.
 // Usage: npm run build && npm run test:e2e
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -21,7 +23,20 @@ const env = {
   // never send real mail from a test, even if the shell has SMTP settings
   SMTP_HOST: "", MAIL_TO_FILES: "1",
 };
-const server = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env, stdio: ["ignore", "pipe", "pipe"] });
+/**
+ * Starts the app as on seohost: start.mjs in the app folder next to dist/, settings in
+ * ../mikipierniki-data/.env. That file stays empty here; the test environment wins over it anyway.
+ */
+function startApp(appEnv, stdio) {
+  const root = mkdtempSync(join(dataDir, "app-"));
+  mkdirSync(join(root, "app"));
+  mkdirSync(join(root, "mikipierniki-data"));
+  copyFileSync(join(repo, "deploy/start.mjs"), join(root, "app/start.mjs"));
+  symlinkSync(join(repo, "dist"), join(root, "app/dist"));
+  writeFileSync(join(root, "mikipierniki-data/.env"), "");
+  return spawn("node", [join(root, "app/start.mjs")], { cwd: repo, env: appEnv, stdio });
+}
+const server = startApp(env, ["ignore", "pipe", "pipe"]);
 let log = "";
 server.stdout.on("data", (d) => (log += d));
 server.stderr.on("data", (d) => (log += d));
@@ -43,6 +58,21 @@ const sha = (s) => createHash("sha256").update(s).digest("hex");
 const db = () => new DatabaseSync(env.DATABASE_PATH);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const settle = () => sleep(400); // flushOutbox runs right after the request
+const BROWSER = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
+const PHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0";
+/** A raw request with exactly these headers (fetch adds its own Sec-Fetch-Mode, so the statistics checks use node:http). */
+const raw = (method, p, headers, body) => new Promise((resolve, reject) => {
+  const req = httpRequest(BASE + p, { method, headers }, (res) => {
+    let text = "";
+    res.setEncoding("utf8");
+    res.on("data", (c) => (text += c));
+    res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, text }));
+  });
+  req.on("error", reject);
+  req.end(body);
+});
+/** What a browser sends when someone opens a page */
+const visit = (p, h = {}) => raw("GET", p, { "user-agent": BROWSER, "sec-fetch-dest": "document", "sec-fetch-mode": "navigate", ...h });
 
 for (let i = 0; i < 100; i++) { try { await fetch(BASE + "/faq"); break; } catch { await sleep(100); } }
 
@@ -876,10 +906,70 @@ try {
   check("first booking e-mails (transfer and voucher) carry the studio address", firstMails.length >= 2 && firstMails.every((x) => x.includes("ul. Testowa 1")), firstMails.length);
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "<script>alert(1)</script>", email: "xss@example.com", consent: true });
   check("interest on open term rejected (only proposed)", r.status === 409);
+
+  // ---------- statistics: page views counted by the server, no cookies, no scripts ----------
+  {
+    const statsPage = () => get("/panel/statystyki?okres=all", { authorization: auth });
+    await statsPage(); // collects whatever earlier checks left in the buffer
+    const q = (sql, ...a) => { const d = db(); try { return d.prepare(sql).all(...a); } finally { d.close(); } };
+    const sumViews = (where, ...a) => q(`SELECT COALESCE(SUM(views), 0) AS v, COALESCE(SUM(entries), 0) AS e FROM stats_views WHERE ${where}`, ...a)[0];
+    const before = sumViews("1");
+    check("API calls and fetches are not page views", before.v === 0, JSON.stringify(before));
+
+    r = await visit("/galeria?utm_source=Instagram&utm_medium=bio&utm_campaign=e2e&t=sekret", { referer: "https://l.instagram.com/", "user-agent": PHONE });
+    check("a visit to a prebuilt page is served as before", r.status === 200 && r.text.includes("Galeria"));
+    await visit("/faq", { referer: "https://mikipierniki.pl/galeria" });
+    await visit("/faq");
+    await visit("/galeria.html", { referer: "https://www.google.com/" });
+    await visit("/warsztaty", { referer: "https://example.org/blog/post?id=1" });
+    await raw("GET", "/faq", { "user-agent": BROWSER }); // no Sec-Fetch headers: a script, not a browser
+    await visit("/faq", { "user-agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
+    await visit("/faq", { "sec-purpose": "prefetch" });
+    await visit("/zapis/wypisz?t=tajny-token");
+    await visit("/newsletter/potwierdz?t=tajny-token");
+    await visit("/panel", { authorization: auth });
+    await visit("/nie-ma-takiej-strony-xyz");
+    await visit("/faq?utm_source=%3Cscript%3E");
+    r = await visit("/do/instagram", { referer: "https://mikipierniki.pl/kontakt" });
+    check("/do/instagram redirects to Instagram and is not cached", r.status === 302 && r.headers.location === "https://instagram.com/mikipierniki" && r.headers["cache-control"] === "no-store", `${r.status} ${r.headers.location}`);
+    r = await visit("/do/mapa", { referer: "https://mikipierniki.pl/kontakt" });
+    check("/do/mapa redirects to Google Maps", r.status === 302 && r.headers.location?.startsWith("https://www.google.com/maps/search/?api=1&query="), r.headers.location);
+    check("/do/<unknown> → 404, no open redirect", (await visit("/do/https%3A%2F%2Fevil.example")).status === 404 && (await visit("/do/nieznany")).status === 404);
+    // a form sent from a page opened with a utm link, and one rejected
+    r = await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/warsztaty?utm_source=instagram", "user-agent": BROWSER }, JSON.stringify({ email: "statystyki@example.com" }));
+    check("form post with a referer still works", r.status === 200, r.text);
+    await raw("POST", "/api/zapytanie", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/kontakt", "user-agent": BROWSER }, JSON.stringify({ kind: "kontakt" }));
+
+    html = await (await statsPage()).text();
+    const rows = q("SELECT * FROM stats_views ORDER BY path, source");
+    const row = (path, source) => rows.filter((x) => x.path === path && x.source === source);
+    const ig = row("/galeria", "Instagram")[0];
+    check("visit from Instagram: entry with utm tags, phone, query without tags dropped", ig && ig.entries === 1 && ig.utm_source === "instagram" && ig.utm_medium === "bio" && ig.utm_campaign === "e2e" && ig.device === "telefon", JSON.stringify(ig));
+    check("step between our pages: a view, not an entry", row("/faq", "").reduce((a, x) => a + x.views, 0) === 1 && row("/faq", "").every((x) => x.entries === 0), JSON.stringify(row("/faq", "")));
+    check("no referer → direct entry from a computer", row("/faq", "(bezpośrednio)").some((x) => x.entries >= 1 && x.device === "komputer"), JSON.stringify(rows));
+    check("/galeria.html counts as /galeria, Google grouped", row("/galeria", "Google").length === 1);
+    check("other sites by host only", row("/warsztaty", "example.org").length === 1 && !JSON.stringify(rows).includes("blog/post"));
+    check("unknown address → one (404) bucket", row("(404)", "(bezpośrednio)").length === 1 && !rows.some((x) => x.path.includes("nie-ma-takiej")));
+    check("odd utm value → (inne)", rows.some((x) => x.path === "/faq" && x.utm_source === "(inne)"));
+    check("outbound clicks counted under /do/*", row("/do/instagram", "").length === 1 && row("/do/mapa", "").length === 1, JSON.stringify(rows.filter((x) => x.path.startsWith("/do"))));
+    check("not counted: no Sec-Fetch, bots, prefetch, panel, token pages", sumViews("path = '/faq'").v === 3 && !rows.some((x) => /panel|zapis|newsletter/.test(x.path)), JSON.stringify(sumViews("path = '/faq'")));
+    check("nothing personal stored (no tokens, IPs or browser strings)", !/tajny|sekret|127\.0\.0\.1|Mozilla|Safari/.test(JSON.stringify(q("SELECT * FROM stats_views")) + JSON.stringify(q("SELECT * FROM stats_forms"))));
+    const hours = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_hours")[0].v;
+    check("hourly sums match the page views", hours === sumViews("1").v, `${hours} vs ${sumViews("1").v}`);
+    const formRows = q("SELECT * FROM stats_forms");
+    check("sent form counted with its page and utm_source", formRows.some((x) => x.form === "newsletter" && x.page === "/warsztaty" && x.utm_source === "instagram" && x.outcome === "wyslane" && x.count === 1), JSON.stringify(formRows));
+    check("rejected form counted as rejected", formRows.some((x) => x.form === "zapytanie" && x.page === "/kontakt" && x.outcome === "odrzucone"));
+    check("stats tab shows sources, pages, clicks and forms", html.includes("Instagram") && html.includes("Galeria") && html.includes("Kliknięcia: mapa Google") && html.includes("Powiadom mnie") && html.includes("Ostatnie zliczone wejście"));
+    check("stats tab: every range renders", (await Promise.all(["7", "30", "90", "365", "all", "x"].map(async (k) => (await get(`/panel/statystyki?okres=${k}`, { authorization: auth })).status))).every((st) => st === 200));
+    check("stats tab needs the password", (await get("/panel/statystyki")).status === 401);
+    const ts = q(`SELECT * FROM term_stats WHERE term_id = ?`, t1)[0];
+    check("term totals for the stats tab", ts && ts.booked_people > 0 && ts.frozen === 0, JSON.stringify(ts));
+  }
+
   // ---------- production without SMTP: mail must fail visibly, not pretend to be sent ----------
   const barePort = PORT + 2;
   const bare = { ...env, PORT: String(barePort), DATABASE_PATH: join(dataDir, "bare.sqlite"), MAIL_TO_FILES: "" };
-  const second = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: bare, stdio: "ignore" });
+  const second = startApp(bare, "ignore");
   try {
     for (let i = 0; i < 100; i++) { try { await fetch(`http://127.0.0.1:${barePort}/faq`); break; } catch { await sleep(100); } }
     await fetch(`http://127.0.0.1:${barePort}/api/newsletter`, { method: "POST", headers: { origin: `http://127.0.0.1:${barePort}`, "content-type": "application/json" }, body: JSON.stringify({ email: "x@example.com" }) });
@@ -895,7 +985,7 @@ try {
     const rEnv = { ...env, PORT: String(port), DATABASE_PATH: join(dataDir, "retention.sqlite") };
     let rlog = "";
     const start = async () => {
-      const p = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: rEnv, stdio: ["ignore", "ignore", "pipe"] });
+      const p = startApp(rEnv, ["ignore", "ignore", "pipe"]);
       p.stderr.on("data", (b) => { rlog += b; });
       for (let i = 0; i < 100; i++) { try { await fetch(base + "/warsztaty"); break; } catch { await sleep(100); } }
       return p;
@@ -925,7 +1015,8 @@ try {
     consent("ended-3y-in", 3 * 365 - 10); consent("ended-3y-out", 3 * 366 + 10);
     // a subscriber confirmed before consent_log existed: rolling the schema back makes the next start add their row
     d.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('stara@example.com', 'tok-stara', 'active', ?, ?)").run(ago(100), ago(99));
-    d.exec("PRAGMA user_version = 3");
+    // tables from later migrations go too, so their migrations can run again
+    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; PRAGMA user_version = 3");
     d.close();
     p = await start(); // the first request starts the worker, which cleans up right away
     await sleep(500);
@@ -939,10 +1030,14 @@ try {
     check("clean-up deletes consent rows 3 years after the consent ended", left("SELECT email_hash FROM consent_log WHERE consent_version = '2026-11-21'") === "active,ended-2y,ended-3y-in", left("SELECT email_hash FROM consent_log"));
     const backfilled = d2.prepare("SELECT * FROM consent_log WHERE consent_version = 'przed-2026-11-21'").all();
     check("subscribers confirmed before consent_log get a row on upgrade", backfilled.length === 1 && backfilled[0].email_hash === sha("stara@example.com") && !!backfilled[0].confirmed_at, JSON.stringify(backfilled));
+    const frozen = d2.prepare("SELECT * FROM term_stats WHERE term_id = 'old'").get();
+    check("clean-up keeps the term's totals from before it deleted the sign-ups", frozen && frozen.frozen === 1 && frozen.booked_people === 2 && frozen.paid_people === 1 && frozen.revenue === 450 && frozen.waitlist_people === 1 && frozen.cancelled_people === 1, JSON.stringify(frozen));
+    const recent = d2.prepare("SELECT frozen FROM term_stats WHERE term_id = 'recent'").get();
+    check("terms still within 30 days are not frozen", recent && recent.frozen === 0, JSON.stringify(recent));
     check("no errors from the clean-up server", !/Error/.test(rlog), rlog.slice(0, 500));
     d2.close();
   }
-  check("no server errors logged", !/\[api\]|Error/.test(log), log.slice(0, 500));
+  check("no server errors logged", !/\[api\]|\[stats\]|Error/.test(log), log.slice(0, 500));
 } finally {
   server.kill();
   if (!fail) rmSync(dataDir, { recursive: true, force: true });
