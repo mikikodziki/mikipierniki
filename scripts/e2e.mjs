@@ -1,10 +1,12 @@
-// End-to-end check of terms, interest, bookings, e-mail, newsletter and panel against the
-// production build. Starts dist/server/entry.mjs on port 4390 (E2E_PORT, plus the next three) with a throwaway database and
-// test settings; e-mails are written to that folder instead of being sent.
+// End-to-end check of terms, interest, bookings, e-mail, newsletter, statistics and panel against the
+// production build. Starts the server the way production does (deploy/start.mjs next to dist/) on port 4390
+// (E2E_PORT, plus the next three) with a throwaway database and test settings; e-mails are written to that
+// folder instead of being sent.
 // Usage: npm run build && npm run test:e2e
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -21,7 +23,20 @@ const env = {
   // never send real mail from a test, even if the shell has SMTP settings
   SMTP_HOST: "", MAIL_TO_FILES: "1",
 };
-const server = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env, stdio: ["ignore", "pipe", "pipe"] });
+/**
+ * Starts the app as on seohost: start.mjs in the app folder next to dist/, settings in
+ * ../mikipierniki-data/.env. That file stays empty here; the test environment wins over it anyway.
+ */
+function startApp(appEnv, stdio) {
+  const root = mkdtempSync(join(dataDir, "app-"));
+  mkdirSync(join(root, "app"));
+  mkdirSync(join(root, "mikipierniki-data"));
+  copyFileSync(join(repo, "deploy/start.mjs"), join(root, "app/start.mjs"));
+  symlinkSync(join(repo, "dist"), join(root, "app/dist"));
+  writeFileSync(join(root, "mikipierniki-data/.env"), "");
+  return spawn("node", [join(root, "app/start.mjs")], { cwd: repo, env: appEnv, stdio });
+}
+const server = startApp(env, ["ignore", "pipe", "pipe"]);
 let log = "";
 server.stdout.on("data", (d) => (log += d));
 server.stderr.on("data", (d) => (log += d));
@@ -43,6 +58,24 @@ const sha = (s) => createHash("sha256").update(s).digest("hex");
 const db = () => new DatabaseSync(env.DATABASE_PATH);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const settle = () => sleep(400); // flushOutbox runs right after the request
+const BROWSER = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
+const PHONE = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.0";
+/**
+ * A raw request with exactly these headers and this target, unnormalised ("/./x", "//x" and
+ * "http://host/x" go out as typed). fetch adds its own Sec-Fetch-Mode, so the statistics checks use node:http.
+ */
+const raw = (method, p, headers, body) => new Promise((resolve, reject) => {
+  const req = httpRequest({ host: "127.0.0.1", port: PORT, path: p, method, headers }, (res) => {
+    let text = "";
+    res.setEncoding("utf8");
+    res.on("data", (c) => (text += c));
+    res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, text }));
+  });
+  req.on("error", reject);
+  req.end(body);
+});
+/** What a browser sends when someone opens a page */
+const visit = (p, h = {}) => raw("GET", p, { "user-agent": BROWSER, "sec-fetch-dest": "document", "sec-fetch-mode": "navigate", ...h });
 
 for (let i = 0; i < 100; i++) { try { await fetch(BASE + "/faq"); break; } catch { await sleep(100); } }
 
@@ -854,6 +887,31 @@ try {
   await settle();
   check("auto-reply works again after 24 h", mails().slice(beforeSecond).map(mail).some((x) => x.includes("To: irena@example.com") && x.includes("Dziękuję za wiadomość")));
 
+  // ---------- inquiries: hide the handled ones ----------
+  {
+    const listHtml = async (q = "") => (await get(`/panel/zapytania${q}`, { authorization: auth })).text();
+    const hiddenAt = (id) => db().prepare("SELECT hidden_at FROM inquiries WHERE id = ?").get(id).hidden_at;
+    const id = db().prepare("SELECT id FROM inquiries WHERE message = 'Jeszcze jedno pytanie.'").get().id;
+    const act = (action, inquiry, pokaz = "aktywne", headers = {}) => fetch(`${BASE}/panel/zapytania`, { method: "POST", redirect: "manual",
+      headers: { authorization: auth, origin: BASE, "content-type": "application/x-www-form-urlencoded", ...headers }, body: new URLSearchParams({ action, id: String(inquiry), pokaz }) });
+    let page = await listHtml();
+    check("inquiries list: active ones by default, with counts", page.includes("Jeszcze jedno pytanie.") && page.includes("Ukryj") && page.includes("Ukryte (0)"));
+    r = await act("hide", id);
+    page = await listHtml();
+    const hiddenPage = await listHtml("?pokaz=ukryte"), allPage = await listHtml("?pokaz=wszystkie");
+    check("Ukryj: gone from the default list, in Ukryte and Wszystkie, nothing deleted", r.status === 303 && r.headers.get("location").startsWith("/panel/zapytania?ok=") && !!hiddenAt(id)
+      && !page.includes("Jeszcze jedno pytanie.") && page.includes("A to już po dobie.") && hiddenPage.includes("Jeszcze jedno pytanie.") && !hiddenPage.includes("A to już po dobie.")
+      && hiddenPage.includes("Przywróć") && hiddenPage.includes("Ukryte (1)") && allPage.includes("Jeszcze jedno pytanie.") && allPage.includes("A to już po dobie.") && inquiriesFrom("irena@example.com") === 3, r.headers.get("location"));
+    r = await act("show", id, "ukryte");
+    check("Przywróć: back in the default list, back to the same tab", r.status === 303 && r.headers.get("location").startsWith("/panel/zapytania?pokaz=ukryte&ok=") && !hiddenAt(id)
+      && (await listHtml()).includes("Jeszcze jedno pytanie."), r.headers.get("location"));
+    r = await act("hide", 999999);
+    check("hiding a missing inquiry → message", r.status === 303 && r.headers.get("location").includes("err="), r.headers.get("location"));
+    const noPassword = await fetch(`${BASE}/panel/zapytania`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: `action=hide&id=${id}` });
+    const crossSite = await act("hide", id, "aktywne", { origin: "https://evil.example" });
+    check("hiding without the password → 401, from another site → 403", noPassword.status === 401 && crossSite.status === 403 && !hiddenAt(id), `${noPassword.status} ${crossSite.status}`);
+  }
+
   // ---------- CSV + misc ----------
   r = await get(`/panel/eksport?termin=${t1}`, { authorization: auth });
   const csvBytes = Buffer.from(await r.arrayBuffer());
@@ -867,10 +925,111 @@ try {
   check("first booking e-mails (transfer and voucher) carry the studio address", firstMails.length >= 2 && firstMails.every((x) => x.includes("ul. Testowa 1")), firstMails.length);
   r = await api("/api/zainteresowanie", { termIds: [t1], people: 1, name: "<script>alert(1)</script>", email: "xss@example.com", consent: true });
   check("interest on open term rejected (only proposed)", r.status === 409);
+
+  // ---------- statistics: page views counted by the server, no cookies, no scripts ----------
+  {
+    const statsPage = () => get("/panel/statystyki?okres=all", { authorization: auth });
+    await statsPage(); // collects whatever earlier checks left in the buffer
+    const q = (sql, ...a) => { const d = db(); try { return d.prepare(sql).all(...a); } finally { d.close(); } };
+    const sumViews = (where, ...a) => q(`SELECT COALESCE(SUM(views), 0) AS v, COALESCE(SUM(entries), 0) AS e FROM stats_views WHERE ${where}`, ...a)[0];
+    const before = sumViews("1");
+    check("API calls and fetches are not page views", before.v === 0, JSON.stringify(before));
+
+    r = await visit("/galeria?utm_source=Instagram&utm_medium=bio&utm_campaign=e2e&t=sekret", { referer: "https://l.instagram.com/", "user-agent": PHONE });
+    check("a visit to a prebuilt page is served as before", r.status === 200 && r.text.includes("Galeria"));
+    await visit("/faq", { referer: "https://mikipierniki.pl/galeria" });
+    await visit("/faq");
+    await visit("/galeria.html", { referer: "https://www.google.com/" });
+    await visit("/warsztaty", { referer: "https://example.org/blog/post?id=1" });
+    await raw("GET", "/faq", { "user-agent": BROWSER }); // no Sec-Fetch headers: a script, not a browser
+    await visit("/faq", { "user-agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)" });
+    await visit("/faq", { "sec-purpose": "prefetch" });
+    await visit("/zapis/wypisz?t=tajny-token");
+    await visit("/newsletter/potwierdz?t=tajny-token");
+    await visit("/panel", { authorization: auth });
+    await visit("/nie-ma-takiej-strony-xyz");
+    await visit("/faq?utm_source=%3Cscript%3E");
+    r = await visit("/do/instagram", { referer: "https://mikipierniki.pl/kontakt" });
+    check("/do/instagram redirects to Instagram and is not cached", r.status === 302 && r.headers.location === "https://instagram.com/mikipierniki" && r.headers["cache-control"] === "no-store", `${r.status} ${r.headers.location}`);
+    r = await visit("/do/mapa", { referer: "https://mikipierniki.pl/kontakt" });
+    check("/do/mapa redirects to Google Maps", r.status === 302 && r.headers.location?.startsWith("https://www.google.com/maps/search/?api=1&query="), r.headers.location);
+    const unknownOut = await Promise.all(["/do/https%3A%2F%2Fevil.example", "/do/nieznany", "/do/constructor", "/do/toString", "/do/valueOf", "/do/__proto__"].map(async (u) => (await visit(u)).status));
+    check("/do/<unknown> → 404, no open redirect, no inherited names", unknownOut.every((st) => st === 404), unknownOut.join(","));
+    // a trailing slash gets a redirect first; neither that nor a made-up name may add a row
+    const slashed = await Promise.all(["/do/instagram/", "/do/kup-tanio-spam-example/"].map(async (u) => (await visit(u)).status));
+    // private pages in unusual forms, and a full address instead of a path
+    for (const u of ["/./zapis/wypisz?t=tajny-token", "/%2e/zapis/wypisz?t=tajny-token", "/faq/../zapis/wypisz?t=tajny-token", "//zapis/wypisz?t=tajny-token", "/ZAPIS/wypisz?t=tajny-token", "http://evil.example/panel"]) await visit(u);
+    await visit("/kontakt", { referer: "http://192.168.1.10/strona" });
+    // mail-link pages send their address (with the token) as Referer to our own pages
+    await visit("/warsztaty", { referer: "https://mikipierniki.pl/newsletter/potwierdz?t=tajny-token" });
+    await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/zapis/wypisz?t=tajny-token", "user-agent": BROWSER }, JSON.stringify({ email: "z-maila@example.com" }));
+    // a form sent from a page opened with a utm link, and one rejected
+    r = await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/warsztaty?utm_source=instagram", "user-agent": BROWSER }, JSON.stringify({ email: "statystyki@example.com" }));
+    check("form post with a referer still works", r.status === 200, r.text);
+    await raw("POST", "/api/zapytanie", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/kontakt", "user-agent": BROWSER }, JSON.stringify({ kind: "kontakt" }));
+    // a form whose Referer names a private page (forged, or the panel): the page is not kept
+    await raw("POST", "/api/zapytanie", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/panel/termin/t-abc", "user-agent": BROWSER }, JSON.stringify({ kind: "kontakt" }));
+
+    html = await (await statsPage()).text();
+    const rows = q("SELECT * FROM stats_views ORDER BY path, source");
+    const row = (path, source) => rows.filter((x) => x.path === path && x.source === source);
+    const ig = row("/galeria", "Instagram")[0];
+    check("visit from Instagram: entry with utm tags, phone, query without tags dropped", ig && ig.entries === 1 && ig.utm_source === "instagram" && ig.utm_medium === "bio" && ig.utm_campaign === "e2e" && ig.device === "telefon", JSON.stringify(ig));
+    check("step between our pages: a view, not an entry", row("/faq", "").reduce((a, x) => a + x.views, 0) === 1 && row("/faq", "").every((x) => x.entries === 0), JSON.stringify(row("/faq", "")));
+    check("no referer → direct entry from a computer", row("/faq", "(bezpośrednio)").some((x) => x.entries >= 1 && x.device === "komputer"), JSON.stringify(rows));
+    check("/galeria.html counts as /galeria, Google grouped", row("/galeria", "Google").length === 1);
+    check("other sites by host only", row("/warsztaty", "example.org").length === 1 && !JSON.stringify(rows).includes("blog/post"));
+    check("unknown address → one (404) bucket", row("(404)", "(bezpośrednio)").length === 1 && !rows.some((x) => x.path.includes("nie-ma-takiej")));
+    check("odd utm value → (inne)", rows.some((x) => x.path === "/faq" && x.utm_source === "(inne)"));
+    check("outbound clicks counted under /do/*", row("/do/instagram", "").length === 1 && row("/do/mapa", "").length === 1, JSON.stringify(rows.filter((x) => x.path.startsWith("/do"))));
+    check("/do/<name>/ redirects without a row; a click counts once", slashed.every((st) => st >= 300 && st < 400) && rows.filter((x) => x.path.startsWith("/do/")).length === 2
+      && sumViews("path = '/do/instagram'").v === 1, `${slashed} ${JSON.stringify(rows.filter((x) => x.path.startsWith("/do")))}`);
+    check("private pages in unusual forms are not counted", !rows.some((x) => /panel|zapis|newsletter|wypisz/.test(x.path)), JSON.stringify(rows.map((x) => x.path)));
+    check("a bare IP address as the referring site → (inne)", row("/kontakt", "(inne)").length === 1 && !JSON.stringify(rows).includes("192.168"), JSON.stringify(row("/kontakt", "(inne)")));
+    const lastAt = q("SELECT value FROM stats_meta WHERE key = 'last_view_at'")[0]?.value ?? "";
+    check("last counted visit kept to the minute", /:00\.000Z$/.test(lastAt) && Date.now() - Date.parse(lastAt) < 5 * 60000, lastAt);
+    check("not counted: no Sec-Fetch, bots, prefetch, panel, token pages", sumViews("path = '/faq'").v === 3 && !rows.some((x) => /panel|zapis|newsletter/.test(x.path)), JSON.stringify(sumViews("path = '/faq'")));
+    check("nothing personal stored (no tokens, IPs or browser strings)", !/tajny|sekret|127\.0\.0\.1|Mozilla|Safari/.test(JSON.stringify(q("SELECT * FROM stats_views")) + JSON.stringify(q("SELECT * FROM stats_forms"))));
+    const hours = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_hours")[0].v;
+    const pageViews = sumViews("path LIKE '/%' AND path NOT LIKE '/do/%'").v;
+    check("hourly sums cover real pages only (no clicks out, no 404)", hours === pageViews && pageViews < sumViews("1").v, `${hours} vs ${pageViews}`);
+    const formRows = q("SELECT * FROM stats_forms");
+    check("sent form counted with its page and utm_source", formRows.some((x) => x.form === "newsletter" && x.page === "/warsztaty" && x.utm_source === "instagram" && x.outcome === "wyslane" && x.count === 1), JSON.stringify(formRows));
+    check("rejected form counted as rejected", formRows.some((x) => x.form === "zapytanie" && x.page === "/kontakt" && x.outcome === "odrzucone"));
+    check("form sent from a private page: page unknown", formRows.some((x) => x.form === "zapytanie" && x.page === "(nieznana)") && !formRows.some((x) => /panel|t-abc/.test(x.page)), JSON.stringify(formRows));
+    check("stats tab shows sources, pages, clicks and forms", html.includes("Instagram") && html.includes("Galeria") && html.includes("Kliknięcia: mapa Google") && html.includes("Powiadom mnie") && html.includes("Ostatnie zliczone wejście"));
+    check("stats tab: every range renders", (await Promise.all(["7", "30", "90", "365", "all", "x"].map(async (k) => (await get(`/panel/statystyki?okres=${k}`, { authorization: auth })).status))).every((st) => st === 200));
+    check("stats tab needs the password", (await get("/panel/statystyki")).status === 401);
+    // past the daily row limit, new pages and tags from a forged Referer go to "(inne)"
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw" }).format(new Date());
+    { const d = db(); const add = d.prepare("INSERT INTO stats_forms VALUES (?, 'newsletter', ?, '', 'wyslane', 1)"); for (let i = 0; i < 3000; i++) add.run(today, `/wypelniacz-${i}`); d.close(); }
+    await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/zmyslona-strona?utm_source=losowe", "user-agent": BROWSER }, JSON.stringify({ email: "limit@example.com" }));
+    await statsPage();
+    check("form rows are capped per day", q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = 'zmyslona-strona' OR page = '/zmyslona-strona'")[0].n === 0 && q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = '(inne)' AND utm_source = '(inne)'")[0].n === 1);
+    { const d = db(); d.prepare("DELETE FROM stats_forms WHERE page LIKE '/wypelniacz-%'").run(); d.close(); }
+    // the view rows are counted as they are added: one batch of forged sources can't run past the limit
+    {
+      const d = db();
+      const have = d.prepare("SELECT COUNT(*) AS n FROM stats_views WHERE day = ?").get(today).n;
+      const add = d.prepare("INSERT INTO stats_views VALUES (?, '/faq', ?, '', '', '', 'komputer', 1, 1)");
+      for (let i = have; i < 995; i++) add.run(today, `wypelniacz-${i}.example`);
+      d.close();
+    }
+    await statsPage();
+    for (let i = 0; i < 20; i++) await visit("/faq", { referer: `https://spam-${i}.example/` });
+    await statsPage();
+    const spamRows = q("SELECT COUNT(*) AS n FROM stats_views WHERE day = ? AND source LIKE 'spam-%'", today)[0].n;
+    const spamOther = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_views WHERE day = ? AND path = '/faq' AND source = '(inne)' AND device = 'komputer'", today)[0].v;
+    check("view rows are capped per day, also within one batch", spamRows === 5 && spamOther >= 15 && q("SELECT COUNT(*) AS n FROM stats_views WHERE day = ?", today)[0].n <= 1001, `${spamRows} named, ${spamOther} in (inne)`);
+    { const d = db(); d.prepare("DELETE FROM stats_views WHERE source LIKE 'wypelniacz-%' OR source LIKE 'spam-%'").run(); d.close(); }
+    const ts = q(`SELECT * FROM term_stats WHERE term_id = ?`, t1)[0];
+    check("term totals for the stats tab", ts && ts.booked_people > 0 && ts.frozen === 0, JSON.stringify(ts));
+  }
+
   // ---------- production without SMTP: mail must fail visibly, not pretend to be sent ----------
   const barePort = PORT + 2;
   const bare = { ...env, PORT: String(barePort), DATABASE_PATH: join(dataDir, "bare.sqlite"), MAIL_TO_FILES: "" };
-  const second = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: bare, stdio: "ignore" });
+  const second = startApp(bare, "ignore");
   try {
     for (let i = 0; i < 100; i++) { try { await fetch(`http://127.0.0.1:${barePort}/faq`); break; } catch { await sleep(100); } }
     await fetch(`http://127.0.0.1:${barePort}/api/newsletter`, { method: "POST", headers: { origin: `http://127.0.0.1:${barePort}`, "content-type": "application/json" }, body: JSON.stringify({ email: "x@example.com" }) });
@@ -886,7 +1045,7 @@ try {
     const rEnv = { ...env, PORT: String(port), DATABASE_PATH: join(dataDir, "retention.sqlite") };
     let rlog = "";
     const start = async () => {
-      const p = spawn("node", ["dist/server/entry.mjs"], { cwd: repo, env: rEnv, stdio: ["ignore", "ignore", "pipe"] });
+      const p = startApp(rEnv, ["ignore", "ignore", "pipe"]);
       p.stderr.on("data", (b) => { rlog += b; });
       for (let i = 0; i < 100; i++) { try { await fetch(base + "/warsztaty"); break; } catch { await sleep(100); } }
       return p;
@@ -901,6 +1060,8 @@ try {
     const booking = (id, termId, status, paid) => d.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, ?, ?, 'N', 'n@example.com', '500600700', 1, 'przelew', 450, ?, ?)")
       .run(id, termId, status, ago(900), paid ? ago(899) : null);
     term("old", 31); term("recent", 29); term("y5", 5 * 366); term("y7", 7 * 365);
+    // a date typed in the past by mistake: nobody signed up, so nothing is frozen
+    term("empty", 31);
     // just inside and just outside 6 calendar years (about 2191 days)
     term("y6in", 6 * 365 - 10); term("y6out", 6 * 366 + 10);
     booking("u-old", "old", "awaiting_payment", false); booking("w-old", "old", "waitlist", false); booking("c-old", "old", "cancelled", false); booking("p-old", "old", "confirmed", true);
@@ -916,7 +1077,8 @@ try {
     consent("ended-3y-in", 3 * 365 - 10); consent("ended-3y-out", 3 * 366 + 10);
     // a subscriber confirmed before consent_log existed: rolling the schema back makes the next start add their row
     d.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('stara@example.com', 'tok-stara', 'active', ?, ?)").run(ago(100), ago(99));
-    d.exec("PRAGMA user_version = 3");
+    // tables from later migrations go too, so their migrations can run again
+    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; ALTER TABLE inquiries DROP COLUMN hidden_at; PRAGMA user_version = 3");
     d.close();
     p = await start(); // the first request starts the worker, which cleans up right away
     await sleep(500);
@@ -930,10 +1092,16 @@ try {
     check("clean-up deletes consent rows 3 years after the consent ended", left("SELECT email_hash FROM consent_log WHERE consent_version = '2026-11-21'") === "active,ended-2y,ended-3y-in", left("SELECT email_hash FROM consent_log"));
     const backfilled = d2.prepare("SELECT * FROM consent_log WHERE consent_version = 'przed-2026-11-21'").all();
     check("subscribers confirmed before consent_log get a row on upgrade", backfilled.length === 1 && backfilled[0].email_hash === sha("stara@example.com") && !!backfilled[0].confirmed_at, JSON.stringify(backfilled));
+    const frozen = d2.prepare("SELECT * FROM term_stats WHERE term_id = 'old'").get();
+    check("clean-up keeps the term's totals from before it deleted the sign-ups", frozen && frozen.frozen === 1 && frozen.booked_people === 2 && frozen.paid_people === 1 && frozen.revenue === 450 && frozen.waitlist_people === 1 && frozen.cancelled_people === 1, JSON.stringify(frozen));
+    const recent = d2.prepare("SELECT frozen FROM term_stats WHERE term_id = 'recent'").get();
+    check("terms still within 30 days are not frozen", recent && recent.frozen === 0, JSON.stringify(recent));
+    const empty = d2.prepare("SELECT frozen FROM term_stats WHERE term_id = 'empty'").get();
+    check("an ended term nobody signed up for stays live (its date can still be corrected)", !empty || empty.frozen === 0, JSON.stringify(empty));
     check("no errors from the clean-up server", !/Error/.test(rlog), rlog.slice(0, 500));
     d2.close();
   }
-  check("no server errors logged", !/\[api\]|Error/.test(log), log.slice(0, 500));
+  check("no server errors logged", !/\[api\]|\[stats\]|Error/.test(log), log.slice(0, 500));
 } finally {
   server.kill();
   if (!fail) rmSync(dataDir, { recursive: true, force: true });

@@ -111,6 +111,7 @@ export function deleteTerm(id: string): boolean {
   const used = db.prepare("SELECT (SELECT COUNT(*) FROM interest WHERE term_id = ?) + (SELECT COUNT(*) FROM bookings WHERE term_id = ?) AS n")
     .get(id, id) as { n: number };
   if (used.n > 0) return false;
+  db.prepare("DELETE FROM term_stats WHERE term_id = ?").run(id);
   db.prepare("DELETE FROM terms WHERE id = ?").run(id);
   return true;
 }

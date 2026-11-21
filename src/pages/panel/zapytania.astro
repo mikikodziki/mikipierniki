@@ -1,31 +1,67 @@
 ---
 import Panel from "@/layouts/Panel.astro";
-import { inquiries } from "@/server/inquiries";
+import { UserError } from "@/server/http";
+import { INQUIRY_FILTERS, inquiries, inquiryCounts, setInquiryHidden, type InquiryFilter } from "@/server/inquiries";
+import { back } from "@/server/panel";
 
 export const prerender = false;
 
-const rows = inquiries();
+const asFilter = (v: unknown): InquiryFilter => (INQUIRY_FILTERS.includes(v as InquiryFilter) ? (v as InquiryFilter) : "aktywne");
+const listUrl = (f: InquiryFilter) => (f === "aktywne" ? "/panel/zapytania" : `/panel/zapytania?pokaz=${f}`);
+
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData();
+  const from = asFilter(f.get("pokaz"));
+  try {
+    const action = f.get("action");
+    if (action !== "hide" && action !== "show") throw new UserError("Nieznana akcja.");
+    const id = Number(f.get("id"));
+    if (!Number.isInteger(id) || !setInquiryHidden(id, action === "hide")) throw new UserError("Nie ma takiego zapytania (mogło zostać usunięte po 12 miesiącach).");
+    return back(listUrl(from), { ok: action === "hide" ? "Zapytanie ukryte. Znajdziesz je w zakładce „Ukryte”." : "Zapytanie wróciło do aktywnych." });
+  } catch (e) {
+    if (e instanceof UserError) return back(listUrl(from), { err: e.message });
+    throw e;
+  }
+}
+
+const filter = asFilter(Astro.url.searchParams.get("pokaz"));
+const rows = inquiries(filter);
+const counts = inquiryCounts();
+const filterLabel: Record<InquiryFilter, string> = { aktywne: "Aktywne", ukryte: "Ukryte", wszystkie: "Wszystkie" };
+const empty: Record<InquiryFilter, string> = { aktywne: "Brak aktywnych zapytań.", ukryte: "Nic nie jest ukryte.", wszystkie: "Brak zapytań." };
 const kindLabel: Record<string, string> = { zamowienie: "Zamówienie", "warsztaty-zamkniete": "Warsztaty zamknięte", voucher: "Voucher", kontakt: "Kontakt" };
 const dt = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
 ---
 <Panel title="Zapytania z formularzy">
   <section class="box">
-    <p class="note">Każde zapytanie przychodzi też mailem; odpowiedź na tamtego maila trafia prosto do nadawcy. Tu jest kopia z ostatnich 12 miesięcy.</p>
-    {rows.length === 0 ? <p>Brak zapytań.</p> : (
+    <p class="note">Każde zapytanie przychodzi też mailem; odpowiedź na tamtego maila trafia prosto do nadawcy. Tu jest kopia z ostatnich 12 miesięcy. Zapytanie, które jest już załatwione, możesz ukryć; zostaje w zakładce „Ukryte” i znika razem z innymi po 12 miesiącach.</p>
+    <nav class="actions" aria-label="Które zapytania pokazać">
+      {INQUIRY_FILTERS.map((k) => (
+        <a class={`btn btn-small ${k === filter ? "btn-primary" : "btn-ghost"}`} href={listUrl(k)} aria-current={k === filter ? "page" : undefined}>{filterLabel[k]} ({counts[k]})</a>
+      ))}
+    </nav>
+    {rows.length === 0 ? <p>{empty[filter]}</p> : (
       <div class="scroll">
         <table class="tbl">
-          <thead><tr><th>Kiedy</th><th>Rodzaj</th><th>Od</th><th>Wiadomość</th></tr></thead>
+          <thead><tr><th>Kiedy</th><th>Rodzaj</th><th>Od</th><th>Wiadomość</th><th><span class="sr-only">Akcja</span></th></tr></thead>
           <tbody>
             {rows.map((r) => {
               const details = Object.entries(JSON.parse(r.details || "{}") as Record<string, string>);
               return (
-                <tr>
-                  <td>{dt(r.created_at)}</td>
+                <tr class={r.hidden_at ? "muted" : undefined}>
+                  <td>{dt(r.created_at)}{r.hidden_at && filter === "wszystkie" && <><br /><span class="note">ukryte</span></>}</td>
                   <td>{kindLabel[r.kind] ?? r.kind}</td>
                   <td>{r.name}<br /><a href={`mailto:${r.email}`}>{r.email}</a>{r.phone && <><br />{r.phone}</>}</td>
                   <td>
                     {details.length > 0 && <p class="note">{details.map(([k, v]) => `${k.replace(/_/g, " ")}: ${v}`).join(" · ")}</p>}
                     <p class="msg">{r.message}</p>
+                  </td>
+                  <td>
+                    <form method="post">
+                      <input type="hidden" name="id" value={r.id} />
+                      <input type="hidden" name="pokaz" value={filter} />
+                      <button class="btn btn-ghost btn-small" type="submit" name="action" value={r.hidden_at ? "show" : "hide"}>{r.hidden_at ? "Przywróć" : "Ukryj"}</button>
+                    </form>
                   </td>
                 </tr>
               );
@@ -39,4 +75,6 @@ const dt = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "E
 
 <style>
   .msg { white-space: pre-wrap; max-width: 60ch; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .scroll { position: relative; }
 </style>

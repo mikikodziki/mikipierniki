@@ -8,6 +8,7 @@ import VoucherCard from "../VoucherCard.astro";
 import SectionHead from "../SectionHead.astro";
 import { getGallery, getTestimonials } from "@/lib/api";
 import { site } from "@/lib/site";
+import { out } from "@/lib/outbound";
 
 const gallery = (await getGallery()).slice(0, 6);
 const testimonials = await getTestimonials();
@@ -24,7 +25,7 @@ const testimonials = await getTestimonials();
     </div>
     <div class="more">
       <a class="btn btn-ghost btn-small" href="/galeria">Cała galeria</a>
-      <a class="btn btn-ghost btn-small" href={site.instagram} rel="noopener">Instagram {site.instagramHandle}</a>
+      <a class="btn btn-ghost btn-small" href={out("instagram")} rel="noopener">Instagram {site.instagramHandle}</a>
     </div>
   </div>
 </section>
