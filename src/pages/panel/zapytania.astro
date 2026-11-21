@@ -10,7 +10,7 @@ const asFilter = (v: unknown): InquiryFilter => (INQUIRY_FILTERS.includes(v as I
 const listUrl = (f: InquiryFilter) => (f === "aktywne" ? "/panel/zapytania" : `/panel/zapytania?pokaz=${f}`);
 
 if (Astro.request.method === "POST") {
-  const f = await Astro.request.formData();
+  const f = await Astro.request.formData().catch(() => new FormData());
   const from = asFilter(f.get("pokaz"));
   try {
     const action = f.get("action");
@@ -25,7 +25,7 @@ if (Astro.request.method === "POST") {
 }
 
 const filter = asFilter(Astro.url.searchParams.get("pokaz"));
-const rows = inquiries(filter);
+const rows = inquiries(filter, 200);
 const counts = inquiryCounts();
 const filterLabel: Record<InquiryFilter, string> = { aktywne: "Aktywne", ukryte: "Ukryte", wszystkie: "Wszystkie" };
 const empty: Record<InquiryFilter, string> = { aktywne: "Brak aktywnych zapytań.", ukryte: "Nic nie jest ukryte.", wszystkie: "Brak zapytań." };
@@ -40,6 +40,7 @@ const dt = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "E
         <a class={`btn btn-small ${k === filter ? "btn-primary" : "btn-ghost"}`} href={listUrl(k)} aria-current={k === filter ? "page" : undefined}>{filterLabel[k]} ({counts[k]})</a>
       ))}
     </nav>
+    {counts[filter] > rows.length && <p class="note">Pokazuję {rows.length} najnowszych z {counts[filter]}.</p>}
     {rows.length === 0 ? <p>{empty[filter]}</p> : (
       <div class="scroll">
         <table class="tbl">
@@ -60,7 +61,7 @@ const dt = (iso: string) => new Date(iso).toLocaleString("pl-PL", { timeZone: "E
                     <form method="post">
                       <input type="hidden" name="id" value={r.id} />
                       <input type="hidden" name="pokaz" value={filter} />
-                      <button class="btn btn-ghost btn-small" type="submit" name="action" value={r.hidden_at ? "show" : "hide"}>{r.hidden_at ? "Przywróć" : "Ukryj"}</button>
+                      <button class="btn btn-ghost btn-small" type="submit" name="action" value={r.hidden_at ? "show" : "hide"} aria-label={`${r.hidden_at ? "Przywróć" : "Ukryj"} zapytanie od: ${r.name}`}>{r.hidden_at ? "Przywróć" : "Ukryj"}</button>
                     </form>
                   </td>
                 </tr>

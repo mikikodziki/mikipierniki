@@ -45,5 +45,8 @@ export function inquiryCounts(): Record<InquiryFilter, number> {
 
 /** Hides an inquiry from the default list, or brings it back. False when there is no such inquiry. */
 export function setInquiryHidden(id: number, hidden: boolean): boolean {
-  return getDb().prepare("UPDATE inquiries SET hidden_at = ? WHERE id = ?").run(hidden ? nowIso() : null, id).changes > 0;
+  const db = getDb();
+  // hiding twice (a stale tab, a double click) keeps the first time
+  if (hidden) return db.prepare("UPDATE inquiries SET hidden_at = COALESCE(hidden_at, ?) WHERE id = ?").run(nowIso(), id).changes > 0;
+  return db.prepare("UPDATE inquiries SET hidden_at = NULL WHERE id = ?").run(id).changes > 0;
 }

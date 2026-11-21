@@ -916,6 +916,18 @@ try {
       && (await listHtml()).includes("Jeszcze jedno pytanie."), r.headers.get("location"));
     r = await act("hide", 999999);
     check("hiding a missing inquiry → message", r.status === 303 && r.headers.get("location").includes("err="), r.headers.get("location"));
+    const odd = await Promise.all([
+      act("cos-innego", id),
+      act("hide", "abc"),
+      fetch(`${BASE}/panel/zapytania`, { method: "POST", redirect: "manual", headers: { authorization: auth, origin: BASE, "content-type": "application/json" }, body: "{}" }),
+    ]);
+    check("unknown action, odd id or a non-form body → message, not an error page", odd.every((x) => x.status === 303 && x.headers.get("location").includes("err=")) && !hiddenAt(id), odd.map((x) => x.status).join(","));
+    await act("hide", id);
+    const first = hiddenAt(id);
+    await sleep(20);
+    await act("hide", id);
+    check("hiding twice keeps the first time", !!first && hiddenAt(id) === first);
+    await act("show", id);
     const noPassword = await fetch(`${BASE}/panel/zapytania`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: `action=hide&id=${id}` });
     const crossSite = await act("hide", id, "aktywne", { origin: "https://evil.example" });
     check("hiding without the password → 401, from another site → 403", noPassword.status === 401 && crossSite.status === 403 && !hiddenAt(id), `${noPassword.status} ${crossSite.status}`);
@@ -969,6 +981,8 @@ try {
     // private pages in unusual forms, and a full address instead of a path
     for (const u of ["/./zapis/wypisz?t=tajny-token", "/%2e/zapis/wypisz?t=tajny-token", "/faq/../zapis/wypisz?t=tajny-token", "//zapis/wypisz?t=tajny-token", "/ZAPIS/wypisz?t=tajny-token", "http://evil.example/panel"]) await visit(u);
     await visit("/kontakt", { referer: "http://192.168.1.10/strona" });
+    // start.mjs keeps 512 characters of the address: a tag cut in half is dropped, not stored shortened
+    await visit(`/regulamin?x=${"a".repeat(480)}&utm_source=instagram-stories`);
     // mail-link pages send their address (with the token) as Referer to our own pages
     await visit("/warsztaty", { referer: "https://mikipierniki.pl/newsletter/potwierdz?t=tajny-token" });
     await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/zapis/wypisz?t=tajny-token", "user-agent": BROWSER }, JSON.stringify({ email: "z-maila@example.com" }));
@@ -994,6 +1008,7 @@ try {
     check("/do/<name>/ redirects without a row; a click counts once", slashed.every((st) => st >= 300 && st < 400) && rows.filter((x) => x.path.startsWith("/do/")).length === 2
       && sumViews("path = '/do/instagram'").v === 1, `${slashed} ${JSON.stringify(rows.filter((x) => x.path.startsWith("/do")))}`);
     check("private pages in unusual forms are not counted", !rows.some((x) => /panel|zapis|newsletter|wypisz/.test(x.path)), JSON.stringify(rows.map((x) => x.path)));
+    check("a utm tag cut by the buffer limit is dropped, not shortened", row("/regulamin", "(bezpośrednio)").some((x) => x.utm_source === "") && !rows.some((x) => /^instagram-s/.test(x.utm_source)), JSON.stringify(row("/regulamin", "(bezpośrednio)")));
     check("a bare IP address as the referring site → (inne)", row("/kontakt", "(inne)").length === 1 && !JSON.stringify(rows).includes("192.168"), JSON.stringify(row("/kontakt", "(inne)")));
     const lastAt = q("SELECT value FROM stats_meta WHERE key = 'last_view_at'")[0]?.value ?? "";
     check("last counted visit kept to the minute", /:00\.000Z$/.test(lastAt) && Date.now() - Date.parse(lastAt) < 5 * 60000, lastAt);
