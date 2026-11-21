@@ -4,13 +4,13 @@ import PageHead from "@/components/PageHead.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import { getVenues } from "@/lib/api";
 import { site } from "@/lib/site";
-import { out, studioMapQuery, studioPlace } from "@/lib/outbound";
+import { out, studioMapQuery } from "@/lib/outbound";
 
 const venues = await getVenues();
 const home = venues[0];
+const homeAddress = home?.address ? `${home.address}, ${home.city}` : undefined;
 // The Google map loads only after a click: until then the browser sends Google nothing (privacy policy, section 7).
-// It shows the district only: the street address must not appear anywhere (docs/dane.md).
-const mapSrc = `https://maps.google.com/maps?q=${studioMapQuery}&z=14&output=embed&hl=pl`;
+const mapSrc = `https://maps.google.com/maps?q=${studioMapQuery}&z=17&output=embed&hl=pl`;
 // the "open in Google Maps" link goes through /do/mapa, which counts the click (statistics)
 const mapLink = out("mapa");
 
@@ -28,6 +28,7 @@ const jsonLd = {
   ...(home && {
     address: {
       "@type": "PostalAddress",
+      ...(home.address && { streetAddress: home.address }),
       addressLocality: home.city,
       addressCountry: "PL",
     },
@@ -60,7 +61,7 @@ const jsonLd = {
           {home && (
             <div>
               <dt>Miejsce warsztatów</dt>
-              <dd>{studioPlace}</dd>
+              <dd>{home.address && <>{home.address}<br /></>}{home.city}</dd>
             </div>
           )}
           <div>
@@ -100,8 +101,8 @@ const jsonLd = {
         <h2 id="venues-title">Warsztaty we Wrocławiu</h2>
         <p class="lead">Wszystkie warsztaty otwarte prowadzę w mojej pracowni we Wrocławiu. Warsztaty dla firm i grup zamkniętych poprowadzę u siebie albo z dojazdem do Was.</p>
       </div>
-      {home && (
-        <div class="venue-map" data-map={mapSrc} data-map-title={`Mapa: okolica pracowni Miki Pierniki — ${studioPlace}`}>
+      {homeAddress && (
+        <div class="venue-map" data-map={mapSrc} data-map-title={`Mapa dojazdu do Miki Pierniki — ${homeAddress}`}>
           <div class="map-gate">
             <svg class="map-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" /></svg>
             <button class="btn btn-primary btn-small" type="button" data-map-show>Pokaż mapę</button>

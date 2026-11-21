@@ -6,7 +6,7 @@ import type { FaqItem, GalleryItem, Testimonial, Venue } from "./types";
 import { site } from "./site";
 
 export const venues: Venue[] = [
-  { id: "pracownia", name: "Pracownia Miki", city: "Wrocław", district: "Szczepin" },
+  { id: "pracownia", name: "Pracownia Miki", city: "Wrocław", address: "ul. Długa 55J", coordinates: { lat: 51.123959, lng: 17.013382 } },
 ];
 
 // Opinions: empty until real ones arrive (Dominika, 2026-11-20). With an empty list the whole

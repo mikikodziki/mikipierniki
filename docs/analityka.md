@@ -25,9 +25,8 @@ płatnymi warsztatami.
   potwierdzić domenę: plik HTML w `public/` (zwykły deploy) albo rekord TXT w OVH (zmiana DNS).
 - [ ] **Monitoring dostępności:** UptimeRobot (darmowe konto).
 - [ ] Opcjonalnie: pole „Skąd o mnie wiesz?” w formularzach.
-- [ ] Opcjonalnie: profil firmy w Google (Google Business Profile). To decyzja Dominiki. Adresu
-  pracowni pokazać nie wolno (`docs/dane.md`), więc tylko jako firma bez adresu, z obszarem
-  działania (Wrocław).
+- [ ] Opcjonalnie: profil firmy w Google (Google Business Profile). To decyzja Dominiki, m.in. czy
+  pokazać adres pracowni.
 
 ## Co jest zrobione (A)
 
