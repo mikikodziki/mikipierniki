@@ -670,10 +670,10 @@ try {
 
   // ---------- panel: correcting, withdrawing and deleting a date pick ----------
   {
-    // own terms and pi- addresses; both terms start at the same minute, so the second id is the first plus "-2"
-    c = await create({ title: "Poprawki chętnych", date: day(40) });
+    // own terms and pi- addresses on a day no other section uses; both start at the same minute, so the second id is the first plus "-2"
+    c = await create({ title: "Poprawki chętnych", date: day(50) });
     const tPi = c.loc.split("/").pop().split("?")[0];
-    c = await create({ title: "Ta sama godzina", date: day(40) });
+    c = await create({ title: "Ta sama godzina", date: day(50) });
     const tPi2 = c.loc.split("/").pop().split("?")[0];
     check("setup: the second term's id extends the first", tPi2 === `${tPi}-2`, `${tPi} ${tPi2}`);
     const piPick = (termIds, email, extra = {}) => api("/api/zainteresowanie", { termIds, people: 2, name: "Ula Pi", email, phone: "500 600 700", notes: "pi uwagi", consent: true, ...extra });

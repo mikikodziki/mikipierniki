@@ -404,7 +404,7 @@ export function bookingChanged(
       // no street address for a waitlist place, as in the waitlist mail
       { details: bookingDetails(b, t, !waitlist) },
       ...payment,
-      { p: "Coś się nie zgadza (np. liczba osób albo dane)? Odpisz na tego maila, a poprawię rezerwację." },
+      { small: CORRECTION_LINE },
       ...bookingInfo(),
     ]),
   };
