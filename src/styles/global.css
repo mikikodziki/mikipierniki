@@ -179,10 +179,16 @@ input[type="number"].input::-webkit-inner-spin-button, input[type="number"].inpu
 .form-grid { display: grid; gap: 16px; }
 .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 480px) { .row2 { grid-template-columns: 1fr; } }
-/* fields side by side share rows (label, field, hint, error), so the fields start at the same
-   height even when one label wraps; browsers without subgrid just stack each field as before */
-.row2--aligned { row-gap: 6px; }
-.row2--aligned > .field { display: grid; grid-row: span 4; grid-template-rows: subgrid; align-content: start; }
+/* Two fields side by side share rows (label, field, error, hint), so the fields start at the same
+   height even when one label wraps. Spacing comes from margins, so empty rows take no room.
+   In one column, or without subgrid, the fields stay as they are everywhere else. */
+@supports (grid-template-rows: subgrid) {
+  @media (min-width: 481px) {
+    .row2--aligned { row-gap: 0; }
+    .row2--aligned > .field { display: grid; grid-row: span 4; grid-template-rows: subgrid; row-gap: 0; align-items: start; }
+    .row2--aligned > .field > * { margin-top: 6px; }
+  }
+}
 .radio { display: flex; gap: 10px; align-items: center; font-weight: 500; padding: 14px 16px; background: var(--field); border-radius: var(--radius); cursor: pointer; box-shadow: inset 0 0 0 1px var(--field-line); }
 
 /* a form always sits on the deeper panel tone, so the light fields read clearly */
