@@ -46,7 +46,8 @@ jobs:
         run: |
           ssh seohost 'mkdir -p mikipierniki/.upload && rm -rf mikipierniki/dist.next'
           rsync -az dist/ seohost:mikipierniki/dist.next/
-          rsync -az package.json package-lock.json deploy/start.mjs seohost:mikipierniki/.upload/
+          rsync -az package.json package-lock.json deploy/start.mjs deploy/cron.sh deploy/backup.sh \
+            seohost:mikipierniki/.upload/
 
       - name: Swap, restart and check
         run: |
@@ -54,6 +55,7 @@ jobs:
             cd ~/mikipierniki
             selector() { cloudlinux-selector "$@" --json --interpreter nodejs --app-root mikipierniki | grep -q "\"success\""; }
             cp .upload/package.json .upload/start.mjs .
+            install -m 700 .upload/cron.sh .upload/backup.sh ../mikipierniki-data/
             if ! cmp -s package-lock.json .upload/package-lock.json; then
               cp .upload/package-lock.json .
               selector install-modules

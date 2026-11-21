@@ -8,7 +8,8 @@ import { legal, site } from "@/lib/site";
  * DRAFT: to be verified by a lawyer before launch.
  * Company data comes from `legal` in src/lib/site.ts; [bracketed] notes left in the text are for
  * the lawyer. Keep the "odbiorcy" list in sync
- * with the real providers. Today the site, database and e-mail all run on one seohost hosting account;
+ * with the real providers. Today the site, database and e-mail all run on one seohost hosting account,
+ * and the nightly database backups go to AWS S3 in Stockholm;
  * add the payment operator here when online payments arrive.
  * The retention periods in section 5 are enforced by src/server/tick.ts (cleanup).
  */
@@ -59,6 +60,7 @@ import { legal, site } from "@/lib/site";
         <p>Nie sprzedaję Twoich danych. Mogą je otrzymać wyłącznie firmy, które pomagają mi prowadzić działalność, i tylko w niezbędnym zakresie:</p>
         <ul>
           <li>dostawca serwera, na którym działają strona, baza zgłoszeń i rezerwacji oraz poczta e-mail: {legal.hosting},</li>
+          <li>dostawca miejsca na zaszyfrowane kopie zapasowe tej bazy (serwery w Sztokholmie, w Szwecji): {legal.backups},</li>
           {legal.accounting && <li>biuro rachunkowe {legal.accounting} – w zakresie danych z faktur,</li>}
           <li>operator paczkomatów lub firma kurierska – przy wysyłce zamówionych pierników.</li>
         </ul>
@@ -72,6 +74,7 @@ import { legal, site } from "@/lib/site";
           <li>Adres e-mail w powiadomieniach o terminach: do czasu wypisania się lub wycofania zgody; po wypisaniu usuwam go w ciągu doby. Adresy, których nikt nie potwierdził, usuwam po 30 dniach.</li>
           <li>Informacje o alergiach: do 30 dni po warsztatach.</li>
           <li>Kopie wiadomości e-mail wysłanych ze strony: 30 dni od wysłania.</li>
+          <li>Kopie zapasowe bazy: 30 dni. Dane usunięte z bazy znikają z kopii najpóźniej po tym czasie.</li>
           <li>Zdjęcia z Twoim wizerunkiem: do czasu wycofania zgody.</li>
           {legal.business && <li>Dokumenty księgowe: przez okres wymagany przepisami podatkowymi (5 lat od końca roku, w którym powstał obowiązek podatkowy).</li>}
         </ul>

@@ -35,6 +35,8 @@ export const legal: {
   nip: string | null;
   regon: string | null;
   hosting: string;
+  /** Where the nightly database backups are kept (S3 in Stockholm, see deploy/README.md) */
+  backups: string;
   /** Accounting office, if there is one; listed among the data recipients */
   accounting: string | null;
   /** Latest notice, in days, when a term is cancelled for too few people */
@@ -50,6 +52,7 @@ export const legal: {
   nip: null,
   regon: null,
   hosting: "SEOHOST Sp. z o.o., ul. Obornicka 330, 60-689 Poznań",
+  backups: "Amazon Web Services EMEA SARL, 38 Avenue John F. Kennedy, L-1855 Luksemburg",
   accounting: null,
   lowTurnoutNoticeDays: "7",
   // the day the site goes live

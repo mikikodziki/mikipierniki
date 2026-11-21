@@ -13,8 +13,10 @@ samym hostingu, a DNS domeny w OVH.
 ~/mikipierniki/stderr.log            błędy aplikacji
 ~/mikipierniki-data/.env             hasła i ustawienia, chmod 600 (wzór: deploy/env.example)
 ~/mikipierniki-data/mikipierniki.sqlite   baza
-~/mikipierniki-data/backups/         nocne kopie, 30 dni
-~/mikipierniki-data/cron.sh, backup.sh    skrypty z crontaba (kopie z deploy/)
+~/mikipierniki-data/backups/         nocne kopie, 30 dni (druga kopia w S3, niżej)
+~/mikipierniki-data/backup.log       wynik każdej nocnej kopii
+~/mikipierniki-data/backup.env       tajny adres do wysyłki kopii do S3, chmod 600
+~/mikipierniki-data/cron.sh, backup.sh   skrypty z crontaba; wgrywa je deploy z deploy/
 ~/domains/mikipierniki.pl/public_html/.htaccess   konfiguracja aplikacji (pisze ją panel) + przekierowania
 ```
 
@@ -41,11 +43,12 @@ Adres serwera, port i użytkownika SSH podaje mail od seohost po włączeniu „
    cloudlinux-selector install-modules --json --interpreter nodejs --app-root mikipierniki
    cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
    ```
-4. **Cron i kopie:** skopiuj `deploy/cron.sh` i `deploy/backup.sh` do `~/mikipierniki-data/`
-   (`chmod 700`) i dopisz do `crontab -e`:
+4. **Cron i kopie:** skrypty z `deploy/` wgrywa każdy deploy. Crontab ustaw z pliku i sprawdź
+   `crontab -l`, bo `crontab -l | … | crontab -` potrafi go wyczyścić. Pod nagłówkiem
+   DirectAdmina (`#direct_crons enabled`, `MAILTO=""`, `PATH=…`):
    ```
-   */5 * * * * $HOME/mikipierniki-data/cron.sh
    30 3 * * * $HOME/mikipierniki-data/backup.sh
+   */5 * * * * $HOME/mikipierniki-data/cron.sh
    ```
 5. **Certyfikat:** DirectAdmin → Certyfikaty SSL/TLS. ACME (Let's Encrypt) wystawia i odnawia
    go sam, gdy domena wskazuje na serwer. Przekierowanie http → https robi serwer.
@@ -89,8 +92,37 @@ sqlite3 ~/mikipierniki-data/mikipierniki.sqlite "select status, count(*) from ou
 cd ~/mikipierniki && mv dist dist.bad && mv dist.prev dist && cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
 ```
 
-Kopie bazy leżą na tym samym koncie. Raz na jakiś czas ściągnij je na inny komputer:
-`rsync -a <ssh>:mikipierniki-data/backups/ ~/kopie-mikipierniki/`.
+## Kopie bazy w S3
+
+Co noc o 3:30 `backup.sh` robi kopię bazy (`sqlite3 .backup`) i sprawdza ją (`integrity_check`).
+Kopia zostaje na serwerze, a spakowana trafia do S3 jako `db-RRRR-MM-DD-GGMM-<losowe>.sqlite.gz`.
+Wynik każdej nocy jest w `~/mikipierniki-data/backup.log`.
+
+- **Konto:** AWS mikusi, profil `mikusia`, region `eu-north-1` (Sztokholm). Bez dodatkowych
+  użytkowników i ról IAM.
+- **Bucket:**
+  - publiczny dostęp zablokowany (Block Public Access), szyfrowanie SSE-S3, tylko HTTPS,
+  - kopie znikają po 30 dniach (reguła cyklu życia). Tyle obiecuje polityka prywatności.
+- **Jak serwer wysyła bez klucza:** polityka bucketu pozwala tylko na `PutObject`, tylko z IP
+  serwera seohost i tylko pod tajną ścieżką. Ścieżka jest w `backup.env`
+  (`S3_URL=https://<bucket>.s3.eu-north-1.amazonaws.com/<ścieżka>`). Czytać, listować i kasować
+  może tylko konto mikusi.
+- **Ochrona przed nadpisaniem:** każda kopia ma losową końcówkę nazwy, której serwer nigdzie nie
+  zapisuje. Ktoś, kto przejmie hosting, może dorzucić pliki, ale nie nadpisze istniejących.
+- **Treść kopii:** `Content-MD5` sprawia, że S3 odrzuca uszkodzone pliki.
+- **Gdy seohost zmieni IP serwera:** wysyłka zacznie się kończyć błędem `403` w `backup.log`.
+  Trzeba wtedy poprawić IP w polityce bucketu.
+
+Odtworzenie (na laptopie z `aws login --profile mikusia`):
+
+```sh
+aws s3 ls s3://<bucket>/ --recursive --profile mikusia
+aws s3 cp s3://<bucket>/<ścieżka>/db-….sqlite.gz - --profile mikusia | gunzip > mikipierniki.sqlite
+sqlite3 mikipierniki.sqlite "PRAGMA integrity_check"
+# na serwerze: zatrzymaj aplikację, podmień plik, usuń mikipierniki.sqlite-wal i -shm, uruchom
+cloudlinux-selector stop --json --interpreter nodejs --app-root mikipierniki
+cloudlinux-selector start --json --interpreter nodejs --app-root mikipierniki
+```
 
 ## Warto wiedzieć
 
