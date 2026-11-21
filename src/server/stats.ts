@@ -123,6 +123,11 @@ function outcomeOf(status: number): Outcome | null {
   return "odrzucone";
 }
 
+/** A real page of the site, as opposed to an outbound click (/do/*) or the (404) and (błąd) buckets */
+const isPage = (path: string) => path.startsWith("/") && !path.startsWith("/do/");
+/** The same test in SQL, for the reports */
+const PAGE_SQL = "path LIKE '/%' AND path NOT LIKE '/do/%'";
+
 const isPhone = (h: RawHit) => h.mobile === "?1" || /Mobi|Android|iPhone|iPad|iPod/.test(h.ua ?? "");
 
 type ViewRow = { day: string; path: string; source: string; us: string; um: string; uc: string; device: string; views: number; entries: number };
@@ -160,9 +165,11 @@ export function collectHits(): number {
       const k = [row.day, row.path, row.source, row.us, row.um, row.uc, row.device].join("\u0000");
       const had = views.get(k);
       if (had) { had.views++; had.entries += entry; } else views.set(k, row);
-      const hk = `${day}\u0000${hour}`;
-      const hh = hours.get(hk);
-      if (hh) { hh.views++; hh.entries += entry; } else hours.set(hk, { day, hour, views: 1, entries: entry });
+      if (isPage(path)) {
+        const hk = `${day}\u0000${hour}`;
+        const hh = hours.get(hk);
+        if (hh) { hh.views++; hh.entries += entry; } else hours.set(hk, { day, hour, views: 1, entries: entry });
+      }
       lastView = Math.max(lastView, h.at);
     } else if (h.method === "POST") {
       const form = url.pathname.replace(/^\/api\//, "").replace(/\/+$/, "") as Form;
@@ -200,9 +207,19 @@ export function collectHits(): number {
     const addHour = db.prepare(`INSERT INTO stats_hours (day, hour, views, entries) VALUES (?, ?, ?, ?)
       ON CONFLICT DO UPDATE SET views = views + excluded.views, entries = entries + excluded.entries`);
     for (const r of hours.values()) addHour.run(r.day, r.hour, r.views, r.entries);
+    const formRowsToday = db.prepare("SELECT COUNT(*) AS n FROM stats_forms WHERE day = ?");
+    const formExists = db.prepare("SELECT 1 FROM stats_forms WHERE day = ? AND form = ? AND page = ? AND utm_source = ? AND outcome = ?");
     const addForm = db.prepare(`INSERT INTO stats_forms (day, form, page, utm_source, outcome, count) VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT DO UPDATE SET count = count + excluded.count`);
-    for (const r of forms.values()) addForm.run(r.day, r.form, r.page, r.us, r.outcome, r.count);
+    const formsFull = new Map<string, boolean>();
+    for (const r of forms.values()) {
+      if (!formsFull.has(r.day)) formsFull.set(r.day, (formRowsToday.get(r.day) as { n: number }).n >= MAX_ROWS_PER_DAY);
+      if (formsFull.get(r.day) && !formExists.get(r.day, r.form, r.page, r.us, r.outcome)) {
+        r.page = OTHER;
+        r.us = r.us && OTHER;
+      }
+      addForm.run(r.day, r.form, r.page, r.us, r.outcome, r.count);
+    }
     if (lastView) {
       db.prepare("INSERT INTO stats_meta (key, value) VALUES ('last_view_at', ?) ON CONFLICT DO UPDATE SET value = excluded.value")
         .run(new Date(lastView).toISOString());
@@ -232,7 +249,7 @@ export function trafficReport(from: string | null): TrafficReport {
   const db = getDb();
   const since = from ?? "0000-00-00";
   const all = <T>(sql: string) => db.prepare(sql).all(since) as unknown as T[];
-  const totals = db.prepare("SELECT COALESCE(SUM(views), 0) AS views, COALESCE(SUM(entries), 0) AS entries FROM stats_views WHERE day >= ? AND path NOT LIKE '/do/%'")
+  const totals = db.prepare(`SELECT COALESCE(SUM(views), 0) AS views, COALESCE(SUM(entries), 0) AS entries FROM stats_views WHERE day >= ? AND ${PAGE_SQL}`)
     .get(since) as { views: number; entries: number };
   const week = Array.from({ length: 7 }, () => Array<number>(24).fill(0));
   for (const r of all<{ day: string; hour: number; entries: number }>("SELECT day, hour, entries FROM stats_hours WHERE day >= ?")) {
@@ -241,13 +258,13 @@ export function trafficReport(from: string | null): TrafficReport {
   }
   return {
     ...totals,
-    daily: all("SELECT day, SUM(views) AS views, SUM(entries) AS entries FROM stats_views WHERE day >= ? AND path NOT LIKE '/do/%' GROUP BY day ORDER BY day"),
-    sources: all("SELECT source, SUM(entries) AS entries FROM stats_views WHERE day >= ? AND entries > 0 GROUP BY source ORDER BY entries DESC, source"),
+    daily: all(`SELECT day, SUM(views) AS views, SUM(entries) AS entries FROM stats_views WHERE day >= ? AND ${PAGE_SQL} GROUP BY day ORDER BY day`),
+    sources: all(`SELECT source, SUM(entries) AS entries FROM stats_views WHERE day >= ? AND ${PAGE_SQL} AND entries > 0 GROUP BY source ORDER BY entries DESC, source`),
     campaigns: all(`SELECT utm_source AS source, utm_medium AS medium, utm_campaign AS campaign, SUM(entries) AS entries, SUM(views) AS views
-      FROM stats_views WHERE day >= ? AND (utm_source != '' OR utm_medium != '' OR utm_campaign != '')
+      FROM stats_views WHERE day >= ? AND ${PAGE_SQL} AND (utm_source != '' OR utm_medium != '' OR utm_campaign != '')
       GROUP BY utm_source, utm_medium, utm_campaign ORDER BY entries DESC, views DESC`),
     pages: all("SELECT path, SUM(views) AS views, SUM(entries) AS entries FROM stats_views WHERE day >= ? GROUP BY path ORDER BY views DESC, path"),
-    devices: all("SELECT device, SUM(entries) AS entries, SUM(views) AS views FROM stats_views WHERE day >= ? AND path NOT LIKE '/do/%' GROUP BY device ORDER BY entries DESC"),
+    devices: all(`SELECT device, SUM(entries) AS entries, SUM(views) AS views FROM stats_views WHERE day >= ? AND ${PAGE_SQL} GROUP BY device ORDER BY entries DESC`),
     week,
     lastViewAt: (db.prepare("SELECT value FROM stats_meta WHERE key = 'last_view_at'").get() as { value: string } | undefined)?.value ?? null,
     firstDay: (db.prepare("SELECT MIN(day) AS d FROM stats_views").get() as { d: string | null }).d,
