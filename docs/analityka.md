@@ -53,9 +53,16 @@ rok albo od początku:
   IP, pełny User-Agent i parametry adresu inne niż `utm_*` nie trafiają do bazy.
 - **Sumy terminów:** `src/server/term-stats.ts` liczy je w tabeli `term_stats`. Zamraża je tuż
   przed tym, jak porządki usuną dane uczestników, więc sezony można porównać po latach.
-- **Ochrona przed zaśmiecaniem bazy:** nieznane adresy liczą się jako jeden „(404)”. Dziwne
-  wartości utm zapisują się jako „(inne)”. Po 3000 różnych wierszy dziennie nowe źródła i
-  oznaczenia też idą do „(inne)”.
+- **Ochrona przed zaśmiecaniem bazy:** nieznane adresy liczą się jako jeden „(404)”, a `/do/*`
+  tylko dla nazw z listy. Dziwne wartości utm zapisują się jako „(inne)”, adresy IP w miejscu
+  witryny odsyłającej też. Po 1000 różnych wierszy dziennie (liczonych przy każdym dopisaniu) nowe
+  źródła i oznaczenia idą do „(inne)”. Bufor w pamięci trzyma tylko skrócone pola, więc pełny
+  (10 tys. notatek) zajmuje kilka MB.
+- **Strony prywatne:** adresy w nietypowej postaci (`/./zapis`, `//zapis`, `%2e`, pełny adres
+  zamiast ścieżki) nie są liczone wcale. Panel i strony z tokenem odpadają też przy sumowaniu,
+  także jako strona, z której wysłano formularz.
+- **Linki utm:** nie wpisujemy w nie niczego osobowego (imion, adresów e-mail). Oznaczenie ma mówić
+  o kanale, nie o osobie, bo zapisuje się dosłownie.
 - **Testy:** E2E uruchamia serwer tak jak produkcja (`start.mjs` obok `dist/`) i sprawdza liczenie,
   pomijanie botów, prefetchu i stron prywatnych, przekierowania, formularze, zakładkę oraz
   zamrażanie sum terminów.

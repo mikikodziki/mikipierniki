@@ -29,12 +29,17 @@ export function refreshTermStats(db: DatabaseSync = getDb()): void {
   `).run(nowIso());
 }
 
-/** Takes the final totals of terms whose sign-ups are about to be deleted (call inside the clean-up). */
+/**
+ * Takes the final totals of terms whose sign-ups are about to be deleted (call inside the clean-up).
+ * A term nobody signed up for stays live, so a date typed in the past by mistake and corrected later
+ * still counts the sign-ups that come after.
+ */
 export function freezeTermStats(db: DatabaseSync, termIds: string[]): void {
   if (!termIds.length) return;
   refreshTermStats(db);
-  const freeze = db.prepare("UPDATE term_stats SET frozen = 1 WHERE term_id = ?");
-  for (const id of termIds) freeze.run(id);
+  const freeze = db.prepare(`UPDATE term_stats SET frozen = 1 WHERE term_id = ?
+    AND (EXISTS (SELECT 1 FROM interest WHERE term_id = ?) OR EXISTS (SELECT 1 FROM bookings WHERE term_id = ?))`);
+  for (const id of termIds) freeze.run(id, id, id);
 }
 
 export interface TermStat {

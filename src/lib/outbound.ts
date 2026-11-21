@@ -2,12 +2,12 @@
  * Links that leave the site. Pages link to /do/<name> instead, which counts the click and
  * redirects here (src/pages/do/[cel].ts); structured data (JSON-LD sameAs) keeps the direct address.
  */
-import { venues } from "./mock-data";
+import { venueById } from "./api";
 import { site } from "./site";
 
-const studio = venues[0];
+const studio = venueById("pracownia");
 // Pin the municipal address point: Google resolves the text "55J" to number 55.
-const destination = studio?.coordinates ? `${studio.coordinates.lat},${studio.coordinates.lng}` : studio ? `${studio.address}, ${studio.city}` : "";
+const destination = studio.coordinates ? `${studio.coordinates.lat},${studio.coordinates.lng}` : `${studio.address}, ${studio.city}`;
 /** Google Maps query for the studio, shared by the embedded map on /kontakt and the outbound link */
 export const studioMapQuery = encodeURIComponent(destination);
 
