@@ -14,9 +14,11 @@ płatnymi warsztatami.
 
 - [ ] **Ruch na stronie:** A) własne statystyki w panelu (**rekomendacja**), B) Plausible,
   C) Umami Cloud, albo nic.
-- [ ] **Przy A:** strony dziś prerenderowane (galeria, o mnie, FAQ, kontakt, zamówienia, prawne,
-  404) przechodzą na renderowanie przy każdym wejściu (`prerender = false`). To odwraca obecne
-  ustawienie, w którym te strony są budowane z góry, patrz punkt 3A.
+- [ ] **Przy A:** `start.mjs` sam stawia serwer HTTP i liczy wejścia przed handlerem Astro.
+  Strony zostają zbudowane z góry, zmienia się tylko sposób startu aplikacji (punkt 3A).
+- [ ] **Kliknięcia:** wyjścia na Instagram i do Map Google przez nasz adres przekierowujący
+  (bez skryptu, proponuję), skrypt liczący kliknięcia (tylko za zgodą, nie proponuję) albo nic.
+  Ruchów myszy nie proponuję w ogóle (punkt 3A, „Kliknięcia i ruch myszy”).
 - [ ] **Search Console:** czyje konto Google (proponuję Dominiki, z dostępem dla Dawida) i jak
   potwierdzić domenę: plik HTML w `public/` (zwykły deploy) albo rekord TXT w OVH (zmiana DNS).
 - [ ] **Monitoring dostępności:** UptimeRobot (darmowe konto).
@@ -54,7 +56,7 @@ W małej firmie to najpewniejsze źródło wiedzy o tym, skąd przychodzą klien
 | Cookies | nie | nie | nie |
 | Kto dostaje dane | nikt nowy (serwer strony) | Plausible (Estonia, dane w UE) | Umami Software, Inc. (USA), region UE do wyboru |
 | Jak długo dane | bez limitu (same sumy) | bez limitu | 6 miesięcy |
-| Kliknięcia (telefon, Instagram, mapa) | nie | tak | tak |
+| Kliknięcia (telefon, Instagram, mapa) | wyjścia na Instagram i do map tak, telefon nie | tak | tak |
 | Raport mailem | nie (jest panel) | tak | nie |
 
 ### A. Własne statystyki w panelu (rekomendacja)
@@ -76,13 +78,21 @@ liczą się wejścia z innej domeny niż nasza: to przybliżenie odwiedzin bez �
   i wszystkie parametry adresu poza `utm_*`.
 - **Panel „Statystyki”:** ostatnie 30, 90 i 365 dni; najczęściej oglądane strony, źródła
   i kampanie. Obok liczby z punktu 2, np. wejścia na `/warsztaty` i głosy na terminy.
-- **Pułapka:** strony prerenderowane (galeria, o mnie, FAQ, kontakt, zamówienia, strony prawne,
-  404) obsługuje statyczny handler adaptera Node, więc nie przechodzą przez middleware.
-  Rozwiązania:
-  1. `prerender = false` na tych stronach, czyli renderowanie przy każdym wejściu. Tak już działają
-     `/` i `/warsztaty`, koszt to milisekundy. **Proponuję to**, bo jest prostsze.
-  2. Opakowanie handlera w `start.mjs` (adapter w trybie `middleware`), co zmienia sposób
-     uruchamiania aplikacji.
+- **Gdzie liczyć, żeby strony zostały zbudowane z góry:** strony prerenderowane (galeria, o mnie,
+  FAQ, kontakt, zamówienia, strony prawne, 404) wydaje statyczny handler adaptera Node, więc
+  middleware Astro ich nie widzi. Ale wydaje je ten sam proces Node, więc liczymy przed nim:
+  - Adapter pozwala wyłączyć samodzielny start (`ASTRO_NODE_AUTOSTART=disabled`), a
+    `dist/server/entry.mjs` eksportuje `handler` (pliki statyczne i strony renderowane razem).
+  - `start.mjs` stawia własny `http.createServer`. Każde zapytanie najpierw trafia do licznika,
+    a potem dalej do `handler`.
+  - Licznik zlicza wejścia w pamięci i co minutę zapisuje sumy do SQLite. Koszt na zapytanie to
+    mikrosekundy przy TTFB rzędu 30 ms.
+  - Strony dalej są gotowymi plikami HTML. Wizyty powrotne też przechodzą przez Node, bo HTML idzie
+    z `max-age=0` (odpowiedź 304 też się liczy).
+  - **Warunek na przyszłość:** jeśli kiedyś LiteSpeed ma wydawać pliki z `dist/client` sam, to
+    tylko zasoby (`/_astro`, `/fonts`, `/zdjecia`), nie HTML.
+  - **Test E2E** uruchamia dziś `dist/server/entry.mjs`, więc musi przejść na ten sam start co
+    produkcja.
 - **Plusy:**
   - Brak skryptu daje najmniejsze ryzyko prawne z trzech opcji (patrz „Zgoda” niżej).
   - Nie ma nowego odbiorcy danych: wszystko zostaje na hostingu w Polsce.
@@ -91,12 +101,40 @@ liczą się wejścia z innej domeny niż nasza: to przybliżenie odwiedzin bez �
     rok do roku.
   - Dominika i tak zagląda do panelu.
 - **Minusy:**
-  - Brak kliknięć (telefon, Instagram, mapa, otwarcie formularza), unikalnych osób i czasu na
-    stronie.
+  - Bez skryptu nie ma kliknięć w telefon i e-mail, otwarć formularza, unikalnych osób ani czasu
+    na stronie.
   - Boty udające przeglądarkę trochę zawyżą liczby.
   - Utrzymujemy to sami.
 - **Do sprawdzenia przy wdrożeniu:** czy LiteSpeed przekazuje nagłówki `Sec-Fetch-*` do Node.
   Sprawdzić też, co wysyła przeglądarka wbudowana w Instagram, bo stamtąd przyjdzie dużo wejść.
+
+### Kliknięcia i ruch myszy (rozszerzenie A)
+
+**Bez skryptu (proponuję):**
+- **Wyjścia na zewnątrz:** linki na Instagram i „Otwórz w Google Maps” prowadzą przez nasz adres,
+  np. `/do/instagram`, który liczy przejście i odpowiada przekierowaniem 302. Nie ma w nim żadnego
+  identyfikatora (pkt 51 wytycznych EDPB dotyczy właśnie linków z identyfikatorem).
+- **Wysłane formularze:** są w bazie (punkt 2), więc lejek „wejścia na `/warsztaty` → głosy
+  i rezerwacje” wychodzi bez śledzenia.
+- **Nie da się:** policzyć kliknięć w `tel:` i `mailto:`.
+
+**Ze skryptem:** technicznie to kilkadziesiąt linijek: nasłuch kliknięć z `navigator.sendBeacon`
+do `/api/zdarzenie`, a dla myszy próbkowanie pozycji, czyli mapy cieplne i nagrania sesji. Nie
+proponuję tego:
+- **Zgoda:** to dokładnie przypadek z pkt 33 wytycznych EDPB (JS każe przeglądarce wysłać
+  informacje). Art. 399 nie ma wyjątku na analitykę, więc potrzebna byłaby zgoda, czyli baner.
+  Odpada obietnica „bez cookies, bez śledzenia”, a z danych zostaje tylko część od tych, którzy
+  się zgodzą.
+- **Profilowanie:** ruch myszy i nagrania sesji to obserwacja zachowania konkretnej osoby. Polityka
+  mówi dziś „nie profiluję”.
+- **Formularze:** nagrania łatwo łapią to, co ktoś wpisuje, np. imiona dzieci i e-maile. Każde
+  pole trzeba by maskować.
+- **Mała wartość:** większość wejść przyjdzie z Instagrama na telefonie, gdzie nie ma myszy. Mapy
+  cieplne mają sens przy tysiącach sesji, a my mamy kilkanaście stron i mały ruch.
+- **Wydajność:** dodatkowy JS i zapytania na każdej stronie, przy Lighthouse 96–100.
+
+Jeśli kliknięcia w przyciski kiedyś będą naprawdę potrzebne (np. ile osób otwiera formularz i go
+nie wysyła), da się je dołożyć do A jako tryb włączany zgodą. To osobna decyzja, razem z banerem.
 
 ### B. Plausible Cloud
 
