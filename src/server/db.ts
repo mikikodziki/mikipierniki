@@ -177,6 +177,10 @@ const migrations: (string | ((conn: DatabaseSync) => void))[] = [
     updated_at TEXT NOT NULL
   );
   `,
+  // inquiries handled in the panel are hidden from the default list (still deleted after 12 months)
+  `
+  ALTER TABLE inquiries ADD COLUMN hidden_at TEXT;
+  `,
 ];
 
 let db: DatabaseSync | undefined;

@@ -896,6 +896,31 @@ try {
   await settle();
   check("auto-reply works again after 24 h", mails().slice(beforeSecond).map(mail).some((x) => x.includes("To: irena@example.com") && x.includes("Dziękuję za wiadomość")));
 
+  // ---------- inquiries: hide the handled ones ----------
+  {
+    const listHtml = async (q = "") => (await get(`/panel/zapytania${q}`, { authorization: auth })).text();
+    const hiddenAt = (id) => db().prepare("SELECT hidden_at FROM inquiries WHERE id = ?").get(id).hidden_at;
+    const id = db().prepare("SELECT id FROM inquiries WHERE message = 'Jeszcze jedno pytanie.'").get().id;
+    const act = (action, inquiry, pokaz = "aktywne", headers = {}) => fetch(`${BASE}/panel/zapytania`, { method: "POST", redirect: "manual",
+      headers: { authorization: auth, origin: BASE, "content-type": "application/x-www-form-urlencoded", ...headers }, body: new URLSearchParams({ action, id: String(inquiry), pokaz }) });
+    let page = await listHtml();
+    check("inquiries list: active ones by default, with counts", page.includes("Jeszcze jedno pytanie.") && page.includes("Ukryj") && page.includes("Ukryte (0)"));
+    r = await act("hide", id);
+    page = await listHtml();
+    const hiddenPage = await listHtml("?pokaz=ukryte"), allPage = await listHtml("?pokaz=wszystkie");
+    check("Ukryj: gone from the default list, in Ukryte and Wszystkie, nothing deleted", r.status === 303 && r.headers.get("location").startsWith("/panel/zapytania?ok=") && !!hiddenAt(id)
+      && !page.includes("Jeszcze jedno pytanie.") && page.includes("A to już po dobie.") && hiddenPage.includes("Jeszcze jedno pytanie.") && !hiddenPage.includes("A to już po dobie.")
+      && hiddenPage.includes("Przywróć") && hiddenPage.includes("Ukryte (1)") && allPage.includes("Jeszcze jedno pytanie.") && allPage.includes("A to już po dobie.") && inquiriesFrom("irena@example.com") === 3, r.headers.get("location"));
+    r = await act("show", id, "ukryte");
+    check("Przywróć: back in the default list, back to the same tab", r.status === 303 && r.headers.get("location").startsWith("/panel/zapytania?pokaz=ukryte&ok=") && !hiddenAt(id)
+      && (await listHtml()).includes("Jeszcze jedno pytanie."), r.headers.get("location"));
+    r = await act("hide", 999999);
+    check("hiding a missing inquiry → message", r.status === 303 && r.headers.get("location").includes("err="), r.headers.get("location"));
+    const noPassword = await fetch(`${BASE}/panel/zapytania`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: `action=hide&id=${id}` });
+    const crossSite = await act("hide", id, "aktywne", { origin: "https://evil.example" });
+    check("hiding without the password → 401, from another site → 403", noPassword.status === 401 && crossSite.status === 403 && !hiddenAt(id), `${noPassword.status} ${crossSite.status}`);
+  }
+
   // ---------- CSV + misc ----------
   r = await get(`/panel/eksport?termin=${t1}`, { authorization: auth });
   const csvBytes = Buffer.from(await r.arrayBuffer());
@@ -1062,7 +1087,7 @@ try {
     // a subscriber confirmed before consent_log existed: rolling the schema back makes the next start add their row
     d.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('stara@example.com', 'tok-stara', 'active', ?, ?)").run(ago(100), ago(99));
     // tables from later migrations go too, so their migrations can run again
-    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; PRAGMA user_version = 3");
+    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; ALTER TABLE inquiries DROP COLUMN hidden_at; PRAGMA user_version = 3");
     d.close();
     p = await start(); // the first request starts the worker, which cleans up right away
     await sleep(500);
