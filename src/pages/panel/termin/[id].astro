@@ -6,7 +6,7 @@ import { site } from "@/lib/site";
 import { admitFromWaitlist, bookingsForTerm, cancelBooking, markPaid } from "@/server/bookings";
 import { bookingBlockers } from "@/server/config";
 import { UserError } from "@/server/http";
-import { interestForTerm, notifyInterested } from "@/server/interest";
+import { deleteInterestRow, editInterest, interestEditFromForm, interestForTerm, notifyInterested, withdrawInterestRow } from "@/server/interest";
 import { flushOutbox } from "@/server/mail";
 import { back, cancelTerm, changeStatus, formStrings, statusLabel, termFromForm } from "@/server/panel";
 import { deleteTerm, getTerm, updateTerm } from "@/server/terms";
@@ -47,6 +47,20 @@ if (Astro.request.method === "POST") {
         ok = n ? `Wysyłam link do rezerwacji: ${n} ${plural(n, "osoba", "osoby", "osób")}.` : "Wszyscy chętni dostali już wiadomość.";
         break;
       }
+      // a date pick, keyed by interest.id; no name in the message, since it ends up in the address bar
+      case "interest-edit":
+        editInterest(id, Number(f.get("interest")), interestEditFromForm(f));
+        ok = "Zgłoszenie poprawione.";
+        break;
+      case "interest-withdraw":
+        withdrawInterestRow(id, Number(f.get("interest")));
+        ok = "Zgłoszenie wycofane. Ten adres nie zgłosi się już na ten termin.";
+        break;
+      case "interest-delete":
+        if (f.get("confirm") !== "on") throw new UserError("Zaznacz, że na pewno chcesz usunąć to zgłoszenie.");
+        deleteInterestRow(id, Number(f.get("interest")));
+        ok = "Zgłoszenie usunięte.";
+        break;
       case "cancel": {
         const r = cancelTerm(id, f.get("notify") === "on");
         ok = `Termin odwołany.${r.bookings + r.interest ? ` Powiadamiam: ${r.bookings} rezerwacji, ${r.interest} chętnych.` : ""}`;
@@ -135,7 +149,7 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
     {interest.length === 0 ? <p class="note">Nikt jeszcze nie zaznaczył tego terminu.</p> : (
       <div class="scroll">
         <table class="tbl">
-          <thead><tr><th>Imię i nazwisko</th><th>Kontakt</th><th>Osób</th><th>Uwagi</th><th>Zgłoszenie</th><th>Link wysłany</th></tr></thead>
+          <thead><tr><th>Imię i nazwisko</th><th>Kontakt</th><th>Osób</th><th>Uwagi</th><th>Zgłoszenie</th><th>Link wysłany</th><th></th></tr></thead>
           <tbody>
             {interest.map((r) => (
               <tr class:list={{ muted: !!r.withdrawn_at }}>
@@ -145,6 +159,44 @@ const bookingLabel: Record<string, string> = { awaiting_payment: "Czeka na wpła
                 <td data-label="Uwagi">{r.notes ?? ""}</td>
                 <td data-label="Zgłoszenie">{dt(r.created_at)}</td>
                 <td data-label="Link wysłany">{dt(r.notified_at) || "—"}</td>
+                <td>
+                  <div class="actions">
+                    {/* a withdrawn row was emptied on purpose, so it can only be deleted */}
+                    {!r.withdrawn_at && (
+                      <details>
+                        <summary>Popraw</summary>
+                        <form method="post" class="confirm">
+                          <input type="hidden" name="action" value="interest-edit" /><input type="hidden" name="interest" value={r.id} />
+                          <label class="field" for={`ie-name-${r.id}`}>Imię i nazwisko<input class="input" id={`ie-name-${r.id}`} name="name" required minlength="2" maxlength="120" value={r.name} /></label>
+                          <label class="field" for={`ie-phone-${r.id}`}>Telefon <span class="hint">opcjonalnie</span><input class="input" type="tel" id={`ie-phone-${r.id}`} name="phone" pattern="[0-9 +\(\)\-]{9,20}" value={r.phone ?? ""} /></label>
+                          <label class="field" for={`ie-people-${r.id}`}>Osób<input class="input" type="number" id={`ie-people-${r.id}`} name="people" required min="1" max={site.bookingMax} value={r.people} /></label>
+                          <label class="field" for={`ie-notes-${r.id}`}>Uwagi<textarea class="input" id={`ie-notes-${r.id}`} name="notes" maxlength="2000">{r.notes ?? ""}</textarea></label>
+                          <span class="note">Adresu e-mail nie da się zmienić. Jeśli jest błędny, usuń zgłoszenie, a ta osoba zgłosi się jeszcze raz.</span>
+                          <button class="btn btn-primary btn-small">Zapisz poprawki</button>
+                        </form>
+                      </details>
+                    )}
+                    {!r.withdrawn_at && (
+                      <details>
+                        <summary>Wycofaj</summary>
+                        <form method="post" class="confirm">
+                          <input type="hidden" name="action" value="interest-withdraw" /><input type="hidden" name="interest" value={r.id} />
+                          <span class="note">Tak jak wycofanie przez link z maila: telefon i uwagi znikną, a ten adres nie zgłosi się już na ten termin.</span>
+                          <button class="btn btn-ghost btn-small">Wycofaj zgłoszenie</button>
+                        </form>
+                      </details>
+                    )}
+                    <details>
+                      <summary>Usuń</summary>
+                      <form method="post" class="confirm">
+                        <input type="hidden" name="action" value="interest-delete" /><input type="hidden" name="interest" value={r.id} />
+                        <label class="check" for={`idel-${r.id}`}><input type="checkbox" id={`idel-${r.id}`} name="confirm" required /><span>na pewno usuń</span></label>
+                        <span class="note">Inaczej niż „Wycofaj”: po usunięciu ten adres może znów zgłosić się na ten termin.</span>
+                        <button class="btn btn-ghost btn-small">Usuń zgłoszenie</button>
+                      </form>
+                    </details>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

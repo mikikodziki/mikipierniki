@@ -2,11 +2,13 @@
  * Interest in proposed dates: visitors tick the dates that suit them, Dominika sees the tally
  * in the panel, opens the winners and mails everyone who ticked them.
  */
+import { z } from "astro/zod";
 import { bookingClosed } from "@/lib/api";
+import { site } from "@/lib/site";
 import type { InterestRequest, Term } from "@/lib/types";
 import { getDb, nowIso, tx } from "./db";
 import { interestNotify, interestThanks, termOpened } from "./emails";
-import { UserError } from "./http";
+import { fields, UserError } from "./http";
 import { enqueue, underHourlyCap } from "./mail";
 import { getTerm } from "./terms";
 import { normalizeEmail, token } from "./util";
@@ -69,6 +71,84 @@ export interface InterestRow {
 
 export function interestForTerm(termId: string): InterestRow[] {
   return getDb().prepare("SELECT * FROM interest WHERE term_id = ? ORDER BY created_at").all(termId) as unknown as InterestRow[];
+}
+
+/* ---------- Dominika's corrections in the panel (a request by phone or e-mail) ---------- */
+
+export interface InterestEdit { name: string; phone: string | null; people: number; notes: string | null }
+
+const peopleRule = `Liczba osób musi być od 1 do ${site.bookingMax}.`;
+// the public form's rules; the e-mail isn't editable: it is the person's identity and unique per term
+const editSchema = z.object({
+  name: fields.name,
+  phone: fields.phone.optional().or(z.literal("")),
+  people: z.number(peopleRule).int(peopleRule).min(1, peopleRule).max(site.bookingMax, peopleRule),
+  notes: fields.notes,
+});
+
+/** Reads the "Popraw" form on the term page. */
+export function interestEditFromForm(f: FormData): InterestEdit {
+  const get = (k: string) => String(f.get(k) ?? "").trim();
+  const r = editSchema.safeParse(
+    { name: get("name"), phone: get("phone"), people: Number(get("people")), notes: get("notes") },
+    { error: () => "Sprawdź pola formularza i spróbuj ponownie." },
+  );
+  if (!r.success) throw new UserError(r.error.issues[0]?.message ?? "Sprawdź pola formularza i spróbuj ponownie.");
+  return { name: r.data.name, phone: r.data.phone || null, people: r.data.people, notes: r.data.notes || null };
+}
+
+/** The row, only if it belongs to the term whose page sent the form. */
+function rowOnTerm(termId: string, id: number): InterestRow {
+  const r = Number.isInteger(id)
+    ? getDb().prepare("SELECT * FROM interest WHERE id = ? AND term_id = ?").get(id, termId) as unknown as InterestRow | undefined
+    : undefined;
+  if (!r) throw new UserError("Nie ma takiego zgłoszenia na ten termin.", 404);
+  return r;
+}
+
+/**
+ * Drops this address's unsent "your date is open" mail for this term only. One token covers every
+ * date ticked together, so the token can't tell them apart; the mail names its term in the booking
+ * link instead. Ids can extend one another (t-…-1100, t-…-1100-2), hence the boundary after the id.
+ */
+function dropTermOpened(email: string, termId: string): void {
+  const db = getDb();
+  const escaped = termId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const link = new RegExp(`[?&]termin=${escaped}(?![\\w-])`);
+  const queued = db.prepare("SELECT id, text FROM outbox WHERE status IN ('pending','failed') AND kind = 'term-opened' AND to_addr = ?")
+    .all(email) as unknown as { id: number; text: string }[];
+  const del = db.prepare("DELETE FROM outbox WHERE id = ?");
+  for (const m of queued) if (link.test(m.text)) del.run(m.id);
+}
+
+export function editInterest(termId: string, id: number, e: InterestEdit): void {
+  const db = getDb();
+  tx(db, () => {
+    // a withdrawn row was emptied on purpose; it stays that way
+    if (rowOnTerm(termId, id).withdrawn_at) throw new UserError("To zgłoszenie jest wycofane, więc nie można go poprawić.");
+    db.prepare("UPDATE interest SET name = ?, phone = ?, people = ?, notes = ? WHERE id = ?").run(e.name, e.phone, e.people, e.notes, id);
+  });
+}
+
+/** Like the person's own withdrawal (withdrawInterest), but for this one date. */
+export function withdrawInterestRow(termId: string, id: number): void {
+  const db = getDb();
+  tx(db, () => {
+    const r = rowOnTerm(termId, id);
+    if (r.withdrawn_at) throw new UserError("To zgłoszenie jest już wycofane.");
+    db.prepare("UPDATE interest SET withdrawn_at = ?, phone = NULL, notes = NULL WHERE id = ?").run(nowIso(), id);
+    dropTermOpened(r.email, termId);
+  });
+}
+
+/** Erasure request or a stranger's address: nothing is kept, so the address can sign up for this date again. */
+export function deleteInterestRow(termId: string, id: number): void {
+  const db = getDb();
+  tx(db, () => {
+    const r = rowOnTerm(termId, id);
+    db.prepare("DELETE FROM interest WHERE id = ?").run(id);
+    dropTermOpened(r.email, termId);
+  });
 }
 
 /** Sends the "your date is open, book here" e-mail to everyone who ticked this term and hasn't had it yet. */

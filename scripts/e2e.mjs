@@ -484,6 +484,93 @@ try {
   const again = db().prepare("SELECT withdrawn_at, phone FROM interest WHERE term_id = ? AND email = 'anna@example.com'").get(t2);
   check("signing up again after withdrawing doesn't bring the date back", r.status === 200 && !!again.withdrawn_at && again.phone === null && mails().length === beforeAgain, JSON.stringify(again));
 
+  // ---------- panel: correcting, withdrawing and deleting a date pick ----------
+  {
+    // own terms and pi- addresses; both terms start at the same minute, so the second id is the first plus "-2"
+    c = await create({ title: "Poprawki chętnych", date: day(40) });
+    const tPi = c.loc.split("/").pop().split("?")[0];
+    c = await create({ title: "Ta sama godzina", date: day(40) });
+    const tPi2 = c.loc.split("/").pop().split("?")[0];
+    check("setup: the second term's id extends the first", tPi2 === `${tPi}-2`, `${tPi} ${tPi2}`);
+    const piPick = (termIds, email, extra = {}) => api("/api/zainteresowanie", { termIds, people: 2, name: "Ula Pi", email, phone: "500 600 700", notes: "pi uwagi", consent: true, ...extra });
+    await piPick([tPi, tPi2], "pi-ula@example.com");
+    await piPick([tPi], "pi-olek@example.com", { name: "Olek Pi", people: 1, phone: "", notes: "" });
+    await settle();
+    const piRow = (termId, email) => db().prepare("SELECT * FROM interest WHERE term_id = ? AND email = ?").get(termId, email);
+    const piPage = async (termId) => (await get(`/panel/termin/${termId}`, { authorization: auth })).text();
+    const piAct = (termId, action, row, form = {}) => panel(`/panel/termin/${termId}`, { action, interest: String(row.id), ...form });
+    const flash = (res, kind) => new URL(res.headers.get("location") ?? "/", BASE).searchParams.get(kind);
+    const ula = piRow(tPi, "pi-ula@example.com"), olek = piRow(tPi, "pi-olek@example.com");
+    html = await piPage(tPi);
+    check("date-pick rows offer Popraw, Wycofaj and Usuń; tally 2 + 1", html.includes(">3 os.</b>") && html.includes('value="interest-edit"') && html.includes('value="interest-withdraw"') && html.includes('value="interest-delete"'));
+
+    // Popraw
+    r = await piAct(tPi, "interest-edit", olek, { name: "Olek Poprawiony", phone: "601 000 111", people: "4", notes: "dwoje dzieci", email: "pi-inny@example.com" });
+    const olekEdited = piRow(tPi, "pi-olek@example.com");
+    check("Popraw saves name, phone, people and notes, never the e-mail", !!flash(r, "ok") && olekEdited.name === "Olek Poprawiony" && olekEdited.phone === "601 000 111"
+      && olekEdited.people === 4 && olekEdited.notes === "dwoje dzieci" && !piRow(tPi, "pi-inny@example.com"), JSON.stringify(olekEdited));
+    check("the tally follows the edit (2 + 4)", (await piPage(tPi)).includes(">6 os.</b>"));
+    const refused = [];
+    for (const people of ["0", "6", "2.5", "x"]) refused.push(await piAct(tPi, "interest-edit", olek, { name: "Olek Poprawiony", people }));
+    refused.push(await piAct(tPi, "interest-edit", olek, { name: "Olek Poprawiony", people: "2", phone: "12" }));
+    check("Popraw refuses people outside 1..5 and a bad phone; the row stays", refused.every((x) => flash(x, "err")) && flash(refused[1], "err") === "Liczba osób musi być od 1 do 5."
+      && flash(refused[4], "err") === "Wpisz poprawny numer telefonu." && JSON.stringify(piRow(tPi, "pi-olek@example.com")) === JSON.stringify(olekEdited), refused.map((x) => flash(x, "err")).join(" | "));
+    const ulaOther = piRow(tPi2, "pi-ula@example.com");
+    r = await piAct(tPi, "interest-edit", ulaOther, { name: "Ktoś Obcy", people: "1" });
+    check("a row of another term can't be changed from this term's page", !!flash(r, "err") && piRow(tPi2, "pi-ula@example.com").name === "Ula Pi");
+
+    // real "your date is open" mails for both terms, put back in the queue to wait (one as failed)
+    await panel(`/panel/termin/${tPi}`, { action: "open" });
+    await panel(`/panel/termin/${tPi2}`, { action: "open" });
+    await panel(`/panel/termin/${tPi}`, { action: "notify" });
+    await panel(`/panel/termin/${tPi2}`, { action: "notify" });
+    await settle();
+    db().prepare("UPDATE outbox SET status = 'pending', send_after = ? WHERE kind = 'term-opened' AND to_addr LIKE 'pi-%'").run(new Date(Date.now() + 7 * 86400000).toISOString());
+    db().prepare("UPDATE outbox SET status = 'failed' WHERE kind = 'term-opened' AND to_addr = 'pi-olek@example.com'").run();
+    const piQueued = (email) => db().prepare("SELECT text FROM outbox WHERE kind = 'term-opened' AND to_addr = ? AND status IN ('pending','failed')").all(email)
+      .map((x) => x.text.match(/\?termin=([\w-]+)/)?.[1]).sort().join();
+    check("setup: term-opened mails queued for both of Ula's dates and Olek's", piQueued("pi-ula@example.com") === [tPi, tPi2].sort().join() && piQueued("pi-olek@example.com") === tPi, `${piQueued("pi-ula@example.com")} / ${piQueued("pi-olek@example.com")}`);
+    await panel(`/panel/termin/${tPi}`, { action: "propose" }); // collecting date picks again, so the re-sign-up checks below reach registerInterest
+
+    // Wycofaj
+    r = await piAct(tPi, "interest-withdraw", ula);
+    const ulaWithdrawn = piRow(tPi, "pi-ula@example.com");
+    check("Wycofaj keeps the row, marks it withdrawn, clears phone and notes", !!flash(r, "ok") && !!ulaWithdrawn?.withdrawn_at && ulaWithdrawn.phone === null && ulaWithdrawn.notes === null, JSON.stringify(ulaWithdrawn));
+    const ulaOtherNow = piRow(tPi2, "pi-ula@example.com");
+    check("Wycofaj leaves the same person's other date alone", !ulaOtherNow.withdrawn_at && ulaOtherNow.phone === "500 600 700" && ulaOtherNow.notes === "pi uwagi");
+    check("Wycofaj drops this person's queued mail for this date only (same token, the other id extends this one; Olek's stays)", piQueued("pi-ula@example.com") === tPi2
+      && piQueued("pi-olek@example.com") === tPi, `${piQueued("pi-ula@example.com")} / ${piQueued("pi-olek@example.com")}`);
+    html = await piPage(tPi);
+    check("the tally leaves out the withdrawn row (4 people, 1 sign-up)", html.includes(">4 os.</b>") && html.includes("(1 zgłoszenie,"));
+    check("a withdrawn row offers only Usuń", (html.match(/value="interest-withdraw"/g) ?? []).length === 1 && (html.match(/value="interest-delete"/g) ?? []).length === 2);
+    r = await piAct(tPi, "interest-edit", ula, { name: "Ula Znowu", phone: "500 600 700", people: "2" });
+    check("Popraw can't fill a withdrawn row again", !!flash(r, "err") && piRow(tPi, "pi-ula@example.com").phone === null && piRow(tPi, "pi-ula@example.com").name === "Ula Pi");
+    const piMails = mails().length;
+    r = await piPick([tPi], "pi-ula@example.com", { name: "Ula Znowu" });
+    await settle();
+    const ulaAgain = piRow(tPi, "pi-ula@example.com");
+    check("after Wycofaj, signing up for that date is still blocked", r.status === 200 && !!ulaAgain.withdrawn_at && ulaAgain.name === "Ula Pi" && mails().length === piMails, JSON.stringify(ulaAgain));
+
+    // Usuń
+    r = await piAct(tPi, "interest-delete", ula);
+    check("Usuń without the tick is refused", !!flash(r, "err") && !!piRow(tPi, "pi-ula@example.com"));
+    r = await piAct(tPi, "interest-delete", ula, { confirm: "on" });
+    check("Usuń removes the row", !!flash(r, "ok") && !piRow(tPi, "pi-ula@example.com"));
+    const ownerPings = () => byKind("interest-notify").filter((x) => x.includes("pi-ula@example.com")).length;
+    const pingsBefore = ownerPings();
+    r = await piPick([tPi], "pi-ula@example.com", { name: "Ula Od Nowa" });
+    await settle();
+    const ulaNew = piRow(tPi, "pi-ula@example.com");
+    check("after Usuń the address can sign up for that date again", r.status === 200 && ulaNew?.name === "Ula Od Nowa" && !ulaNew.withdrawn_at && ownerPings() === pingsBefore + 1, JSON.stringify(ulaNew));
+    r = await piAct(tPi, "interest-delete", olek, { confirm: "on" });
+    check("Usuń drops that person's failed mail for this date", !!flash(r, "ok") && !piRow(tPi, "pi-olek@example.com") && piQueued("pi-olek@example.com") === "", piQueued("pi-olek@example.com"));
+    const piForm = new URLSearchParams({ action: "interest-delete", interest: String(ulaNew.id), confirm: "on" });
+    const noPassword = await fetch(`${BASE}/panel/termin/${tPi}`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: piForm, redirect: "manual" });
+    const crossSite = await fetch(`${BASE}/panel/termin/${tPi}`, { method: "POST", headers: { authorization: auth, origin: "https://evil.example", "content-type": "application/x-www-form-urlencoded" }, body: piForm, redirect: "manual" });
+    check("Usuń without the password → 401, from another site → 403, row kept", noPassword.status === 401 && crossSite.status === 403 && !!piRow(tPi, "pi-ula@example.com"), `${noPassword.status} ${crossSite.status}`);
+    await settle();
+  }
+
   // ---------- cancelling a proposed term ----------
   await api("/api/zainteresowanie", { termIds: [t2], people: 1, name: "Hania Druga", email: "hania@example.com", consent: true });
   await settle();
