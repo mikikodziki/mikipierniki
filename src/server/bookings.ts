@@ -124,18 +124,23 @@ export function bookingsForTerm(termId: string): BookingRow[] {
   return getDb().prepare("SELECT * FROM bookings WHERE term_id = ? ORDER BY created_at").all(termId) as unknown as BookingRow[];
 }
 
-function load(id: string): { b: BookingRow; t: Term } {
+/**
+ * A booking on the term whose panel page sent the action. A page opened before the booking was moved
+ * still lists it under the old term; acting from there must not move it back or touch another term.
+ */
+function load(id: string, onTerm: string): { b: BookingRow; t: Term } {
   const b = getDb().prepare("SELECT * FROM bookings WHERE id = ?").get(id) as unknown as BookingRow | undefined;
   const t = b && getTerm(b.term_id);
   if (!b || !t) throw new UserError("Nie ma takiej rezerwacji.", 404);
+  if (b.term_id !== onTerm) throw new UserError(`Rezerwacja ${id} jest już na innym terminie. Odśwież stronę.`, 409);
   return { b, t };
 }
 
 /** Transfer arrived or the voucher checks out: confirm and send the address. */
-export function markPaid(id: string): void {
+export function markPaid(id: string, onTerm: string): void {
   const db = getDb();
   tx(db, () => {
-    const { b, t } = load(id);
+    const { b, t } = load(id, onTerm);
     if (b.status !== "awaiting_payment") throw new UserError("Tę rezerwację można potwierdzić tylko, gdy czeka na wpłatę.");
     db.prepare("UPDATE bookings SET status = 'confirmed', paid_at = ? WHERE id = ?").run(nowIso(), id);
     enqueue(bookingConfirmed(mailData(b), t));
@@ -143,10 +148,10 @@ export function markPaid(id: string): void {
 }
 
 /** Offers a freed seat to someone on the waitlist: they get transfer details and 3 days to pay. */
-export function admitFromWaitlist(id: string): void {
+export function admitFromWaitlist(id: string, onTerm: string): void {
   const db = getDb();
   tx(db, () => {
-    const { b, t } = load(id);
+    const { b, t } = load(id, onTerm);
     if (b.status !== "waitlist") throw new UserError("Ta osoba nie jest na liście rezerwowej.");
     if (new Date(t.startsAt).getTime() <= Date.now()) throw new UserError("Te warsztaty już się zaczęły.");
     const left = t.capacity - seatsTaken(t.id);
@@ -157,10 +162,10 @@ export function admitFromWaitlist(id: string): void {
   });
 }
 
-export function cancelBooking(id: string, notify: boolean): void {
+export function cancelBooking(id: string, notify: boolean, onTerm: string): void {
   const db = getDb();
   tx(db, () => {
-    const { b, t } = load(id);
+    const { b, t } = load(id, onTerm);
     if (b.status === "cancelled") return;
     db.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE id = ?").run(nowIso(), id);
     if (notify) enqueue(bookingCancelled(mailData(b), t, "single"));
@@ -170,13 +175,13 @@ export function cancelBooking(id: string, notify: boolean): void {
 const started = (t: Term) => new Date(t.startsAt).getTime() <= Date.now();
 
 /**
- * Drops unsent mail about a booking: pending, or failed and waiting for "Wyślij ponownie". Booking mails carry
- * its number; the waitlist one only the date, in its subject. `to` keeps it to one recipient (the old address).
+ * Drops unsent mail to the customer about a booking: pending, or failed and waiting for "Wyślij ponownie".
+ * Every booking mail carries its number. Mail to Dominika stays, and so does a cancellation she chose to
+ * send (`keepCancellation`), so deleting a cancelled booking doesn't leave the customer uninformed.
  */
-function dropUnsentMail(b: BookingRow, t: Term, to?: string): void {
-  getDb().prepare(`DELETE FROM outbox WHERE status IN ('pending','failed') AND kind LIKE 'booking-%' AND (? IS NULL OR to_addr = ?)
-    AND (instr(text, ?) > 0 OR (kind = 'booking-waitlist' AND to_addr = ? AND subject = ?))`)
-    .run(to ?? null, to ?? null, b.id, b.email, bookingWaitlist(mailData(b), t).subject);
+function dropUnsentMail(b: BookingRow, keepCancellation = false): void {
+  getDb().prepare(`DELETE FROM outbox WHERE status IN ('pending','failed') AND kind LIKE 'booking-%' AND to_addr = ? AND instr(text, ?) > 0
+    ${keepCancellation ? "AND kind != 'booking-cancelled'" : ""}`).run(b.email, b.id);
 }
 
 /** What Dominika can correct in a booking, and the term it should be on. */
@@ -191,6 +196,10 @@ export interface EditResult {
   total: number;
   /** Paid before the change, so a different total is hers to settle */
   paid: boolean;
+  /** A new payment deadline, when the edit set one */
+  newDue: string | null;
+  /** Moved off the waitlist onto a term with free seats; it now waits for payment */
+  promoted: boolean;
 }
 
 /**
@@ -198,10 +207,10 @@ export interface EditResult {
  * the one-booking-per-address rule are checked as for a new booking, leaving the booking itself out.
  * Money is never settled here: a paid booking whose total changes is for Dominika to sort out.
  */
-export function editBooking(id: string, edit: BookingEdit, notify: boolean): EditResult {
+export function editBooking(id: string, onTerm: string, edit: BookingEdit, notify: boolean): EditResult {
   const db = getDb();
   return tx(db, () => {
-    const { b, t: from } = load(id);
+    const { b, t: from } = load(id, onTerm);
     if (b.status === "cancelled") throw new UserError("Anulowanej rezerwacji nie można poprawić.");
     const moved = edit.termId !== b.term_id;
     const to = moved ? getTerm(edit.termId) : from;
@@ -214,7 +223,11 @@ export function editBooking(id: string, edit: BookingEdit, notify: boolean): Edi
       const dup = db.prepare("SELECT id FROM bookings WHERE term_id = ? AND email = ? AND id != ? AND status != 'cancelled'").get(to.id, email, id);
       if (dup) throw new UserError(`Ten adres ma już rezerwację na ${moved ? whenInText(to) : "ten termin"} (${dup.id}).`, 409);
     }
-    // a waitlist place holds no seat: it moves without a seat check and stays on the waitlist
+    // a waitlist place holds no seat, so it moves without a seat check; on a term with enough free seats and
+    // no waitlist of its own nobody is ahead of it, so it gets the seat the way "Daj miejsce" gives one
+    const promoted = moved && b.status === "waitlist"
+      && to.capacity - seatsTaken(to.id, id) >= edit.people
+      && !db.prepare("SELECT 1 FROM bookings WHERE term_id = ? AND status = 'waitlist' AND id != ?").get(to.id, id);
     if (b.status !== "waitlist" && (moved || edit.people > b.people)) {
       const left = Math.max(0, to.capacity - seatsTaken(to.id, id));
       if (edit.people > left) {
@@ -223,34 +236,51 @@ export function editBooking(id: string, edit: BookingEdit, notify: boolean): Edi
           : `Wolnych miejsc razem z tą rezerwacją: ${left}, a potrzeba ${edit.people}.`, 409);
       }
     }
+    const readdressed = email !== b.email;
+    const status: BookingStatus = promoted ? "awaiting_payment" : b.status;
+    const transferDue = status === "awaiting_payment" && b.payment === "przelew";
+    // a new date gets a deadline that fits it; a corrected address never got the transfer details, so it
+    // gets a fresh deadline too (never an earlier one). A phone or name fix leaves an overdue booking overdue.
+    const due = !transferDue ? b.payment_due_at
+      : moved ? admitDueDate(to)
+      : readdressed ? laterOf(b.payment_due_at, admitDueDate(to))
+      : b.payment_due_at;
     const next: BookingRow = {
-      ...b, term_id: to.id, name: edit.name, email, phone: edit.phone, people: edit.people,
-      guardians: to.type === "dzieci" ? (edit.guardians ?? 1) : null, notes: edit.notes || null, total: bookingTotal(to, edit.people),
-      // a new date gets a deadline that fits it, and its own reminder and overdue notice
-      payment_due_at: moved && b.status === "awaiting_payment" && b.payment === "przelew" ? admitDueDate(to) : b.payment_due_at,
-      reminded_at: moved ? null : b.reminded_at, overdue_notified_at: moved ? null : (b.overdue_notified_at ?? null),
+      ...b, term_id: to.id, status, name: edit.name, email, phone: edit.phone, people: edit.people,
+      guardians: to.type === "dzieci" ? (edit.guardians ?? 1) : null, notes: edit.notes || null,
+      // priced again only when what is bought changes: the term's price may have changed since the booking
+      total: moved || edit.people !== b.people ? bookingTotal(to, edit.people) : b.total,
+      payment_due_at: due,
+      // a new date, or an address that never got it, needs its own reminder; a new deadline its own overdue notice
+      reminded_at: moved || readdressed ? null : b.reminded_at,
+      overdue_notified_at: due !== b.payment_due_at ? null : (b.overdue_notified_at ?? null),
     };
-    db.prepare(`UPDATE bookings SET term_id = ?, name = ?, email = ?, phone = ?, people = ?, guardians = ?, notes = ?, total = ?,
+    db.prepare(`UPDATE bookings SET term_id = ?, status = ?, name = ?, email = ?, phone = ?, people = ?, guardians = ?, notes = ?, total = ?,
       payment_due_at = ?, reminded_at = ?, overdue_notified_at = ? WHERE id = ?`)
-      .run(next.term_id, next.name, next.email, next.phone, next.people, next.guardians, next.notes, next.total,
+      .run(next.term_id, next.status, next.name, next.email, next.phone, next.people, next.guardians, next.notes, next.total,
         next.payment_due_at, next.reminded_at, next.overdue_notified_at ?? null, id);
     // what was queued for the old address or date must not go out later
-    if (moved || email !== b.email) dropUnsentMail(b, from, b.email);
-    if (notify) enqueue(bookingChanged(mailData(next), to, b.status, { moved, previousTotal: b.total }));
-    return { movedTo: moved ? to : null, oldTotal: b.total, total: next.total, paid: !!b.paid_at };
+    if (moved || readdressed) dropUnsentMail(b);
+    if (notify) enqueue(bookingChanged(mailData(next), to, status, { moved, previousTotal: b.total }));
+    return {
+      movedTo: moved ? to : null, oldTotal: b.total, total: next.total, paid: !!b.paid_at,
+      newDue: due !== b.payment_due_at ? due : null, promoted,
+    };
   });
 }
+
+const laterOf = (a: string | null, b: string) => (a && new Date(a).getTime() > new Date(b).getTime() ? a : b);
 
 /**
  * Removes a booking entered by mistake, with the mail still waiting to go out about it. Paid ones stay
  * in the accounts for 6 years (privacy policy, retention in tick.ts), so they can only be cancelled.
  */
-export function deleteBooking(id: string): void {
+export function deleteBooking(id: string, onTerm: string): void {
   const db = getDb();
   tx(db, () => {
-    const { b, t } = load(id);
+    const { b } = load(id, onTerm);
     if (b.paid_at) throw new UserError(`Opłaconej rezerwacji nie da się usunąć: zostaje w rozliczeniach przez 6 lat.${b.status === "cancelled" ? "" : " Możesz ją anulować albo poprawić."}`);
-    dropUnsentMail(b, t);
+    dropUnsentMail(b, true);
     db.prepare("DELETE FROM bookings WHERE id = ? AND paid_at IS NULL").run(id);
   });
 }

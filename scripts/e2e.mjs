@@ -437,10 +437,11 @@ try {
     check("e-mail change saved in lower case, mail to the new address", bk("pa-anna-nowy@example.com")?.id === anna.id && mailsTo("pa-anna-nowy@example.com", "booking-changed").length === 1, flash(r, "err"));
     check("e-mail change drops pending and failed mail for this booking to the old address", unsentCount(`pa-stary-1 ${anna.id}`) === 0 && unsentCount(`pa-stary-2 ${anna.id}`) === 0);
     check("…but not another booking's mail or the owner's", unsentCount("pa-inna-rezerwacja MP-INNA99") === 1 && unsentCount(`pa-wlascicielka ${anna.id}`) === 1);
-    const listSubject = mailsTo("pa-lista@example.com", "booking-waitlist")[0].match(/^Subject: (.*)$/m)[1];
-    unsent("booking-waitlist", "pa-lista@example.com", "pa-lista-bez-numeru", listSubject);
+    const listId = bk("pa-lista@example.com").id;
+    check("the waitlist mail carries the booking number", mailsTo("pa-lista@example.com", "booking-waitlist")[0].includes(`numer zgłoszenia ${listId}`));
+    unsent("booking-waitlist", "pa-lista@example.com", `pa-lista-niewyslana ${listId}`);
     r = await edit(bk("pa-lista@example.com"), { email: "pa-lista-nowa@example.com", notify: "" });
-    check("e-mail change drops the unsent waitlist mail too (it carries no booking number)", unsentCount("pa-lista-bez-numeru") === 0 && bk("pa-lista-nowa@example.com")?.status === "waitlist", flash(r, "err"));
+    check("e-mail change drops the unsent waitlist mail too, by its number", unsentCount(`pa-lista-niewyslana ${listId}`) === 0 && bk("pa-lista-nowa@example.com")?.status === "waitlist", flash(r, "err"));
 
     // moving
     const moving = bk("pa-bezmaila@example.com");
@@ -489,8 +490,10 @@ try {
     check("delete without the confirmation box → error, kept", flash(r, "err").includes("Zaznacz") && !!bk("pa-pozno@example.com"), flash(r, "err"));
     unsent("booking-awaiting", "pa-pozno@example.com", `pa-usun-1 ${lateNow.id}`);
     unsent("booking-notify", "mika@mikipierniki.pl", `pa-usun-2 ${lateNow.id}`);
+    unsent("booking-cancelled", "pa-pozno@example.com", `pa-usun-3 ${lateNow.id}`);
     r = await del(lateNow);
-    check("delete an unpaid booking → gone, with its unsent mail", flash(r, "ok").includes("usunięta") && !bk("pa-pozno@example.com") && unsentCount(`pa-usun-1 ${lateNow.id}`) === 0 && unsentCount(`pa-usun-2 ${lateNow.id}`) === 0, flash(r, "err"));
+    check("delete an unpaid booking → gone, with its unsent mail to the customer", flash(r, "ok").includes("usunięta") && !bk("pa-pozno@example.com") && unsentCount(`pa-usun-1 ${lateNow.id}`) === 0, flash(r, "err"));
+    check("…but a cancellation she chose to send and the owner's mail stay", unsentCount(`pa-usun-3 ${lateNow.id}`) === 1 && unsentCount(`pa-usun-2 ${lateNow.id}`) === 1);
     r = await del(paidMoved);
     check("delete a paid booking → refused, kept", flash(r, "err").includes("nie da się usunąć") && !!bk("pa-oplacona@example.com"), flash(r, "err"));
     const pelnyD = bk("pa-pelny-d@example.com");
@@ -504,6 +507,69 @@ try {
       && html.includes(">Usuń</summary>") && html.includes("Opłaconej rezerwacji nie usuniesz") && html.includes('value="add-booking"'));
     html = await (await get(`/panel/termin/${tDraft}`, { authorization: auth })).text();
     check("no add form on a term without open booking", !html.includes('value="add-booking"'));
+    // after the review: what a correction must not change, and actions from a page that is out of date
+    const pE = pid(await create({ title: "Poprawki E", date: day(46), capacity: "6" }));
+    const pF = pid(await create({ title: "Poprawki F", date: day(47), capacity: "6" }));
+    const pG = pid(await create({ title: "Poprawki G", date: day(48), capacity: "1" }));
+    const pH = pid(await create({ title: "Poprawki H", date: day(49), capacity: "1" }));
+    for (const t of [pE, pF, pG, pH]) await panel(`/panel/termin/${t}`, { action: "open" });
+    await add(pE, { name: "Renata Cena", email: "pa-cena@example.com", people: "2", paid: "on", notify: "" });
+    // the term gets dearer after she has paid
+    db().prepare("UPDATE terms SET price = 500 WHERE id = ?").run(pE);
+    r = await edit(bk("pa-cena@example.com"), { phone: "511 222 333", notify: "" });
+    let cena = bk("pa-cena@example.com");
+    check("a contact-only correction keeps the total, even after the term's price changed", cena.total === 900 && cena.phone === "511 222 333" && !flash(r, "ok").includes("Kwota"), `${cena.total} ${flash(r, "ok")}${flash(r, "err")}`);
+    r = await edit(cena, { people: "3", notify: "" });
+    cena = bk("pa-cena@example.com");
+    check("a people change prices it again and says what to settle", cena.total === 1500 && flash(r, "ok").includes("Kwota zmieniła się z 900 zł na 1500 zł: rozlicz dopłatę albo zwrot."), flash(r, "ok") + flash(r, "err"));
+    r = await edit(cena, { termId: pF, notify: "" });
+    cena = bk("pa-cena@example.com");
+    check("setup: moved to term F", cena.term_id === pF, flash(r, "err"));
+    // a tab of term E opened before the move still lists it there; "bez zmian" in it posts E
+    r = await panel(`/panel/termin/${pE}`, { action: "edit-booking", booking: cena.id, termId: pE, name: cena.name, email: cena.email, phone: "599 999 999", people: String(cena.people), notes: "", notify: "on" });
+    check("a stale page can't move a booking back or change it", flash(r, "err").includes("jest już na innym terminie") && bk("pa-cena@example.com").term_id === pF && bk("pa-cena@example.com").phone === "511 222 333", flash(r, "err"));
+    for (const action of ["paid", "admit", "cancel-booking", "delete-booking"]) {
+      r = await panel(`/panel/termin/${pE}`, { action, booking: cena.id, confirm: "on" });
+      check(`'${action}' from another term's page → error, booking untouched`, flash(r, "err").includes("jest już na innym terminie") && bk("pa-cena@example.com")?.status === "confirmed", flash(r, "err"));
+    }
+    // a reminder already sent to the old address doesn't count for the new one
+    db().prepare("UPDATE bookings SET reminded_at = ? WHERE id = ?").run(new Date().toISOString(), cena.id);
+    r = await edit(cena, { email: "pa-cena-nowa@example.com", notify: "" });
+    check("a new address gets its own reminder", bk("pa-cena-nowa@example.com")?.reminded_at === null, flash(r, "err"));
+
+    // an overdue transfer whose details went to a mistyped address
+    await add(pE, { name: "Olga Literówka", email: "pa-zly-adres@example.com" });
+    let olga = bk("pa-zly-adres@example.com");
+    const past = new Date(Date.now() - 3600000).toISOString();
+    db().prepare("UPDATE bookings SET payment_due_at = ?, overdue_notified_at = ? WHERE id = ?").run(past, past, olga.id);
+    r = await edit(olga, { phone: "522 333 444", notify: "" });
+    olga = bk("pa-zly-adres@example.com");
+    check("a phone fix leaves an overdue booking overdue", olga.payment_due_at === past && !!olga.overdue_notified_at, JSON.stringify(olga));
+    r = await edit(olga, { email: "pa-dobry-adres@example.com", notify: "" });
+    olga = bk("pa-dobry-adres@example.com");
+    check("a corrected address gets a fresh deadline, and without the mail the panel says it", olga && new Date(olga.payment_due_at) > new Date(Date.now() + 11 * 3600000)
+      && olga.overdue_notified_at === null && flash(r, "ok").includes("Nowy termin wpłaty:") && flash(r, "ok").includes("Przekaż go"), `${flash(r, "ok")}${flash(r, "err")} ${JSON.stringify(olga)}`);
+    r = await edit(olga, { name: "Olga Poprawiona" });
+    await settle();
+    check("…and the corrected mail gives that deadline", mailsTo("pa-dobry-adres@example.com", "booking-changed").some((x) => x.includes(`Termin wpłaty: ${dueText(olga.payment_due_at)}.`)), dueText(olga.payment_due_at));
+
+    // a waitlist entry moved to a term with free seats
+    for (const [t, name, email] of [[pG, "Gosia Pierwsza", "pa-g1@example.com"], [pG, "Wanda Czeka", "pa-g2@example.com"], [pG, "Wiktor Czeka", "pa-g3@example.com"],
+      [pH, "Hania Pierwsza", "pa-h1@example.com"], [pH, "Hubert Czeka", "pa-h2@example.com"]]) await add(t, { name, email, notify: "" });
+    check("setup: two on G's waitlist, one on H's", bk("pa-g2@example.com").status === "waitlist" && bk("pa-g3@example.com").status === "waitlist" && bk("pa-h2@example.com").status === "waitlist");
+    r = await edit(bk("pa-g2@example.com"), { termId: pE });
+    await settle();
+    const wanda = bk("pa-g2@example.com");
+    check("a waitlist entry moved to a term with free seats and no waitlist gets the seat", wanda.term_id === pE && wanda.status === "awaiting_payment" && !!wanda.payment_due_at
+      && flash(r, "ok").includes("zeszła z listy rezerwowej") && mailsTo("pa-g2@example.com", "booking-changed").some((x) => x.includes("Dane do przelewu")), `${flash(r, "ok")}${flash(r, "err")} ${JSON.stringify(wanda)}`);
+    // H: its seat freed, its own waitlist not yet given it
+    r = await panel(`/panel/termin/${pH}`, { action: "cancel-booking", booking: bk("pa-h1@example.com").id });
+    check("setup: H has a free seat and someone waiting", bk("pa-h1@example.com").status === "cancelled" && bk("pa-h2@example.com").status === "waitlist", flash(r, "err"));
+    r = await edit(bk("pa-g3@example.com"), { termId: pH, notify: "" });
+    check("…but not ahead of the waitlist already on the new term", bk("pa-g3@example.com").term_id === pH && bk("pa-g3@example.com").status === "waitlist" && !flash(r, "ok").includes("zeszła"), flash(r, "ok") + flash(r, "err"));
+    check("'edit-booking' without the password → 401", (await fetch(`${BASE}/panel/termin/${pE}`, { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: "action=edit-booking" })).status === 401);
+    check("'edit-booking' from another site → 403", (await fetch(`${BASE}/panel/termin/${pE}`, { method: "POST", headers: { authorization: auth, origin: "https://evil.example", "content-type": "application/x-www-form-urlencoded" }, body: "action=edit-booking" })).status === 403);
+
     db().prepare("DELETE FROM outbox WHERE text LIKE 'pa-%'").run();
     await settle();
   }

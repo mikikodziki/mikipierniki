@@ -223,7 +223,8 @@ export function bookingWaitlist(b: BookingMailData, t: Term): Mail {
     subject: `Lista rezerwowa: ${shortDate(t.startsAt)}`,
     ...render([
       hi(b.name),
-      { p: `wszystkie miejsca na ${whenInText(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}).` },
+      // the number identifies the entry in replies, and lets the panel drop this mail when the entry changes
+      { p: `wszystkie miejsca na ${whenInText(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}, numer zgłoszenia ${b.id}).` },
       { p: "Gdy zwolni się miejsce, napiszę do Ciebie z danymi do wpłaty. Do tego czasu niczego nie płacisz." },
       { small: CORRECTION_LINE },
       ...bookingInfo(),
