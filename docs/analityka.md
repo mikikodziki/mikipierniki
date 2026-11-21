@@ -14,6 +14,9 @@ płatnymi warsztatami.
 
 - [ ] **Ruch na stronie:** A) własne statystyki w panelu (**rekomendacja**), B) Plausible,
   C) Umami Cloud, albo nic.
+- [ ] **Przy A:** strony dziś prerenderowane (galeria, o mnie, FAQ, kontakt, zamówienia, prawne,
+  404) przechodzą na renderowanie przy każdym wejściu (`prerender = false`). To odwraca obecne
+  ustawienie, w którym te strony są budowane z góry, patrz punkt 3A.
 - [ ] **Search Console:** czyje konto Google (proponuję Dominiki, z dostępem dla Dawida) i jak
   potwierdzić domenę: plik HTML w `public/` (zwykły deploy) albo rekord TXT w OVH (zmiana DNS).
 - [ ] **Monitoring dostępności:** UptimeRobot (darmowe konto).
@@ -25,7 +28,7 @@ płatnymi warsztatami.
 ## 1. Wyszukiwarka: Google Search Console i Bing Webmaster Tools
 
 Pokazują frazy, po których ludzie trafiają na stronę, pozycje, kliknięcia, wyświetlenia i błędy
-indeksowania. Przyjmują też `sitemap.xml`. Bing może zaimportować ustawienia z Search Console.
+indeksowania. Przyjmują też `sitemap.xml`. Bing ma podobno import ustawień z Search Console (do sprawdzenia).
 
 - Darmowe i bez żadnego skryptu na stronie. Nie dotykają danych odwiedzających, więc polityka
   się nie zmienia.
@@ -81,7 +84,7 @@ liczą się wejścia z innej domeny niż nasza: to przybliżenie odwiedzin bez �
   2. Opakowanie handlera w `start.mjs` (adapter w trybie `middleware`), co zmienia sposób
      uruchamiania aplikacji.
 - **Plusy:**
-  - Brak skryptu daje najmocniejszą pozycję prawną (patrz „Zgoda” niżej).
+  - Brak skryptu daje najmniejsze ryzyko prawne z trzech opcji (patrz „Zgoda” niżej).
   - Nie ma nowego odbiorcy danych: wszystko zostaje na hostingu w Polsce.
   - Narzędzie jest darmowe.
   - Same sumy bez danych osobowych można trzymać latami, więc da się porównać sezon świąteczny
@@ -134,8 +137,11 @@ Plausible to najlepszy gotowy panel z tej trójki.
   tam wymieniona. Wytycznych UODO ani UKE o analityce bez cookies nie znalazłem.
 - Wniosek: przy B i C pytanie „czy potrzebna zgoda” trzeba dać prawnikowi. Bez odpowiedzi nie
   wpisujemy do polityki, że zgoda nie jest potrzebna.
-- A nie wysyła z przeglądarki niczego poza zwykłym wejściem na stronę, więc najpewniej jest poza
-  art. 399. Ocena też należy do prawnika, ale ryzyko jest najmniejsze.
+- A nie wysyła z przeglądarki niczego poza zwykłym wejściem na stronę, ale czyta nagłówki HTTP
+  (Referer, User-Agent, Sec-Fetch). Pkt 43 wytycznych mówi, że zbieranie informacji z nagłówków,
+  np. przy fingerprintingu, może podlegać art. 5(3). A nie tworzy identyfikatora ani odcisku
+  przeglądarki i zapisuje tylko sumy, więc ryzyko jest najmniejsze z trzech. Ocena i tak należy
+  do prawnika. Żeby czytać mniej, można zrezygnować z podziału na telefon i komputer.
 
 ### Odrzucone
 
@@ -163,8 +169,9 @@ Plausible to najlepszy gotowy panel z tej trójki.
 
 ## 5. Dostępność strony
 
-- UptimeRobot Free sprawdza stronę co 5 minut i wysyła maila, gdy przestanie działać. Według ich
-  pomocy i regulaminu darmowy plan wolno używać komercyjnie.
+- UptimeRobot Free sprawdza stronę co kilka minut (interwał do potwierdzenia przy zakładaniu konta)
+  i wysyła maila, gdy przestanie działać. Według ich pomocy i regulaminu darmowy plan wolno używać
+  komercyjnie.
 - Do sprawdzenia: czy zapytania monitora nie dostają 429 od ochrony przed botami na hostingu.
   Jeśli tak, trzeba poprosić seohost o wyjątek.
 - Błędy serwera pokazuje też Search Console.
@@ -186,6 +193,7 @@ Plausible to najlepszy gotowy panel z tej trójki.
   AWStats). Jeśli są, można je obejrzeć za darmo jeszcze dziś.
 - Plausible: cena w EUR oraz to, czy kampanie UTM i Search Console wchodzą w Starter.
 - Czy Googlebot i UptimeRobot dostają 429.
+- Interwał sprawdzania w darmowym UptimeRobot i import z Search Console do Bing.
 
 ## Źródła
 
