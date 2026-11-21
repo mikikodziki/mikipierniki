@@ -70,6 +70,10 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
       <label class="check" for="su-terms"><input type="checkbox" id="su-terms" name="acceptedTerms" required />
         <span>Akceptuję <a href="/regulamin" target="_blank">regulamin</a> i znam <a href="/polityka-prywatnosci" target="_blank">politykę prywatności</a>.</span>
       </label>
+      <!-- optional and unticked; outside #su-pay and #su-rules, so the waitlist keeps it. Same scope as #news-consent in Newsletter.astro -->
+      <label class="check" for="su-newsletter"><input type="checkbox" id="su-newsletter" name="newsletter" />
+        <span>Powiadom mnie o kolejnych warsztatach. Zgadzam się na e-maile od Miki Pierniki o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Zapis potwierdzę linkiem z pierwszego maila, a wypiszę się jednym kliknięciem w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci" target="_blank">polityce prywatności</a>.</span>
+      </label>
       <p class="rules-note" id="su-rules">Do 7 dni przed warsztatami możesz zrezygnować: zwrócę całą wpłatę albo przeniosę Cię na inny termin. Później zwracam wpłatę, jeśli miejsce zajmie osoba z listy rezerwowej; możesz też przekazać miejsce innej osobie.</p>
       <p class="form-error" id="su-error" role="alert" hidden></p>
       <div class="summary"><span id="su-sum-label">Do zapłaty</span><b id="su-sum">{pln(payload[0]?.price ?? 0)}</b></div>
@@ -80,6 +84,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
       <Cookie shape="heart" class="done-cookie" />
       <h2 id="su-done-title" tabindex="-1">Do zobaczenia przy lukrze!</h2>
       <p id="su-done-text"></p>
+      <p id="su-done-news" hidden>Jeśli tego adresu nie ma jeszcze na liście powiadomień, wysłałam na niego osobny e-mail z linkiem do potwierdzenia zapisu. Kliknij go, żeby dostawać wiadomości o nowych terminach.</p>
       <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
     </div>
   </form>
@@ -104,6 +109,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
     const guardiansWrap = $("su-guardians-wrap");
     const err = $("su-error");
     const submit = $<HTMLButtonElement>("su-submit");
+    const news = $<HTMLInputElement>("su-newsletter");
     const pay = () => (form.querySelector<HTMLInputElement>('input[name="payment"]:checked')?.value ?? "przelew") as PaymentMethod;
     const current = () => terms.find((t) => t.id === sel.value)!;
     const n = (el: HTMLInputElement | HTMLSelectElement) => Math.max(0, Math.floor(Number(el.value) || 0));
@@ -187,6 +193,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
         payment: pay(),
         voucherCode: pay() === "voucher" ? $<HTMLInputElement>("su-voucher").value.trim() : undefined,
         acceptedTerms: true,
+        newsletter: news.checked,
       };
       const website = $<HTMLInputElement>("su-website").value;
       submit.disabled = true;
@@ -200,6 +207,10 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
           res.status === "waitlist" ? `Jeśli zwolni się miejsce na ${date}, zaproponuję je osobom z listy w kolejności zapisów. Gdy przyjdzie Twoja kolej, napiszę do Ciebie.`
           : req.payment === "voucher" ? `Rezerwacja na ${date} zapisana. Szczegóły z adresem pracowni wysłałam na ${req.email}. Sprawdzę voucher i potwierdzę rezerwację mailem.`
           : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) i adres pracowni wysłałam na ${req.email}. Wpłać w ciągu 3 dni, najpóźniej dzień przed warsztatami. Po wpłacie dostaniesz potwierdzenie.`;
+        // the same words whether or not the address was already on the list
+        $("su-done-news").hidden = !req.newsletter;
+        // consent is given anew each time, so the next booking starts unticked
+        news.checked = false;
         $("signup-fields").hidden = true;
         $("signup-done").hidden = false;
         $("su-done-title").focus();

@@ -387,6 +387,79 @@ try {
   r = await panel("/panel/newsletter", { action: "remove", email: "nikt@example.com" });
   check("panel 'Wypisz' for an address not on the list → error", r.headers.get("location").includes("err="));
 
+  // ---------- "Powiadom mnie" ticked in the booking and date-pick forms ----------
+  // own terms and addresses, so the counts in the other sections stay as they are
+  const confirmRows = (email) => db().prepare("SELECT COUNT(*) n FROM outbox WHERE kind = 'newsletter-confirm' AND to_addr = ?").get(email).n;
+  const confirmMailTo = (email) => byKind("newsletter-confirm").some((x) => x.includes(`To: ${email}`) && x.includes("/newsletter/potwierdz?t="));
+  c = await create({ title: "Lukier i nowości", date: day(36) });
+  const tNlPick = c.loc.split("/").pop().split("?")[0];
+  c = await create({ title: "Trzy miejsca", date: day(37), capacity: "3" });
+  const tNlBook = c.loc.split("/").pop().split("?")[0];
+  await panel(`/panel/termin/${tNlBook}`, { action: "open" });
+  const pickNl = (email, extra = {}) => api("/api/zainteresowanie", { termIds: [tNlPick], people: 1, name: "Lena Lista", email, consent: true, ...extra });
+  const bookNl = (email, extra = {}) => api("/api/rezerwacja", { termId: tNlBook, people: 1, name: "Marta Lista", email, phone: "500 600 700", payment: "przelew", acceptedTerms: true, ...extra });
+  // an address already on the list, confirmed the usual way
+  await api("/api/newsletter", { email: "aktywna@example.com" });
+  await settle();
+  await confirmPost(db().prepare("SELECT token FROM subscribers WHERE email = 'aktywna@example.com'").get().token);
+  const activeBefore = { token: db().prepare("SELECT token FROM subscribers WHERE email = 'aktywna@example.com'").get().token, confirms: confirmRows("aktywna@example.com"), consents: db().prepare("SELECT COUNT(*) n FROM consent_log WHERE email_hash = ?").get(sha("aktywna@example.com")).n };
+  check("setup: aktywna@ is an active subscriber", statusOf("aktywna@example.com") === "active" && activeBefore.confirms === 1 && activeBefore.consents === 1, JSON.stringify(activeBefore));
+  const activeUnchanged = () => statusOf("aktywna@example.com") === "active" && confirmRows("aktywna@example.com") === activeBefore.confirms
+    && db().prepare("SELECT token FROM subscribers WHERE email = 'aktywna@example.com'").get().token === activeBefore.token
+    && db().prepare("SELECT COUNT(*) n FROM consent_log WHERE email_hash = ?").get(sha("aktywna@example.com")).n === activeBefore.consents;
+
+  // date pick ("Pasuje mi")
+  r = await pickNl("lena@example.com");
+  await settle();
+  check("date pick without the box: saved, no subscribers row, no confirmation", r.status === 200 && statusOf("lena@example.com") === undefined && confirmRows("lena@example.com") === 0);
+  r = await pickNl("Nina@Example.com", { name: "Nina Nowa", newsletter: true });
+  const ninaRes = await r.json();
+  await settle();
+  check("date pick with the box: same answer, pending subscriber, one 'newsletter-confirm' mail", r.status === 200 && JSON.stringify(ninaRes) === JSON.stringify({ terms: 1 })
+    && statusOf("nina@example.com") === "pending" && confirmRows("nina@example.com") === 1 && confirmMailTo("nina@example.com"), `${r.status} ${JSON.stringify(ninaRes)} ${statusOf("nina@example.com")} ${confirmRows("nina@example.com")}`);
+  check("date pick with the box: the sign-up itself is saved", !!db().prepare("SELECT 1 FROM interest WHERE term_id = ? AND email = 'nina@example.com'").get(tNlPick));
+  r = await pickNl("aktywna@example.com", { newsletter: true });
+  await settle();
+  check("date pick with the box for an active address: works, no new mail, subscription untouched", r.status === 200 && activeUnchanged());
+  r = await pickNl("zly-termin@example.com", { termIds: [tDraft], newsletter: true });
+  await settle();
+  check("refused date pick (409) with the box: nobody signed up", r.status === 409 && statusOf("zly-termin@example.com") === undefined && confirmRows("zly-termin@example.com") === 0);
+  const ninaToken = db().prepare("SELECT token FROM subscribers WHERE email = 'nina@example.com'").get()?.token ?? "brak";
+  await confirmPost(ninaToken);
+  const ninaConsent = db().prepare("SELECT consent_version, confirmed_at FROM consent_log WHERE email_hash = ?").all(sha("nina@example.com"));
+  check("the link from that mail confirms and writes the consent row", statusOf("nina@example.com") === "active" && ninaConsent.length === 1 && ninaConsent[0].consent_version === consent1.consent_version && !!ninaConsent[0].confirmed_at, JSON.stringify(ninaConsent));
+
+  // booking (3 seats)
+  r = await bookNl("marta@example.com");
+  const martaRes = await r.json();
+  await settle();
+  check("booking without the box: saved, no subscribers row, no confirmation", r.status === 200 && martaRes.status === "awaiting_payment" && statusOf("marta@example.com") === undefined && confirmRows("marta@example.com") === 0, JSON.stringify(martaRes));
+  r = await bookNl("pelna@example.com", { people: 3, newsletter: true });
+  const fullErr = await r.json();
+  await settle();
+  check("booking refused for lack of seats (409) with the box: nobody signed up", r.status === 409 && fullErr.error.includes("zostały 2 miejsca")
+    && statusOf("pelna@example.com") === undefined && confirmRows("pelna@example.com") === 0 && !db().prepare("SELECT 1 FROM bookings WHERE email = 'pelna@example.com'").get(), JSON.stringify(fullErr));
+  r = await bookNl("marta@example.com", { newsletter: true });
+  await settle();
+  check("duplicate booking (409) with the box: nobody signed up", r.status === 409 && statusOf("marta@example.com") === undefined && confirmRows("marta@example.com") === 0);
+  r = await bookNl("marta@example.com", { newsletter: "tak" });
+  check("newsletter that isn't true/false → 400", r.status === 400, String(r.status));
+  r = await bookNl("aktywna@example.com", { name: "Ala Aktywna", newsletter: true });
+  const activeRes = await r.json();
+  await settle();
+  check("booking with the box for an active address: works, no new mail, subscription untouched", r.status === 200 && activeRes.status === "awaiting_payment" && activeUnchanged(), JSON.stringify(activeRes));
+  r = await bookNl("olga@example.com", { name: "Olga Nowa", newsletter: true });
+  const olgaRes = await r.json();
+  await settle();
+  check("booking with the box: booked, pending subscriber, one 'newsletter-confirm' mail", r.status === 200 && olgaRes.status === "awaiting_payment"
+    && statusOf("olga@example.com") === "pending" && confirmRows("olga@example.com") === 1 && confirmMailTo("olga@example.com"), `${JSON.stringify(olgaRes)} ${statusOf("olga@example.com")}`);
+  check("booking with the box: the booking's own mail still goes out", byKind("booking-awaiting").some((x) => x.includes(olgaRes.bookingId) && x.includes("To: olga@example.com")));
+  r = await bookNl("wanda@example.com", { name: "Wanda Lista", newsletter: true });
+  const wandaRes = await r.json();
+  await settle();
+  check("waitlist booking with the box: on the waitlist, pending subscriber, one 'newsletter-confirm' mail", r.status === 200 && wandaRes.status === "waitlist"
+    && statusOf("wanda@example.com") === "pending" && confirmRows("wanda@example.com") === 1 && confirmMailTo("wanda@example.com"), `${JSON.stringify(wandaRes)} ${statusOf("wanda@example.com")}`);
+
   // ---------- withdrawing interest ----------
   const thanks = mails().map(mail).find((x) => x.includes("To: anna@example.com") && x.includes("/zapis/wypisz?t="));
   const wtoken = thanks.match(/wypisz\?t=([\w-]+)/)[1];

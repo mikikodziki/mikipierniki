@@ -63,6 +63,8 @@ export interface BookingRequest {
   /** Gift card code when payment === "voucher" */
   voucherCode?: string;
   acceptedTerms: true;
+  /** Ticked "Powiadom mnie": after the booking is saved, a newsletter confirmation link is sent (double opt-in) */
+  newsletter?: boolean;
 }
 
 export type BookingStatus = "confirmed" | "awaiting_payment" | "waitlist" | "cancelled";
@@ -83,6 +85,8 @@ export interface InterestRequest {
   phone?: string;
   notes?: string;
   consent: true;
+  /** Ticked "Powiadom mnie": after the sign-up is saved, a newsletter confirmation link is sent (double opt-in) */
+  newsletter?: boolean;
 }
 
 export type InquiryKind = "zamowienie" | "warsztaty-zamkniete" | "voucher" | "kontakt";

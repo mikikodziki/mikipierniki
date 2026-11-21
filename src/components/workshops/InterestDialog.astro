@@ -59,6 +59,10 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
       <label class="check" for="in-consent"><input type="checkbox" id="in-consent" name="consent" required />
         <span>Proszę o kontakt w sprawie zaznaczonych terminów, także o e-mail z ceną i linkiem do rezerwacji, gdy któryś z nich się potwierdzi. Szczegóły w <a href="/polityka-prywatnosci" target="_blank">polityce prywatności</a>.</span>
       </label>
+      <!-- optional and unticked. Same scope as #news-consent in Newsletter.astro -->
+      <label class="check" for="in-newsletter"><input type="checkbox" id="in-newsletter" name="newsletter" />
+        <span>Powiadom mnie o kolejnych warsztatach. Zgadzam się na e-maile od Miki Pierniki o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Zapis potwierdzę linkiem z pierwszego maila, a wypiszę się jednym kliknięciem w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci" target="_blank">polityce prywatności</a>.</span>
+      </label>
       <p class="form-error" id="in-error" role="alert" hidden></p>
       <button class="btn btn-primary" type="submit" id="in-submit">Daj mi znać</button>
     </div>
@@ -67,6 +71,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
       <Cookie shape="star" class="done-cookie" />
       <h2 id="in-done-title" tabindex="-1">Dziękuję!</h2>
       <p id="in-done-text"></p>
+      <p id="in-done-news" hidden>Jeśli tego adresu nie ma jeszcze na liście powiadomień, wysłałam na niego osobny e-mail z linkiem do potwierdzenia zapisu. Kliknij go, żeby dostawać wiadomości o nowych terminach.</p>
       <button class="btn btn-ghost" type="button" data-close>Zamknij</button>
     </div>
   </form>
@@ -85,6 +90,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
     const submit = $<HTMLButtonElement>("in-submit");
     const boxes = [...form.querySelectorAll<HTMLInputElement>('input[name="termIds"]')];
     const people = $<HTMLSelectElement>("in-people");
+    const news = $<HTMLInputElement>("in-newsletter");
 
     // ticks survive closing and reopening; after a sent form the next one starts clean
     let sent = false;
@@ -135,6 +141,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         return;
       }
       const email = $<HTMLInputElement>("in-email").value.trim();
+      const newsletter = news.checked;
       submit.disabled = true;
       const label = submit.textContent;
       submit.textContent = "Wysyłam…";
@@ -147,9 +154,14 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
           phone: $<HTMLInputElement>("in-phone").value.trim() || undefined,
           notes: $<HTMLTextAreaElement>("in-notes").value.trim() || undefined,
           consent: true,
+          newsletter,
           website: $<HTMLInputElement>("in-website").value,
         });
         $("in-done-text").textContent = `Gdy zbierze się grupa, napiszę na ${email} z linkiem do rezerwacji. Jeśli to Twoje pierwsze zgłoszenie na te terminy, potwierdzenie już do Ciebie leci.`;
+        // the same words whether or not the address was already on the list
+        $("in-done-news").hidden = !newsletter;
+        // consent is given anew each time, so the next sign-up starts unticked
+        news.checked = false;
         sent = true;
         $("in-fields").hidden = true;
         $("in-done").hidden = false;

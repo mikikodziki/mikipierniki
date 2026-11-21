@@ -3,6 +3,7 @@ import { z } from "astro/zod";
 import { fields, handleJson } from "@/server/http";
 import { registerInterest } from "@/server/interest";
 import { flushOutbox } from "@/server/mail";
+import { subscribeAfterSignup } from "@/server/newsletter";
 import { site } from "@/lib/site";
 
 export const prerender = false;
@@ -15,11 +16,14 @@ const schema = z.object({
   phone: fields.phone.optional().or(z.literal("")),
   notes: fields.notes,
   consent: z.literal(true, "Zaznacz prośbę o kontakt, żebym mogła dać Ci znać."),
+  newsletter: z.boolean().default(false),
 });
 
 export const POST: APIRoute = ({ request }) =>
   handleJson(request, schema, (d) => {
+    // throws (409) before anything is saved; a repeat sign-up answers like a new one, and so does this
     const res = registerInterest({ ...d, phone: d.phone || undefined });
+    if (d.newsletter) subscribeAfterSignup(d.email);
     void flushOutbox();
     return res;
   });
