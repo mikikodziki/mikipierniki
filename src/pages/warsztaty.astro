@@ -11,7 +11,7 @@ import InterestDialog from "@/components/workshops/InterestDialog.astro";
 import VoucherCard from "@/components/VoucherCard.astro";
 import { getFaq, venueById } from "@/lib/api";
 import { plural, pln } from "@/lib/format";
-import { site, workshopDefaults } from "@/lib/site";
+import { legal, site, workshopDefaults } from "@/lib/site";
 import type { WorkshopType } from "@/lib/types";
 import { publicTerms } from "@/server/terms";
 
@@ -85,7 +85,7 @@ const included = [
   "rękawy cukiernicze",
   "napoje",
   "pudełko, w którym zabierasz swoje pierniki",
-  "lampka grzanego wina na warsztatach wieczornych",
+  "kubek rozgrzewającego ponczu korzennego (bez alkoholu) na warsztatach wieczornych",
 ];
 
 const closedFacts = [
@@ -97,7 +97,7 @@ const closedFacts = [
 ---
 <Base
   title="Warsztaty lukrowania pierników we Wrocławiu"
-  description={`Warsztaty lukrowania pierników we Wrocławiu, w mojej pracowni. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne z winem i dla dzieci, warsztaty zamknięte i vouchery.`}
+  description={`Warsztaty lukrowania pierników we Wrocławiu, w mojej pracowni. Grupa od ${site.groupMin} do ${site.groupMax} osób, materiały w cenie, pierniki zabierasz do domu. Terminy dla dorosłych, wieczorne i dla dzieci, warsztaty zamknięte i vouchery.`}
   mobileCta={false}
   jsonLd={jsonLd}
 >
@@ -121,13 +121,14 @@ const closedFacts = [
         id="terminy"
         eyebrow="Kalendarz"
         title="Wybierz termin i zarezerwuj miejsce"
-        lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne z lampką grzanego wina (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}, od 18 lat) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Wszystkie prowadzę w jednym miejscu — w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
+        lead={`Do wyboru warsztaty dla dorosłych (3–4 godziny${adultPrice ? `, ${pln(adultPrice)} od osoby` : ""}), wieczorne, też dla dorosłych (3–4 godziny${eveningPrice ? `, ${pln(eveningPrice)} od osoby` : ""}) i dwugodzinne dla dzieci (${kidsPrice ? `${pln(kidsPrice)} za dziecko` : "dla dzieci"}). Na wieczornych podaję kubek rozgrzewającego ponczu korzennego (bez alkoholu). Wszystkie prowadzę w jednym miejscu — w mojej pracowni we Wrocławiu. Rezerwacja zajmuje minutę, a potwierdzenie przychodzi mailem.`}
       />
       <TermsList terms={terms} />
       <ul class="terms-notes">
         {anyProposed && <li>Terminy oznaczone jako propozycja dopiero zbieram. Zaznacz te, które Ci pasują, a gdy zbierze się grupa, potwierdzę termin i napiszę z linkiem do rezerwacji.</li>}
-        <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat razem z rodzicem. Starsze dzieci radzą sobie same i mogą przyjść bez opiekuna. W sezonie mam tylko dwa takie terminy.</li>
-        <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać — wtedy zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
+        <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat. Rodzic lub opiekun zostaje z dzieckiem przez cały czas. Młodzież od 13 do 17 lat może przyjść na warsztaty dla dorosłych bez opiekuna, z pisemną zgodą rodzica i numerem telefonu do niego. Jak dbam o bezpieczeństwo dzieci, opisują moje <a href="/standardy-ochrony-maloletnich">standardy ochrony małoletnich</a>. W sezonie mam tylko dwa terminy dla dzieci.</li>
+        <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać najpóźniej {legal.lowTurnoutNoticeDays} dni wcześniej. Wtedy w ciągu 14 dni zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
+        <li>Zapis wysłany przyciskiem „Rezerwuję z obowiązkiem zapłaty” jest wiążący. Płacisz przelewem w ciągu 3 dni, najpóźniej dzień przed warsztatami. Zapisy przez stronę zamykam 2 dni przed startem. Zasady rezygnacji opisuje <a href="/regulamin#rezygnacja">regulamin</a>.</li>
         <li>Każda osoba dekoruje 6–8 pierników i zabiera do domu wszystkie.</li>
       </ul>
     </div>
@@ -158,7 +159,7 @@ const closedFacts = [
           <ul>
             {included.map((x) => <li>{x}</li>)}
           </ul>
-          <p class="inc-note">Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu i z ochotą na odrobinę bałaganu. Pierniki zawierają gluten, jajka, soję i laktozę, mogą też zawierać śladowe ilości orzechów — alergie wpisz w formularzu zapisu.</p>
+          <p class="inc-note">Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu i z ochotą na odrobinę bałaganu. Alergeny w piernikach: gluten, jajka, soja, mleko (w tym laktoza). Mogą też zawierać śladowe ilości orzechów. Jeśli masz alergię lub nietolerancję, zadzwoń do mnie przed warsztatami: <a href={site.phoneHref}>{site.phone}</a>.</p>
         </aside>
       </div>
     </div>
@@ -228,10 +229,10 @@ const closedFacts = [
           lead={`Voucher kosztuje ${pln(voucherPrice)} i jest ważny rok. Osoba obdarowana sama wybiera termin z kalendarza.`}
         />
         <ul class="voucher-facts">
-          <li>Wystarcza na dowolne warsztaty: dla dorosłych, wieczorne z winem albo dla dzieci.</li>
-          <li>Wersję PDF wysyłam mailem, więc sprawdza się nawet na ostatnią chwilę.</li>
-          <li>Wersję drukowaną przygotowuję wyłącznie do odbioru osobistego w pracowni.</li>
+          <li>Wystarcza na dowolne warsztaty: dla dorosłych, wieczorne albo dla dzieci. Jeśli warsztaty kosztują mniej, reszta zostaje na voucherze do końca jego ważności.</li>
+          <li>Wersję PDF wysyłam mailem, a drukowaną przygotowuję do odbioru osobistego w pracowni.</li>
           <li>Realizacja jest prosta: obdarowana osoba zapisuje się na wybrany termin i przy płatności zaznacza kartę podarunkową.</li>
+          <li>Formularz to niewiążąca prośba. Odpiszę osobiście i ustalimy szczegóły. Zasady opisuje <a href="/regulamin#vouchery">regulamin</a>.</li>
         </ul>
         <VoucherCard />
       </div>
@@ -240,10 +241,10 @@ const closedFacts = [
         <InquiryForm
           kind="voucher"
           id="voucher-form"
-          submitLabel="Zamawiam voucher"
+          submitLabel="Zamów voucher"
           messageLabel="Dla kogo i na jaką okazję?"
           messagePlaceholder="Np. dla mamy na urodziny, najchętniej na warsztaty świąteczne."
-          successText="Dziękuję! W ciągu 24 godzin wyślę dane do płatności, a po wpłacie voucher."
+          successText="Dziękuję! Odpiszę osobiście w ciągu 24 godzin i ustalimy szczegóły."
         >
           <div class="row2">
             <label class="field" for="voucher-form-count">Liczba voucherów

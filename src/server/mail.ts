@@ -77,7 +77,8 @@ export async function flushOutbox(): Promise<void> {
         const next = new Date(Date.now() + attempts * attempts * 60_000).toISOString();
         db.prepare("UPDATE outbox SET attempts = ?, last_error = ?, send_after = ?, status = ? WHERE id = ?")
           .run(attempts, String(e).slice(0, 500), next, attempts >= MAX_ATTEMPTS ? "failed" : "pending", m.id);
-        console.error(`[mail] ${m.kind} to ${m.to_addr} failed (attempt ${attempts}):`, e);
+        // no address in the log; the error text is kept in outbox.last_error
+        console.error(`[mail] outbox #${m.id} (${m.kind}) failed (attempt ${attempts}), code: ${(e as { code?: string }).code ?? "unknown"}`);
       }
     }
   } finally {

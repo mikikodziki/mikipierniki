@@ -110,6 +110,18 @@ const migrations: string[] = [
   -- Dominika gets one e-mail when an unpaid transfer booking passes its deadline
   ALTER TABLE bookings ADD COLUMN overdue_notified_at TEXT;
   `,
+  `
+  -- proof of the newsletter consent: keyed by a hash of the address, so it can outlive the subscriber row
+  CREATE TABLE consent_log (
+    id INTEGER PRIMARY KEY,
+    email_hash TEXT NOT NULL,
+    consent_version TEXT NOT NULL,
+    subscribed_at TEXT,
+    confirmed_at TEXT,
+    unsubscribed_at TEXT
+  );
+  CREATE INDEX consent_log_email ON consent_log (email_hash);
+  `,
 ];
 
 let db: DatabaseSync | undefined;
@@ -118,7 +130,7 @@ export function getDb(): DatabaseSync {
   if (db) return db;
   mkdirSync(dirname(config.databasePath), { recursive: true });
   const conn = new DatabaseSync(config.databasePath);
-  conn.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;");
+  conn.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA secure_delete = ON;");
   const { user_version } = conn.prepare("PRAGMA user_version").get() as { user_version: number };
   for (let v = user_version; v < migrations.length; v++) {
     tx(conn, () => {

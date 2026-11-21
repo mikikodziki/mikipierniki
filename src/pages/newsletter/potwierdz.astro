@@ -1,17 +1,27 @@
 ---
+/**
+ * Confirms a newsletter sign-up. A GET only shows a button (mail scanners open links), the POST
+ * from that button confirms.
+ */
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
-import { confirmSubscription } from "@/server/newsletter";
+import { confirmSubscription, subscriberByToken } from "@/server/newsletter";
 
 export const prerender = false;
 
 const t = Astro.url.searchParams.get("t") ?? "";
-const result = t ? confirmSubscription(t) : "unknown";
+let sub = t ? subscriberByToken(t) : undefined;
+if (Astro.request.method === "POST" && sub && confirmSubscription(t) === "ok") sub = subscriberByToken(t);
+const state = !sub || sub.status === "unsubscribed" ? "unknown" : sub.status === "active" ? "done" : "ask";
 ---
 <Base title="Potwierdzenie zapisu" noindex mobileCta={false}>
-  {result === "ok" ? (
-    <PageHead eyebrow="Powiadomienia" title="Gotowe, jesteś na liście!" lead="Napiszę, gdy tylko pojawią się nowe terminy warsztatów. Do zobaczenia przy lukrze!">
+  {state === "done" ? (
+    <PageHead eyebrow="Powiadomienia" title="Gotowe, jesteś na liście!" lead="Napiszę, gdy pojawią się nowe terminy warsztatów albo nowości w ofercie. Do zobaczenia przy lukrze!">
       <div><a class="btn btn-primary" href="/warsztaty">Zobacz warsztaty</a></div>
+    </PageHead>
+  ) : state === "ask" ? (
+    <PageHead eyebrow="Powiadomienia" title="Potwierdzić zapis?" lead={`Adres ${sub!.email} dostanie ode mnie e-maile o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Wypiszesz się jednym kliknięciem w każdej wiadomości.`}>
+      <form method="post"><button class="btn btn-primary" type="submit">Potwierdzam zapis</button></form>
     </PageHead>
   ) : (
     <PageHead eyebrow="Powiadomienia" title="Ten link już nie działa" lead="Może wygasł albo adres został wypisany. Zapisz się jeszcze raz na stronie głównej, a wyślę nowy link.">

@@ -2,106 +2,168 @@
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import DraftNote from "@/components/pages/DraftNote.astro";
-import { legal, site } from "@/lib/site";
+import { legal, site, workshopDefaults } from "@/lib/site";
+import { plural, pln } from "@/lib/format";
 
 /*
- * DRAFT: to be verified by a lawyer before launch (legal.draft shows the note).
- * Company data comes from `legal` in src/lib/site.ts. Sections 4.5 (withdrawal, voucher) and 6.5
- * (teenagers from 13) are proposals written on 2026-11-20, waiting for Dominika's and a lawyer's OK.
+ * Terms of service: open workshops, gift vouchers, custom gingerbread orders and the services the site
+ * provides electronically (forms, date sign-ups, newsletter, booking). Owner and business data come
+ * from `legal` in src/lib/site.ts: the address, business name, NIP and REGON show once filled in, and
+ * the invoice sentence only with `legal.business`. `legal.draft` shows the draft note. The appendix is
+ * the model withdrawal form (załącznik nr 2 do ustawy o prawach konsumenta).
  */
+const host = Astro.site?.host ?? "mikipierniki.pl";
+const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby", "osób")}`;
 ---
 <Base
-  title="Regulamin warsztatów"
-  description="Regulamin warsztatów lukrowania pierników Miki Pierniki: rezerwacja, płatność, rezygnacja, bezpieczeństwo i reklamacje."
+  title="Regulamin warsztatów, voucherów i zamówień"
+  description="Regulamin Miki Pierniki: zapisy na warsztaty lukrowania pierników, płatność, rezygnacja, vouchery, pierniki na zamówienie, reklamacje i usługi na stronie."
 >
-  <PageHead eyebrow="Dokumenty" title="Regulamin warsztatów">
+  <PageHead eyebrow="Dokumenty" title="Regulamin warsztatów, voucherów i zamówień">
     <DraftNote updated={legal.regulaminFrom} />
   </PageHead>
 
   <section class="section legal">
     <div class="wrap">
       <div class="prose">
-        <h2 id="organizator">1. Organizator</h2>
-        <p>Organizatorką warsztatów lukrowania pierników „{site.name}” jest {legal.owner}{legal.business && <>, prowadząca działalność gospodarczą pod firmą {legal.business}, {legal.address}, NIP {legal.nip}, REGON {legal.regon}</>}, zwana dalej „Organizatorką”.</p>
-        <p>Kontakt z Organizatorką: e-mail <a href={`mailto:${site.email}`}>{site.email}</a>, telefon <a href={site.phoneHref}>{site.phone}</a>.</p>
-        <p>Warsztaty otwarte odbywają się w mojej pracowni we Wrocławiu. Dokładny adres podaję w potwierdzeniu zapisu.</p>
-        <p>Regulamin określa zasady zapisów, płatności, udziału i rezygnacji z warsztatów otwartych ogłaszanych na stronie. Warsztaty zamknięte (dla firm i prywatnych grup) wyceniam indywidualnie i mogą mieć warunki ustalane osobno.</p>
+        <h2 id="organizator">1. Organizator i kontakt</h2>
+        <p>Warsztaty lukrowania pierników „{site.name}” prowadzę ja, {legal.owner}{legal.business && <>, {legal.business}</>}{legal.address && <>, {legal.address}</>}{legal.nip && <>, NIP {legal.nip}</>}{legal.regon && <>, REGON {legal.regon}</>}. Przyjmuję też zamówienia na vouchery i pierniki.</p>
+        <p>Kontakt: e-mail <a href={`mailto:${site.email}`}>{site.email}</a>, telefon <a href={site.phoneHref}>{site.phone}</a>.</p>
+        <p>Regulamin opisuje zasady zapisów na warsztaty otwarte ogłaszane na stronie {host}, voucherów, zamówień pierników oraz usług, które świadczę przez stronę drogą elektroniczną. Piszę go w pierwszej osobie: „ja” to {legal.owner}, a „Ty” to osoba, która korzysta ze strony, zapisuje się na warsztaty albo coś zamawia.</p>
+        <p>Warsztaty otwarte odbywają się w mojej pracowni we Wrocławiu. Dokładny adres podaję w e-mailu, który dostajesz po zapisie.</p>
+        <p>Warsztaty zamknięte (dla firm i grup prywatnych) wyceniam indywidualnie i ich warunki możemy ustalić osobno. W sprawach, których nie ustalimy, stosuje się ten regulamin.</p>
 
-        <h2 id="rezerwacja">2. Rezerwacja</h2>
+        <h2 id="rezerwacja">2. Zapis na warsztaty i zawarcie umowy</h2>
         <ol>
-          <li>Na warsztaty zapisujesz się przez formularz na stronie, wybierając termin i liczbę miejsc.</li>
-          <li>Przy terminach oznaczonych jako „propozycja terminu” możesz zgłosić, że termin Ci pasuje. Takie zgłoszenie jest bezpłatne i do niczego nie zobowiązuje ani Ciebie, ani mnie. Gdy na termin zbierze się grupa, potwierdzam go i wysyłam zgłoszonym osobom e-mail z linkiem do rezerwacji. O kolejności decydują rezerwacje.</li>
-          <li>Wysłanie formularza oznacza akceptację niniejszego regulaminu.</li>
-          <li>Rezerwacja staje się wiążąca po zaksięgowaniu płatności. Potwierdzenie otrzymasz e-mailem.</li>
-          <li>Każdy uczestnik, również dziecko, zajmuje osobne miejsce. Grupa liczy od 4 do 10 osób.</li>
-          <li>Gdy na wybrany termin nie ma już wolnych miejsc, możesz zapisać się na listę rezerwową. O zwolnionym miejscu poinformuję Cię e-mailem.</li>
+          <li>Na warsztaty zapisujesz się przez formularz na stronie. Wybierasz termin i liczbę miejsc, podajesz swoje dane kontaktowe i akceptujesz regulamin.</li>
+          <li>Umowa zostaje zawarta w chwili wysłania formularza przyciskiem „Rezerwuję z obowiązkiem zapłaty”. Zaraz potem dostajesz e-mail z potwierdzeniem rezerwacji, danymi do przelewu i adresem pracowni.</li>
+          <li>Zapisy przez stronę zamykam 2 dni (48 godzin) przed rozpoczęciem warsztatów.</li>
+          <li>Każdy uczestnik, również dziecko, zajmuje osobne miejsce. Grupa liczy od {site.groupMin} do {site.groupMax} osób.</li>
+          <li>Przy terminach oznaczonych jako „propozycja terminu” możesz zgłosić, że termin Ci pasuje. Zgłoszenie jest bezpłatne i do niczego nie zobowiązuje ani Ciebie, ani mnie. Gdy zbierze się grupa, potwierdzam termin i wysyłam zgłoszonym osobom e-mail z linkiem do zapisu. O miejscach decyduje kolejność rezerwacji.</li>
+          <li>Gdy na termin nie ma wolnych miejsc, możesz zapisać się na listę rezerwową. Ten zapis jest bezpłatny i nie zobowiązuje do zapłaty. Zwolnione miejsca proponuję e-mailem w kolejności zapisów, razem z danymi do przelewu. Umowa zostaje wtedy zawarta, gdy opłacisz miejsce w terminie podanym w e-mailu.</li>
         </ol>
 
-        <h2 id="platnosc">3. Płatność</h2>
+        <h2 id="platnosc">3. Ceny i płatność</h2>
         <ol>
-          <li>Ceny podane na stronie są cenami brutto za jedno miejsce: warsztaty dla dorosłych 450 zł za osobę, warsztaty wieczorne z winem 500 zł za osobę, warsztaty dla dzieci 200 zł za dziecko.</li>
-          <li>Cena obejmuje upieczone pierniki, lukry, rękawy cukiernicze, napoje i pudełko na gotowe pierniki. Na warsztatach wieczornych dodatkowo lampkę grzanego wina. Każdy uczestnik dekoruje 6–8 pierników i zabiera je wszystkie do domu.</li>
-          <li>Możesz zapłacić przelewem na rachunek podany w e-mailu, który dostajesz zaraz po rezerwacji, albo kartą podarunkową (voucherem).</li>
-          <li>Przy wyborze przelewu wpłata powinna zostać zaksięgowana w ciągu 3 dni od dokonania rezerwacji. Po tym czasie nieopłacona rezerwacja może zostać anulowana, a miejsce zwolnione.</li>
-          <li>Voucher kosztuje 500 zł, jest ważny rok od daty zakupu i można go wykorzystać na dowolne warsztaty. Przy zapisie obdarowana osoba wybiera płatność kartą podarunkową i podaje kod vouchera, a ja potwierdzam rezerwację e-mailem po sprawdzeniu kodu. Voucher wysyłam w PDF albo, w wersji drukowanej, wydaję do odbioru osobistego w pracowni. Vouchera nie wymieniam na gotówkę.</li>
-          {legal.business && <li>Na życzenie wystawiam fakturę. Dane do faktury podaj w formularzu zapisu lub e-mailem.</li>}
+          <li>Cenę każdego terminu podaję przy nim na stronie i w formularzu zapisu. To kwota końcowa za jedno miejsce, bez dodatkowych opłat. Zwykle: warsztaty dla dorosłych {pln(workshopDefaults.dorosli.price)} za osobę, warsztaty wieczorne dla dorosłych {pln(workshopDefaults.wieczor.price)} za osobę, warsztaty dla dzieci {pln(workshopDefaults.dzieci.price)} za dziecko.</li>
+          <li>W cenie są upieczone pierniki, lukry, rękawy cukiernicze, napoje i pudełko na gotowe pierniki, a na warsztatach wieczornych także kubek rozgrzewającego ponczu korzennego (bez alkoholu). Każdy uczestnik dekoruje 6–8 pierników i zabiera wszystkie do domu.</li>
+          <li>Rodzic lub opiekun, który towarzyszy dziecku na warsztatach dla dzieci, nie płaci za udział.</li>
+          <li>Płacisz przelewem na rachunek podany w e-mailu z potwierdzeniem rezerwacji. Wpłata musi dotrzeć w ciągu 3 dni od rezerwacji, ale nie później niż dzień przed warsztatami.</li>
+          <li>Rezerwację, która nie zostanie opłacona w tym terminie, mogę anulować i zwolnić miejsce. Dam Ci o tym znać e-mailem.</li>
+          <li>Możesz też zapłacić voucherem (<a href="#vouchery">punkt 9</a>).</li>
+          {legal.business && <li>Na Twoje życzenie wystawię fakturę.</li>}
         </ol>
 
-        <h2 id="rezygnacja">4. Rezygnacja uczestnika</h2>
+        <h2 id="rezygnacja">4. Rezygnacja i zwroty</h2>
         <ol>
-          <li>Jeśli zrezygnujesz najpóźniej 7 dni przed terminem warsztatów, zwrócę Ci całą wpłaconą kwotę albo przeniosę rezerwację na inny termin, jeśli są na nim wolne miejsca.</li>
-          <li>Przy rezygnacji później niż 7 dni przed terminem wpłata nie podlega zwrotowi, ale możesz przekazać swoje miejsce innej osobie. Wystarczy, że podasz mi jej imię i nazwisko e-mailem przed warsztatami.</li>
-          <li>Rezygnację zgłaszasz e-mailem na adres {site.email}. Liczy się data otrzymania wiadomości.</li>
-          <li>Zwrot następuje w ciągu 14 dni, tą samą metodą, którą dokonano płatności, chyba że ustalimy inaczej.</li>
-          <li>Warsztaty to usługa związana z wypoczynkiem, świadczona w z góry ustalonym dniu. Przy takich usługach ustawa o prawach konsumenta (art. 38) nie daje prawa odstąpienia od umowy zawartej na odległość, dlatego obowiązują zasady rezygnacji z punktów 1–4. Inaczej jest z voucherem, który nie ma ustalonego terminu: od jego zakupu możesz odstąpić w ciągu 14 dni bez podania przyczyny, jeśli nie został jeszcze wykorzystany.</li>
+          <li>Rezygnację zgłaszasz e-mailem na <a href={`mailto:${site.email}`}>{site.email}</a>. Liczy się dzień, w którym dostanę wiadomość.</li>
+          <li>Jeśli zrezygnujesz najpóźniej 7 dni przed warsztatami, zwrócę Ci całą wpłatę albo, jeśli wolisz, przeniosę rezerwację na inny termin z wolnymi miejscami.</li>
+          <li>Przy późniejszej rezygnacji wpłata nie podlega zwrotowi. Możesz jednak przekazać swoje miejsce innej osobie. Wystarczy, że przed warsztatami podasz mi e-mailem jej imię i nazwisko.</li>
+          <li>Jeśli zwolnione przez Ciebie miejsce zajmie osoba z listy rezerwowej, zwrócę Ci całą wpłatę.</li>
+          <li>Zwroty wypłacam w ciągu 14 dni, tą samą metodą, którą opłacono rezerwację, chyba że ustalimy inaczej. Przy płatności voucherem kwota wraca na voucher.</li>
+          <li>Warsztaty to usługa związana z wypoczynkiem, świadczona w oznaczonym dniu. Dlatego, zgodnie z art. 38 ust. 1 pkt 12 ustawy o prawach konsumenta, nie przysługuje Ci prawo odstąpienia od umowy zawartej na odległość. Obowiązują zasady rezygnacji z tego punktu.</li>
         </ol>
 
-        <h2 id="odwolanie">5. Odwołanie lub zmiana warsztatów przez Organizatorkę</h2>
+        <h2 id="odwolanie">5. Odwołanie lub zmiana warsztatów</h2>
         <ol>
-          <li>Zastrzegam sobie prawo do odwołania warsztatów z ważnych przyczyn, np. choroby lub zbyt małej liczby zapisanych osób (poniżej 4 uczestników).</li>
-          <li>O odwołaniu poinformuję Cię e-mailem lub telefonicznie najszybciej, jak to możliwe, a w przypadku zbyt małej liczby osób najpóźniej {legal.lowTurnoutNoticeDays} dni przed terminem.</li>
-          <li>W takiej sytuacji wybierasz: pełny zwrot wpłaty albo przeniesienie rezerwacji na inny termin.</li>
-          <li>Zmiana miejsca lub godziny warsztatów jest możliwa wyłącznie z ważnych przyczyn i zostanie Ci zakomunikowana z wyprzedzeniem. Jeśli nowy termin lub miejsce Ci nie odpowiada, zwrócę całą wpłatę.</li>
+          <li>Mogę odwołać warsztaty z ważnych przyczyn, np. z powodu choroby albo gdy zapisze się mniej niż {groupMinPeople}.</li>
+          <li>O odwołaniu informuję e-mailem lub telefonicznie najszybciej, jak to możliwe, a przy zbyt małej liczbie osób najpóźniej {legal.lowTurnoutNoticeDays} dni przed warsztatami.</li>
+          <li>Gdy odwołam warsztaty, wybierasz: zwrot całej wpłaty w ciągu 14 dni albo inny termin. Jeśli rezerwacja była opłacona voucherem, przywracam na nim kwotę i przedłużam jego ważność o 3 miesiące.</li>
+          <li>Godzinę lub miejsce warsztatów zmieniam tylko z ważnych przyczyn i informuję o tym z wyprzedzeniem. Jeśli zmiana Ci nie odpowiada, zwracam całą wpłatę w ciągu 14 dni.</li>
         </ol>
 
-        <h2 id="dzieci">6. Udział dzieci</h2>
+        <h2 id="dzieci">6. Dzieci i młodzież</h2>
         <ol>
-          <li>Warsztaty dla dzieci są przeznaczone dla dzieci w wieku od 6 do 12 lat i trwają 2 godziny. Dziecko z tej grupy wiekowej przychodzi z rodzicem lub opiekunem.</li>
-          <li>Starsze dzieci radzą sobie samodzielnie i mogą wziąć udział bez opiekuna.</li>
-          <li>Dzieci przez cały czas trwania warsztatów pozostają pod opieką rodzica lub opiekuna, który odpowiada za ich bezpieczeństwo.</li>
-          <li>Warsztaty wieczorne z winem są przeznaczone wyłącznie dla osób pełnoletnich.</li>
-          <li>W warsztatach dla dorosłych mogą wziąć udział osoby od 13 lat. Osoba niepełnoletnia potrzebuje zgody rodzica lub opiekuna, którą wystarczy przesłać e-mailem przed warsztatami.</li>
+          <li>Warsztaty dla dzieci są dla dzieci w wieku od 6 do 12 lat i trwają 2 godziny.</li>
+          <li>Rodzic lub opiekun zostaje z dzieckiem przez cały czas warsztatów i sprawuje nad nim opiekę. Nie wyłącza to mojej odpowiedzialności za bezpieczne warunki w pracowni.</li>
+          <li>Osoby w wieku od 13 do 17 lat mogą wziąć udział w warsztatach dla dorosłych bez opiekuna. Potrzebują pisemnej zgody rodzica lub opiekuna z numerem telefonu do niego. Zgodę przekazujesz mi przed rozpoczęciem warsztatów.</li>
+          <li>W kontakcie z dziećmi kieruję się <a href="/standardy-ochrony-maloletnich">standardami ochrony małoletnich</a>.</li>
         </ol>
 
-        <h2 id="alergeny">7. Alergeny i bezpieczeństwo</h2>
+        <h2 id="alergeny">7. Bezpieczeństwo i alergeny</h2>
         <ol>
-          <li>Pierniki zawierają gluten, jajka, soję i laktozę. Mogą zawierać śladowe ilości orzechów.</li>
+          <li>Alergeny w piernikach: gluten, jajka, soja, mleko (w tym laktoza). Pierniki mogą też zawierać śladowe ilości orzechów. Dotyczy to pierników na warsztatach i na zamówienie.</li>
           <li>Złoty lukier jest niejadalny i służy wyłącznie do dekoracji.</li>
-          <li>Alergie i nietolerancje pokarmowe zgłoś w formularzu zapisu. Postaram się przygotować, ale nie mogę zagwarantować całkowitego braku kontaktu z alergenami.</li>
-          <li>Uczestnicy korzystają z materiałów i narzędzi zgodnie z instrukcjami prowadzącej.</li>
-          <li>Na warsztatach wieczornych, na których serwowane jest grzane wino, alkohol podaję wyłącznie osobom pełnoletnim. Kto nie pije, dostaje wersję bezalkoholową.</li>
+          <li>W formularzach nie pytam o zdrowie i proszę, nie wpisuj tam takich informacji. Jeśli masz alergię lub nietolerancję, zadzwoń do mnie przed warsztatami: <a href={site.phoneHref}>{site.phone}</a>. Przy zamówieniu pierników zadzwoń, zanim potwierdzisz wycenę. W pracowni nie mogę całkowicie wykluczyć kontaktu z alergenami.</li>
+          <li>Z materiałów i narzędzi korzystasz zgodnie z moimi wskazówkami.</li>
         </ol>
 
         <h2 id="zdjecia">8. Zdjęcia z warsztatów</h2>
         <ol>
-          <li>W trakcie warsztatów mogę robić zdjęcia pierników i przebiegu zajęć.</li>
-          <li>Zawsze pytam uczestników o zgodę przed publikacją. Zdjęcia, na których widać Twój wizerunek (lub wizerunek Twojego dziecka), publikuję na stronie i na Instagramie ({site.instagramHandle}) wyłącznie za Twoją wyraźną zgodą, o którą zapytam na miejscu.</li>
-          <li>Zgodę możesz w każdej chwili wycofać, pisząc na {site.email}. Usunę wtedy zdjęcia z moich kanałów.</li>
+          <li>Zdjęcia, na których widać uczestników, robię i publikuję tylko za pisemną zgodą. Zgodę wyrażasz na karcie, którą podpisujesz na miejscu. Za dziecko podpisuje ją rodzic lub opiekun.</li>
+          <li>Brak zgody nie wpływa na udział w warsztatach.</li>
+          <li>Zgodę możesz w każdej chwili wycofać e-mailem na <a href={`mailto:${site.email}`}>{site.email}</a>. Usunę wtedy zdjęcia z moich kanałów: strony i Instagrama ({site.instagramHandle}).</li>
         </ol>
 
-        <h2 id="reklamacje">9. Reklamacje</h2>
+        <h2 id="vouchery">9. Vouchery</h2>
         <ol>
-          <li>Jeśli coś poszło nie tak, napisz do mnie na {site.email}. W reklamacji podaj swoje imię i nazwisko, termin warsztatów i opis problemu.</li>
-          <li>Odpowiem na reklamację w ciągu 14 dni od jej otrzymania.</li>
-          <li>Jako konsument możesz także skorzystać z pozasądowych sposobów rozpatrywania reklamacji, np. pomocy miejskiego lub powiatowego rzecznika konsumentów.</li>
+          <li>Voucher (karta podarunkowa) ma wartość {pln(site.voucherPrice)} i jest ważny 12 miesięcy od dnia zakupu. Możesz nim zapłacić za dowolne warsztaty otwarte.</li>
+          <li>Voucher zamawiasz przez formularz na stronie albo e-mailem. Zamówienie przez formularz jest niewiążące. Odpowiadam osobiście e-mailem z warunkami: ceną, formą vouchera i sposobem płatności. Umowa zostaje zawarta, gdy je potwierdzisz.</li>
+          <li>Po wpłacie wysyłam voucher w PDF e-mailem albo przygotowuję wersję drukowaną do odbioru w pracowni.</li>
+          <li>Przy zapisie na warsztaty wybierasz płatność voucherem i podajesz jego kod. Rezerwację potwierdzam e-mailem po sprawdzeniu kodu.</li>
+          <li>Jeśli warsztaty kosztują mniej niż wartość vouchera, reszta zostaje na voucherze do końca jego ważności. Jeśli kosztują więcej, różnicę dopłacasz przelewem.</li>
+          <li>Vouchera nie wymieniam na gotówkę.</li>
+          <li>Od umowy zakupu vouchera możesz odstąpić bez podania przyczyny w ciągu 14 dni od jej zawarcia. Wystarczy wiadomość na <a href={`mailto:${site.email}`}>{site.email}</a>. Możesz użyć <a href="#formularz-odstapienia">wzoru formularza</a> z załącznika. Wpłatę zwracam w ciągu 14 dni od otrzymania Twojego oświadczenia.</li>
         </ol>
 
-        <h2 id="postanowienia">10. Postanowienia końcowe</h2>
+        <h2 id="zamowienia">10. Pierniki na zamówienie</h2>
+        <ol>
+          <li>Zapytanie o pierniki wysyłasz przez formularz na stronie albo e-mailem. Zapytanie nie jest wiążące.</li>
+          <li>Odpowiadam e-mailem z wyceną: ceną, sposobem dostawy, terminem realizacji i warunkami płatności. Umowa zostaje zawarta, gdy potwierdzisz tę wycenę.</li>
+          <li>Pierniki personalizowane, czyli wykonane według Twojego projektu lub specyfikacji (np. własny kształt, logo, imiona, napisy), nie podlegają zwrotowi. Zgodnie z art. 38 ust. 1 pkt 3 ustawy o prawach konsumenta nie przysługuje Ci prawo odstąpienia od takiej umowy.</li>
+          <li>Od umowy o pierniki bez personalizacji, w standardowych wzorach z mojej oferty, możesz odstąpić bez podania przyczyny w ciągu 14 dni od ich odbioru. Wystarczy wiadomość na <a href={`mailto:${site.email}`}>{site.email}</a>. Możesz użyć <a href="#formularz-odstapienia">wzoru formularza</a> z załącznika. Pierniki odsyłasz na swój koszt, a wpłatę zwracam w ciągu 14 dni od otrzymania Twojego oświadczenia.</li>
+          <li>Odpowiadam za zgodność pierników z umową, także za uszkodzenia powstałe w transporcie. Jeśli paczka dotrze uszkodzona, zrób zdjęcie i napisz do mnie. Reklamacje rozpatruję tak jak w <a href="#reklamacje">punkcie 12</a>.</li>
+        </ol>
+
+        <h2 id="uslugi-elektroniczne">11. Usługi świadczone drogą elektroniczną</h2>
+        <ol>
+          <li>Przez stronę {host} bezpłatnie świadczę drogą elektroniczną te usługi: formularze kontaktowe i zapytań (o pierniki, vouchery i warsztaty zamknięte), zgłoszenia na proponowane terminy, newsletter z informacjami o nowych terminach warsztatów i nowościach w ofercie oraz formularz zapisu na warsztaty. Płatne są tylko same warsztaty, vouchery i pierniki.</li>
+          <li>Do korzystania z nich potrzebujesz dostępu do internetu, aktualnej przeglądarki internetowej z włączoną obsługą JavaScript i adresu e-mail.</li>
+          <li>Przez stronę nie wolno przesyłać treści o charakterze bezprawnym.</li>
+          <li>Korzystanie z formularza kończy się z chwilą jego wysłania albo wcześniej, gdy przestaniesz go wypełniać.</li>
+          <li>Zgłoszenie na proponowany termin możesz w każdej chwili wycofać linkiem z e-maila. Kończy się też, gdy potwierdzę albo odwołam termin.</li>
+          <li>Newsletter zamawiasz na czas nieokreślony, potwierdzając zapis linkiem z e-maila. Możesz z niego zrezygnować w każdej chwili linkiem, który jest w każdej wiadomości, albo pisząc na <a href={`mailto:${site.email}`}>{site.email}</a>.</li>
+          <li>Reklamacje dotyczące tych usług zgłaszasz tak jak w <a href="#reklamacje">punkcie 12</a>.</li>
+        </ol>
+
+        <h2 id="reklamacje">12. Reklamacje</h2>
+        <ol>
+          <li>Odpowiadam za zgodność warsztatów, voucherów i pierników z umową na zasadach ustawy o prawach konsumenta.</li>
+          <li>Reklamację zgłaszasz e-mailem na <a href={`mailto:${site.email}`}>{site.email}</a>. Napisz, czego dotyczy (termin warsztatów, zamówienie, voucher albo usługa na stronie), co poszło nie tak i czego oczekujesz.</li>
+          <li>Odpowiem e-mailem w ciągu 14 dni od otrzymania reklamacji.</li>
+          <li>Jako konsument możesz też skorzystać z pozasądowych sposobów rozpatrywania reklamacji, np. z pomocy miejskiego lub powiatowego rzecznika konsumentów.</li>
+        </ol>
+
+        <h2 id="zmiany">13. Zmiany regulaminu</h2>
+        <ol>
+          <li>Regulamin mogę zmienić z ważnych przyczyn, np. gdy zmieni się prawo albo moja oferta. Nową wersję publikuję na tej stronie z datą, od której obowiązuje.</li>
+          <li>Zmiany nie działają wstecz. Do rezerwacji, voucherów i zamówień sprzed zmiany stosuje się regulamin w brzmieniu z dnia zawarcia umowy.</li>
+        </ol>
+
+        <h2 id="postanowienia">14. Postanowienia końcowe</h2>
         <ol>
           <li>Zasady przetwarzania danych osobowych opisuje <a href="/polityka-prywatnosci">polityka prywatności</a>.</li>
-          <li>W sprawach nieuregulowanych regulaminem stosuje się przepisy prawa polskiego, w szczególności Kodeksu cywilnego i ustawy o prawach konsumenta.</li>
-          <li>Regulamin obowiązuje od {legal.regulaminFrom}. Zmiany regulaminu nie dotyczą rezerwacji dokonanych przed ich wprowadzeniem.</li>
+          <li>Postanowienia o konsumentach stosuje się też do osoby prowadzącej jednoosobową działalność gospodarczą, jeśli umowa nie ma dla niej charakteru zawodowego.</li>
+          <li>W sprawach nieuregulowanych regulaminem stosuje się prawo polskie, w szczególności Kodeks cywilny i ustawę o prawach konsumenta.</li>
+          <li>Regulamin obowiązuje od {legal.regulaminFrom}.</li>
         </ol>
+
+        <h2 id="formularz-odstapienia">Załącznik. Wzór formularza odstąpienia od umowy</h2>
+        <p>Z formularza możesz skorzystać przy voucherach i piernikach bez personalizacji (<a href="#vouchery">punkty 9</a> i <a href="#zamowienia">10</a>). Nie musisz: wystarczy też oświadczenie napisane własnymi słowami.</p>
+        <div class="model-form">
+          <p class="mf-title">Wzór formularza odstąpienia od umowy</p>
+          <p>(formularz ten należy wypełnić i odesłać tylko w przypadku chęci odstąpienia od umowy)</p>
+          <ul>
+            <li>Adresat: {legal.owner}{legal.business && <>, {legal.business}</>}{legal.address && <>, {legal.address}</>}, e-mail: {site.email}</li>
+            <li>Ja/My(*) niniejszym informuję/informujemy(*) o moim/naszym odstąpieniu od umowy sprzedaży następujących towarów(*) umowy dostawy następujących towarów(*) umowy o dzieło polegającej na wykonaniu następujących towarów(*)/o świadczenie następującej usługi(*)</li>
+            <li>Data zawarcia umowy(*)/odbioru(*)</li>
+            <li>Imię i nazwisko konsumenta(-ów)</li>
+            <li>Adres konsumenta(-ów)</li>
+            <li>Podpis konsumenta(-ów) (tylko jeżeli formularz jest przesyłany w wersji papierowej)</li>
+            <li>Data</li>
+          </ul>
+          <p class="mf-note">(*) Niepotrzebne skreślić.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -109,4 +171,9 @@ import { legal, site } from "@/lib/site";
 
 <style>
   .prose h2 { scroll-margin-top: 96px; }
+  .model-form { display: grid; gap: 12px; padding: clamp(18px, 3vw, 28px); border: 1.5px solid var(--line); border-radius: var(--radius); }
+  .model-form .mf-title { font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+  .model-form ul { list-style: none; padding: 0; gap: 10px; }
+  .model-form li::before { content: "– "; }
+  .mf-note { font-size: .9rem; color: var(--ink-soft); }
 </style>

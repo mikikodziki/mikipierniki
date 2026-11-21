@@ -3,11 +3,11 @@
  * Each returns plain text plus a light HTML version built from the same blocks.
  */
 import { plural, pln, shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
-import { site } from "@/lib/site";
+import { legal, site } from "@/lib/site";
 import type { InquiryKind, Term } from "@/lib/types";
 import { config } from "./config";
 import type { Mail } from "./mail";
-import { escapeHtml } from "./util";
+import { escapeHtml, warsawParts } from "./util";
 
 /** Dominika's green palette from src/styles/tokens.css (e-mail clients need literal colours) */
 const C = {
@@ -81,7 +81,29 @@ const url = (path: string) => `${config.siteUrl}${path}`;
 const people = (n: number, unit: Term["priceUnit"]) =>
   `${n} ${unit === "dziecko" ? (n === 1 ? "dziecko" : "dzieci") : plural(n, "osoba", "osoby", "osób")}`;
 
-const CANCEL_RULE = "Jeśli nie możesz przyjść, napisz najpóźniej 7 dni przed terminem: zwrócę całą wpłatę albo przeniosę rezerwację na inny termin. Później możesz przekazać swoje miejsce innej osobie.";
+const CANCEL_RULE = "Rezygnacja do 7 dni przed warsztatami: zwrot całej wpłaty albo zmiana terminu. Później zwrot, jeśli miejsce zajmie osoba z listy rezerwowej; możesz też przekazać miejsce innej osobie. Zwrot w ciągu 14 dni.";
+
+/** Who the mail is from; sits in every message that isn't a direct reply to something the reader just did. */
+const SENDER_LINE = `Nadawca: ${legal.owner} (${site.name}), ${site.email}`;
+
+/** Seller, contact, complaints, withdrawal and cancellation rules, with the link to the regulamin. */
+const bookingInfo = (): Block[] => [
+  { p: "Informacje o rezerwacji:" },
+  { list: [
+    `Organizatorka: ${legal.owner}`,
+    ...(legal.business ? [`Firma: ${legal.business}`] : []),
+    ...(legal.address ? [`Adres firmy: ${legal.address}`] : []),
+    ...(legal.nip ? [`NIP: ${legal.nip}`] : []),
+    `Kontakt: ${site.email}, tel. ${site.phone}`,
+    `Reklamacje: e-mailem na ${site.email}, odpowiadam w ciągu 14 dni.`,
+    "Prawo odstąpienia od umowy nie przysługuje (art. 38 ust. 1 pkt 12 ustawy o prawach konsumenta).",
+  ] },
+  { small: CANCEL_RULE },
+  { small: `Pełny regulamin: ${url("/regulamin")}` },
+];
+
+/** "17 listopada, godz. 14:30" */
+const dueText = (iso: string) => `${shortDate(iso)}, godz. ${warsawParts(iso).time}`;
 
 /* ---------- interest in proposed dates ---------- */
 
@@ -94,20 +116,20 @@ export function interestThanks(to: string, name: string, terms: Term[], withdraw
       { p: "dziękuję za zgłoszenie. Zapisałam, że pasują Ci te terminy:" },
       { list: terms.map(termLine) },
       { p: `Gdy na któryś z nich zbierze się grupa (od ${site.groupMin} osób), napiszę do Ciebie z linkiem do rezerwacji. Do tego czasu niczego nie płacisz i nic Cię nie wiąże.` },
-      { small: `Plany się zmieniły? Zgłoszenie wycofasz tutaj: ${url(`/zapis/wypisz?t=${withdrawToken}`)}` },
+      { small: `Plany się zmieniły? Zgłoszenie wycofasz tutaj: ${url(`/zapis/wypisz?t=${withdrawToken}`)}\nJeśli to nie Ty wypełniałaś(-eś) formularz, kliknij link do wycofania, a usunę zgłoszenie.` },
     ]),
   };
 }
 
-export function interestNotify(name: string, email: string, phone: string | undefined, count: number, notes: string | undefined, terms: Term[]): Mail {
+export function interestNotify(name: string, email: string, count: number, terms: Term[]): Mail {
   return {
     kind: "interest-notify", to: config.mailNotify, replyTo: email,
     subject: `Nowe zgłoszenie: ${name} (${count} os.)`,
     ...render([
       { p: "Ktoś zgłosił chęć udziału w proponowanych terminach:" },
-      { details: [["Imię i nazwisko", name], ["E-mail", email], ["Telefon", phone || "—"], ["Liczba osób", String(count)], ["Uwagi", notes || "—"]] },
+      { details: [["Imię i nazwisko", name], ["E-mail", email], ["Liczba osób", String(count)]] },
       { list: terms.map(termLine) },
-      { button: { label: "Otwórz panel", url: url("/panel") } },
+      ...terms.map((t): Block => ({ button: { label: terms.length > 1 ? `Panel: ${shortDate(t.startsAt)}` : "Otwórz termin w panelu", url: url(`/panel/termin/${t.id}`) } })),
     ], { signature: false }),
   };
 }
@@ -121,8 +143,9 @@ export function termOpened(to: string, name: string, t: Term, withdrawToken: str
       { p: "mam dobrą wiadomość: termin, który Ci pasował, odbędzie się." },
       { details: [["Kiedy", when(t)], ["Warsztaty", t.title], ["Cena", `${pln(t.price)} / ${t.priceUnit === "dziecko" ? "dziecko" : "os."}`]] },
       { p: `Miejsc jest ${t.capacity} i o kolejności decydują rezerwacje, więc nie czekaj za długo.` },
-      { button: { label: "Rezerwuję miejsce", url: url(`/warsztaty?termin=${t.id}`) } },
+      { button: { label: "Przejdź do rezerwacji", url: url(`/warsztaty?termin=${t.id}`) } },
       { small: `Nie chcesz już wiadomości o tym terminie? ${url(`/zapis/wypisz?t=${withdrawToken}`)}` },
+      { small: SENDER_LINE },
     ]),
   };
 }
@@ -145,6 +168,8 @@ export function termDropped(to: string, name: string, t: Term): Mail {
 export interface BookingMailData {
   id: string; name: string; email: string; phone: string; people: number; guardians: number | null;
   notes: string | null; payment: "przelew" | "voucher"; voucherCode: string | null; total: number;
+  /** When a transfer is due (ISO); only set while a booking awaits payment */
+  paymentDueAt?: string | null;
 }
 
 const bookingDetails = (b: BookingMailData, t: Term, withAddress: boolean): [string, string][] => [
@@ -167,8 +192,8 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
       { details: bookingDetails(b, t, true) },
       { p: "Dane do przelewu:" },
       { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
-      { p: "Masz 3 dni na wpłatę. Gdy przelew dotrze, potwierdzę rezerwację mailem." },
-      { small: CANCEL_RULE },
+      { p: `Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami.${b.paymentDueAt ? ` Termin wpłaty: ${dueText(b.paymentDueAt)}.` : ""} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
+      ...bookingInfo(),
     ]),
   };
 }
@@ -181,7 +206,7 @@ export function bookingVoucher(b: BookingMailData, t: Term): Mail {
       hi(b.name),
       { p: `dziękuję za rezerwację! Sprawdzę kod vouchera ${b.voucherCode ?? ""} i potwierdzę rezerwację mailem, zwykle tego samego dnia.` },
       { details: bookingDetails(b, t, true) },
-      { small: CANCEL_RULE },
+      ...bookingInfo(),
     ]),
   };
 }
@@ -207,7 +232,7 @@ export function bookingConfirmed(b: BookingMailData, t: Term): Mail {
       { p: b.payment === "voucher" ? "voucher się zgadza, rezerwacja jest potwierdzona!" : "wpłata dotarła, rezerwacja jest potwierdzona!" },
       { details: bookingDetails(b, t, true) },
       { p: "Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu, wszystkie materiały czekają na miejscu. Dzień przed warsztatami przypomnę się mailem." },
-      { small: CANCEL_RULE },
+      ...bookingInfo(),
     ]),
   };
 }
@@ -246,10 +271,10 @@ export function bookingNotify(b: BookingMailData, t: Term, status: string): Mail
     subject: `${label}: ${b.name}, ${shortDate(t.startsAt)} (${b.people} os.)`,
     ...render([
       { details: [
-        ["Numer", b.id], ["Termin", termLine(t)], ["Imię i nazwisko", b.name], ["E-mail", b.email], ["Telefon", b.phone],
+        ["Numer", b.id], ["Termin", termLine(t)], ["Imię i nazwisko", b.name], ["E-mail", b.email],
         [t.priceUnit === "dziecko" ? "Dzieci" : "Osoby", String(b.people)],
         ...(b.guardians ? [["Rodzice", String(b.guardians)] as [string, string]] : []),
-        ["Płatność", b.payment === "voucher" ? `voucher ${b.voucherCode ?? ""}` : "przelew"], ["Kwota", pln(b.total)], ["Uwagi", b.notes || "—"],
+        ["Płatność", b.payment === "voucher" ? `voucher ${b.voucherCode ?? ""}` : "przelew"], ["Kwota", pln(b.total)],
       ] },
       { button: { label: "Otwórz w panelu", url: url(`/panel/termin/${t.id}`) } },
     ], { signature: false }),
@@ -261,7 +286,7 @@ export function bookingOverdue(b: BookingMailData, t: Term): Mail {
     kind: "booking-overdue", to: config.mailNotify, replyTo: b.email,
     subject: `Brak wpłaty: ${b.id}, ${b.name}, ${shortDate(t.startsAt)}`,
     ...render([
-      { p: `Minęły 3 dni od rezerwacji ${b.id} (${b.name}, ${b.people} os., ${pln(b.total)}) na ${whenInText(t)}, a w panelu nie jest oznaczona jako opłacona.` },
+      { p: `Minął termin wpłaty za rezerwację ${b.id} (${b.name}, ${b.people} os., ${pln(b.total)}) na ${whenInText(t)}, a w panelu nie jest oznaczona jako opłacona.` },
       { p: "Jeśli przelew dotarł, kliknij „Opłacone”. Jeśli nie, możesz napisać do tej osoby (odpowiedz na tego maila) albo anulować rezerwację i zwolnić miejsce." },
       { button: { label: "Otwórz w panelu", url: url(`/panel/termin/${t.id}`) } },
     ], { signature: false }),
@@ -273,10 +298,10 @@ export function bookingOverdue(b: BookingMailData, t: Term): Mail {
 export function newsletterConfirm(to: string, confirmToken: string): Mail {
   return {
     kind: "newsletter-confirm", to,
-    subject: "Potwierdź zapis na wiadomości o terminach",
+    subject: "Potwierdź zapis na wiadomości od Miki Pierniki",
     ...render([
       { p: "Cześć," },
-      { p: "dziękuję za zapis! Kliknij przycisk, żeby potwierdzić adres. Potem napiszę, gdy tylko pojawią się nowe terminy warsztatów." },
+      { p: "dziękuję za zapis! Kliknij przycisk, żeby potwierdzić adres. Potem będę wysyłać Ci e-maile o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne)." },
       { button: { label: "Potwierdzam zapis", url: url(`/newsletter/potwierdz?t=${confirmToken}`) } },
       { small: "Jeśli to nie Ty, zignoruj tę wiadomość. Bez potwierdzenia nie wyślę nic więcej." },
     ]),
@@ -291,6 +316,7 @@ export function newsletterBroadcast(to: string, subject: string, body: string, u
     ...render([
       ...body.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map((p) => ({ p })),
       { small: `Dostajesz tę wiadomość, bo zapisałaś(-eś) się na powiadomienia na mikipierniki.pl. Wypisz się jednym kliknięciem: ${unsubscribe}` },
+      { small: SENDER_LINE },
     ]),
   };
 }

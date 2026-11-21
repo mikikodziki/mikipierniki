@@ -23,6 +23,8 @@ const {
   messagePlaceholder = "",
   successText = "Dziękuję! Odpiszę najpóźniej w ciągu 24 godzin.",
 } = Astro.props;
+// the part of the regulamin that describes what this form leads to
+const termsHref = kind === "zamowienie" ? "/regulamin#zamowienia" : kind === "voucher" ? "/regulamin#vouchery" : "/regulamin";
 ---
 <form class="inquiry form-grid" data-inquiry={kind} id={id} novalidate>
   <div class="row2">
@@ -41,8 +43,9 @@ const {
     <textarea class="input" id={`${id}-message`} name="message" rows="4" maxlength="5000" placeholder={messagePlaceholder} required></textarea>
   </label>
   <label class="check" for={`${id}-consent`}><input type="checkbox" id={`${id}-consent`} name="consent" required />
-    <span>Zgadzam się na kontakt w sprawie zapytania zgodnie z <a href="/polityka-prywatnosci" target="_blank">polityką prywatności</a>.</span>
+    <span>Proszę o odpowiedź na to zapytanie. Jak przetwarzam dane, opisuje <a href="/polityka-prywatnosci" target="_blank">polityka prywatności</a>.</span>
   </label>
+  <p class="inquiry-note">Zapytanie nie jest wiążące; warunki zamówień opisuje <a href={termsHref} target="_blank">regulamin</a>.</p>
   <div class="hp" aria-hidden="true"><label for={`${id}-website`}>Strona www</label><input type="text" id={`${id}-website`} name="website" tabindex="-1" autocomplete="off" /></div>
   <p class="form-error" role="alert" hidden></p>
   <div><button class="btn btn-primary" type="submit">{submitLabel}</button></div>
@@ -91,3 +94,7 @@ const {
     });
   });
 </script>
+
+<style>
+  .inquiry-note { font-size: .88rem; color: var(--ink-soft); }
+</style>

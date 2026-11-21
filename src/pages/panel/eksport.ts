@@ -13,7 +13,8 @@ export const GET: APIRoute = ({ url }) => {
     new Response(body, { headers: { "content-type": "text/csv; charset=utf-8", "content-disposition": `attachment; filename="${name}"` } });
 
   if (url.searchParams.get("co") === "newsletter") {
-    const rows = subscribers().map((s) => [s.email, s.status, s.created_at, s.confirmed_at, s.unsubscribed_at]);
+    // only confirmed, still subscribed addresses: the file must not become a mailing list beyond consent
+    const rows = subscribers().filter((s) => s.status === "active").map((s) => [s.email, s.status, s.created_at, s.confirmed_at, s.unsubscribed_at]);
     return file("powiadomienia.csv", csv([["email", "status", "zapis", "potwierdzenie", "wypisanie"], ...rows]));
   }
 

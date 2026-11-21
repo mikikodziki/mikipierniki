@@ -103,7 +103,7 @@ Wynik każdej nocy jest w `~/mikipierniki-data/backup.log`.
   użytkowników i ról IAM.
 - **Bucket:**
   - publiczny dostęp zablokowany (Block Public Access), szyfrowanie SSE-S3, tylko HTTPS,
-  - kopie znikają po 30 dniach (reguła cyklu życia). Tyle obiecuje polityka prywatności.
+  - kopie znikają po 30 dniach (reguła cyklu życia). Polityka prywatności obiecuje do 35 dni.
 - **Jak serwer wysyła bez klucza:** polityka bucketu pozwala tylko na `PutObject`, tylko z IP
   serwera seohost i tylko pod tajną ścieżką. Ścieżka jest w `backup.env`
   (`S3_URL=https://<bucket>.s3.eu-north-1.amazonaws.com/<ścieżka>`). Czytać, listować i kasować

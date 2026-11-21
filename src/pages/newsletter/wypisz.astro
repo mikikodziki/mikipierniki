@@ -24,9 +24,9 @@ if (Astro.request.method === "POST" && sub) {
   {!sub ? (
     <PageHead eyebrow="Powiadomienia" title="Ten link już nie działa" lead={`Jeśli chcesz się wypisać, odpisz na dowolną wiadomość ode mnie, a usunę Twój adres ręcznie.`} />
   ) : done ? (
-    <PageHead eyebrow="Powiadomienia" title="Wypisano" lead={`Adres ${sub.email} nie dostanie już ode mnie wiadomości o terminach. Gdybyś zmienił(a) zdanie, zapiszesz się ponownie na stronie.`} />
+    <PageHead eyebrow="Powiadomienia" title="Wypisano" lead={`Adres ${sub.email} nie dostanie już ode mnie wiadomości o terminach warsztatów ani nowościach w ofercie. Gdybyś zmienił(a) zdanie, zapiszesz się ponownie na stronie.`} />
   ) : (
-    <PageHead eyebrow="Powiadomienia" title="Wypisać Cię z powiadomień?" lead={`Adres ${sub.email} przestanie dostawać wiadomości o nowych terminach.`}>
+    <PageHead eyebrow="Powiadomienia" title="Wypisać Cię z powiadomień?" lead={`Adres ${sub.email} przestanie dostawać wiadomości o nowych terminach warsztatów i nowościach w ofercie.`}>
       <form method="post"><button class="btn btn-primary" type="submit">Tak, wypisz mnie</button></form>
     </PageHead>
   )}
