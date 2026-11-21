@@ -190,9 +190,10 @@ const closedFacts = [
           messagePlaceholder="Np. zespół 10 osób, mamy jakieś dwie godziny, chcielibyśmy u nas w biurze."
           successText="Dziękuję! Odpiszę zwykle w ciągu 24 godzin z propozycją terminu i wyceną."
         >
-          <div class="row2">
-            <label class="field" for="firmy-form-size">Liczba osób <span class="hint">pełny warsztat do {site.closedGroupMax}</span>
+          <div class="row2 row2--aligned">
+            <label class="field" for="firmy-form-size">Liczba osób
               <input class="input" type="number" id="firmy-form-size" name="groupSize" data-detail="liczba_osob" min="1" inputmode="numeric" />
+              <span class="hint hint--below">pełny warsztat do {site.closedGroupMax}</span>
             </label>
             <label class="field" for="firmy-form-date">Preferowany termin
               <input class="input" type="date" id="firmy-form-date" name="preferredDate" data-detail="termin" />
