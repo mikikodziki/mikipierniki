@@ -14,7 +14,9 @@ const ORIGIN_FREE = new Set(["/newsletter/wypisz"]);
 
 function sameOrigin(request: Request, url: URL): boolean {
   const origin = request.headers.get("origin");
-  if (origin) return origin === url.origin || origin === config.siteUrl;
+  // "null" comes from a page that sends no referrer (a mail-link page opened before this fix) or
+  // from a sandboxed frame; the browser's own Sec-Fetch-Site tells which
+  if (origin && origin !== "null") return origin === url.origin || origin === config.siteUrl;
   return request.headers.get("sec-fetch-site") === "same-origin";
 }
 
@@ -65,7 +67,9 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
     try {
       res.headers.set("cache-control", "no-store");
       res.headers.set("x-robots-tag", "noindex, nofollow");
-      if (tokenPage) res.headers.set("referrer-policy", "no-referrer");
+      // the address with the token goes only back to this site, never to another one; not
+      // "no-referrer", because then browsers send "Origin: null" with the page's own button
+      if (tokenPage) res.headers.set("referrer-policy", "same-origin");
     } catch {
       // redirects built with Response.redirect have immutable headers; they carry no data anyway
     }
