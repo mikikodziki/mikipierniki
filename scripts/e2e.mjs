@@ -591,11 +591,15 @@ try {
   const consents = () => db().prepare("SELECT * FROM consent_log WHERE email_hash = ? ORDER BY id").all(sha("gosia@example.com"));
   const confirmPost = (t, origin = BASE) => fetch(`${BASE}/newsletter/potwierdz?t=${t}`, { method: "POST", headers: { origin, "content-type": "application/x-www-form-urlencoded" }, body: "" });
   r = await get(`/newsletter/potwierdz?t=${ctoken}`);
-  check("mail-link pages aren't cached and send no referrer", r.headers.get("cache-control") === "no-store" && r.headers.get("referrer-policy") === "no-referrer");
+  check("mail-link pages aren't cached and keep their address to this site", r.headers.get("cache-control") === "no-store" && r.headers.get("referrer-policy") === "same-origin");
   html = await r.text();
   check("confirm link (GET) only shows the button", html.includes("Potwierdzam zapis") && !html.includes("Gotowe, jesteś na liście") && html.includes('name="robots" content="noindex"'));
   check("GET did not confirm and wrote no consent", sub() === "pending" && consents().length === 0);
   check("cross-site confirm POST → 403", (await confirmPost(ctoken, "https://evil.example")).status === 403 && sub() === "pending");
+  // "Origin: null": what a mail-link page that sent no referrer posts; Sec-Fetch-Site decides
+  const nullOrigin = (site) => fetch(`${BASE}/newsletter/potwierdz?t=nie-ma-takiego`, { method: "POST", headers: { origin: "null", "sec-fetch-site": site, "content-type": "application/x-www-form-urlencoded" }, body: "" });
+  const [nullSame, nullCross] = [(await nullOrigin("same-origin")).status, (await nullOrigin("cross-site")).status];
+  check("Origin: null passes only with Sec-Fetch-Site: same-origin", nullSame === 200 && nullCross === 403, `${nullSame} ${nullCross}`);
   r = await confirmPost(ctoken);
   html = await r.text();
   check("confirm POST activates", r.status === 200 && html.includes("Gotowe, jesteś na liście") && sub() === "active");
