@@ -7,7 +7,12 @@ import { newsletterBroadcast, newsletterConfirm } from "./emails";
 import { enqueue, underHourlyCap } from "./mail";
 import { emailHash, normalizeEmail, token } from "./util";
 
-/** Version of the consent wording shown next to the sign-up form; bump it when that text changes. */
+/**
+ * Version of the consent wording. One version covers both places that collect it: #news-consent in
+ * Newsletter.astro and the tick box in the booking and date-pick forms (SignupDialog, InterestDialog).
+ * Their wording differs but the consent sentence has the same scope; bump the version when either changes.
+ * consent_log doesn't record which of the two was used.
+ */
 export const NEWSLETTER_CONSENT_VERSION = "2026-11-21";
 
 /** One confirmation e-mail per address in this time, however often the form is sent. */
