@@ -9,7 +9,8 @@ import { outbound } from "@/lib/outbound";
 export const prerender = false;
 
 export const GET: APIRoute = ({ params }) => {
-  const to = outbound[params.cel as keyof typeof outbound];
+  // own keys only: "constructor" or "toString" must not resolve to something inherited
+  const to = params.cel && Object.hasOwn(outbound, params.cel) ? outbound[params.cel as keyof typeof outbound] : undefined;
   if (!to) return new Response("Nie ma takiego linku.", { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } });
   return new Response(null, {
     status: 302,

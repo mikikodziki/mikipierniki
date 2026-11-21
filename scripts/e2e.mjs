@@ -925,7 +925,8 @@ try {
     check("/do/instagram redirects to Instagram and is not cached", r.status === 302 && r.headers.location === "https://instagram.com/mikipierniki" && r.headers["cache-control"] === "no-store", `${r.status} ${r.headers.location}`);
     r = await visit("/do/mapa", { referer: "https://mikipierniki.pl/kontakt" });
     check("/do/mapa redirects to Google Maps", r.status === 302 && r.headers.location?.startsWith("https://www.google.com/maps/search/?api=1&query="), r.headers.location);
-    check("/do/<unknown> → 404, no open redirect", (await visit("/do/https%3A%2F%2Fevil.example")).status === 404 && (await visit("/do/nieznany")).status === 404);
+    const unknownOut = await Promise.all(["/do/https%3A%2F%2Fevil.example", "/do/nieznany", "/do/constructor", "/do/toString", "/do/valueOf", "/do/__proto__"].map(async (u) => (await visit(u)).status));
+    check("/do/<unknown> → 404, no open redirect, no inherited names", unknownOut.every((st) => st === 404), unknownOut.join(","));
     // a form sent from a page opened with a utm link, and one rejected
     r = await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/warsztaty?utm_source=instagram", "user-agent": BROWSER }, JSON.stringify({ email: "statystyki@example.com" }));
     check("form post with a referer still works", r.status === 200, r.text);
@@ -946,13 +947,21 @@ try {
     check("not counted: no Sec-Fetch, bots, prefetch, panel, token pages", sumViews("path = '/faq'").v === 3 && !rows.some((x) => /panel|zapis|newsletter/.test(x.path)), JSON.stringify(sumViews("path = '/faq'")));
     check("nothing personal stored (no tokens, IPs or browser strings)", !/tajny|sekret|127\.0\.0\.1|Mozilla|Safari/.test(JSON.stringify(q("SELECT * FROM stats_views")) + JSON.stringify(q("SELECT * FROM stats_forms"))));
     const hours = q("SELECT COALESCE(SUM(views), 0) AS v FROM stats_hours")[0].v;
-    check("hourly sums match the page views", hours === sumViews("1").v, `${hours} vs ${sumViews("1").v}`);
+    const pageViews = sumViews("path LIKE '/%' AND path NOT LIKE '/do/%'").v;
+    check("hourly sums cover real pages only (no clicks out, no 404)", hours === pageViews && pageViews < sumViews("1").v, `${hours} vs ${pageViews}`);
     const formRows = q("SELECT * FROM stats_forms");
     check("sent form counted with its page and utm_source", formRows.some((x) => x.form === "newsletter" && x.page === "/warsztaty" && x.utm_source === "instagram" && x.outcome === "wyslane" && x.count === 1), JSON.stringify(formRows));
     check("rejected form counted as rejected", formRows.some((x) => x.form === "zapytanie" && x.page === "/kontakt" && x.outcome === "odrzucone"));
     check("stats tab shows sources, pages, clicks and forms", html.includes("Instagram") && html.includes("Galeria") && html.includes("Kliknięcia: mapa Google") && html.includes("Powiadom mnie") && html.includes("Ostatnie zliczone wejście"));
     check("stats tab: every range renders", (await Promise.all(["7", "30", "90", "365", "all", "x"].map(async (k) => (await get(`/panel/statystyki?okres=${k}`, { authorization: auth })).status))).every((st) => st === 200));
     check("stats tab needs the password", (await get("/panel/statystyki")).status === 401);
+    // past the daily row limit, new pages and tags from a forged Referer go to "(inne)"
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Warsaw" }).format(new Date());
+    { const d = db(); const add = d.prepare("INSERT INTO stats_forms VALUES (?, 'newsletter', ?, '', 'wyslane', 1)"); for (let i = 0; i < 3000; i++) add.run(today, `/wypelniacz-${i}`); d.close(); }
+    await raw("POST", "/api/newsletter", { "content-type": "application/json", origin: BASE, referer: "https://mikipierniki.pl/zmyslona-strona?utm_source=losowe", "user-agent": BROWSER }, JSON.stringify({ email: "limit@example.com" }));
+    await statsPage();
+    check("form rows are capped per day", q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = 'zmyslona-strona' OR page = '/zmyslona-strona'")[0].n === 0 && q("SELECT COUNT(*) AS n FROM stats_forms WHERE page = '(inne)' AND utm_source = '(inne)'")[0].n === 1);
+    { const d = db(); d.prepare("DELETE FROM stats_forms WHERE page LIKE '/wypelniacz-%'").run(); d.close(); }
     const ts = q(`SELECT * FROM term_stats WHERE term_id = ?`, t1)[0];
     check("term totals for the stats tab", ts && ts.booked_people > 0 && ts.frozen === 0, JSON.stringify(ts));
   }
