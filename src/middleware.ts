@@ -14,7 +14,7 @@ const ORIGIN_FREE = new Set(["/newsletter/wypisz"]);
 
 function sameOrigin(request: Request, url: URL): boolean {
   const origin = request.headers.get("origin");
-  // "null" comes from a page that sends no referrer (a mail-link page opened before 22.11.2026) or
+  // "null" comes from a page that sends no referrer (a mail-link page opened before this fix) or
   // from a sandboxed frame; the browser's own Sec-Fetch-Site tells which
   if (origin && origin !== "null") return origin === url.origin || origin === config.siteUrl;
   return request.headers.get("sec-fetch-site") === "same-origin";
