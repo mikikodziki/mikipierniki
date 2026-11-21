@@ -83,6 +83,9 @@ const people = (n: number, unit: Term["priceUnit"]) =>
 
 const CANCEL_RULE = "Rezygnacja do 7 dni przed warsztatami: zwrot całej wpłaty albo zmiana terminu. Później zwrot, jeśli miejsce zajmie osoba z listy rezerwowej; możesz też przekazać miejsce innej osobie. Zwrot w ciągu 14 dni.";
 
+/** In every booking mail to the customer, before the information block: a mistake is fixed on reply. */
+const CORRECTION_LINE = "Coś się nie zgadza (np. liczba osób albo dane)? Odpisz na tego maila, a poprawię rezerwację.";
+
 /** Who the mail is from; sits in every message that isn't a direct reply to something the reader just did. */
 const SENDER_LINE = `Nadawca: ${legal.owner} (${site.name}), ${site.email}`;
 
@@ -193,6 +196,7 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
       { p: "Dane do przelewu:" },
       { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
       { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
+      { small: CORRECTION_LINE },
       ...bookingInfo(),
     ]),
   };
@@ -207,6 +211,7 @@ export function bookingVoucher(b: BookingMailData, t: Term): Mail {
       { p: `dziękuję za rezerwację! Sprawdzę kod vouchera ${b.voucherCode ?? ""} i potwierdzę rezerwację mailem, zwykle tego samego dnia.` },
       ...(b.total > site.voucherPrice ? [{ p: `Rezerwacja kosztuje ${pln(b.total)}, więcej niż voucher (${pln(site.voucherPrice)}). W mailu po sprawdzeniu vouchera napiszę, ile i jak dopłacić.` }] : []),
       { details: bookingDetails(b, t, true) },
+      { small: CORRECTION_LINE },
       ...bookingInfo(),
     ]),
   };
@@ -220,6 +225,7 @@ export function bookingWaitlist(b: BookingMailData, t: Term): Mail {
       hi(b.name),
       { p: `wszystkie miejsca na ${whenInText(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}).` },
       { p: "Gdy zwolni się miejsce, napiszę do Ciebie z danymi do wpłaty. Do tego czasu niczego nie płacisz." },
+      { small: CORRECTION_LINE },
       ...bookingInfo(),
     ]),
   };
@@ -234,6 +240,7 @@ export function bookingConfirmed(b: BookingMailData, t: Term): Mail {
       { p: b.payment === "voucher" ? "voucher się zgadza, rezerwacja jest potwierdzona!" : "wpłata dotarła, rezerwacja jest potwierdzona!" },
       { details: bookingDetails(b, t, true) },
       { p: "Nie musisz niczego przynosić. Przyjdź w wygodnym ubraniu, wszystkie materiały czekają na miejscu. Dzień przed warsztatami przypomnę się mailem." },
+      { small: CORRECTION_LINE },
       ...bookingInfo(),
     ]),
   };

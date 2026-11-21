@@ -224,6 +224,10 @@ try {
   r = await panel(`/panel/termin/${t1}`, { action: "admit", booking: b3.bookingId });
   await settle();
   check("admit from waitlist → transfer mail with 'zwolniło się miejsce'", lastMails(1)[0].includes("zwolniło się miejsce") && lastMails(1)[0].includes("12 3456 7890"));
+  check("booking mails to the customer (transfer, seat freed, voucher, waitlist, confirmed) offer a correction on reply", lastMails(1)[0].includes("zwolniło się miejsce")
+    && ["booking-awaiting", "booking-voucher", "booking-waitlist", "booking-confirmed"].every((k) => byKind(k).length > 0
+      && byKind(k).every((x) => x.includes("Coś się nie zgadza (np. liczba osób albo dane)? Odpisz na tego maila, a poprawię rezerwację."))));
+  check("owner notifications don't carry the correction line", byKind("booking-notify").length > 0 && byKind("booking-notify").every((x) => !x.includes("Coś się nie zgadza")));
   const due = db().prepare("SELECT payment_due_at FROM bookings WHERE id = ?").get(b3.bookingId);
   check("admitted booking has a new 3-day deadline", due.payment_due_at && new Date(due.payment_due_at) > new Date(Date.now() + 2.9 * 86400000));
 
