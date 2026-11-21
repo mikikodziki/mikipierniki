@@ -2,11 +2,10 @@
  * "Powiadom mnie" list with double opt-in: nothing is sent to an address until its owner
  * clicks the confirmation link. Every broadcast carries a one-click unsubscribe link.
  */
-import { createHash } from "node:crypto";
 import { getDb, nowIso, tx } from "./db";
 import { newsletterBroadcast, newsletterConfirm } from "./emails";
-import { enqueue } from "./mail";
-import { normalizeEmail, token } from "./util";
+import { enqueue, underHourlyCap } from "./mail";
+import { emailHash, normalizeEmail, token } from "./util";
 
 /** Version of the consent wording shown next to the sign-up form; bump it when that text changes. */
 export const NEWSLETTER_CONSENT_VERSION = "2026-11-21";
@@ -17,7 +16,6 @@ const CONFIRM_MAIL_INTERVAL_MS = 24 * 60 * 60 * 1000;
 /** Outbox kinds that carry newsletter mail to a subscriber. */
 const NEWSLETTER_KINDS = ["newsletter", "newsletter-confirm"];
 
-const emailHash = (email: string) => createHash("sha256").update(email.trim().toLowerCase()).digest("hex");
 
 interface SubscriberRow {
   email: string; token: string; status: "pending" | "active" | "unsubscribed";
@@ -30,13 +28,17 @@ export function subscribe(rawEmail: string): void {
   const email = normalizeEmail(rawEmail);
   const row = db.prepare("SELECT * FROM subscribers WHERE email = ?").get(email) as unknown as SubscriberRow | undefined;
   if (row?.status === "active") return;
-  // a repeat within 24 hours doesn't send another confirmation
-  const recent = db.prepare("SELECT 1 FROM outbox WHERE kind = 'newsletter-confirm' AND to_addr = ? AND created_at > ?")
-    .get(email, new Date(Date.now() - CONFIRM_MAIL_INTERVAL_MS).toISOString());
-  if (recent) return;
+  // a repeat within 24 hours doesn't send another confirmation, unless the last one failed;
+  // someone who unsubscribed and signs up again gets a fresh link at once
+  if (row?.status === "pending") {
+    const recent = db.prepare("SELECT 1 FROM outbox WHERE kind = 'newsletter-confirm' AND to_addr = ? AND status != 'failed' AND created_at > ?")
+      .get(email, new Date(Date.now() - CONFIRM_MAIL_INTERVAL_MS).toISOString());
+    if (recent) return;
+  }
+  if (!underHourlyCap("newsletter-confirm")) return;
   const tok = token();
   if (row) {
-    db.prepare("UPDATE subscribers SET token = ?, status = 'pending', created_at = ?, unsubscribed_at = NULL WHERE email = ?").run(tok, nowIso(), email);
+    db.prepare("UPDATE subscribers SET token = ?, status = 'pending', created_at = ?, confirmed_at = NULL, unsubscribed_at = NULL WHERE email = ?").run(tok, nowIso(), email);
   } else {
     db.prepare("INSERT INTO subscribers (email, token, status, created_at) VALUES (?, ?, 'pending', ?)").run(email, tok, nowIso());
   }
@@ -59,17 +61,29 @@ export function confirmSubscription(tok: string): "ok" | "unknown" {
   });
 }
 
-/** Unsubscribes, closes the open consent record and drops newsletter mail that hasn't gone out yet. */
+/**
+ * Unsubscribes, closes the open consent record and drops newsletter mail that hasn't gone out yet
+ * (failed mail too, so "retry" in the panel can't send it later). By the token from a mail, or by
+ * the address when Dominika removes someone in the panel.
+ */
 export function unsubscribe(tok: string): boolean {
+  return unsubscribeWhere("token", tok);
+}
+
+export function unsubscribeEmail(rawEmail: string): boolean {
+  return unsubscribeWhere("email", normalizeEmail(rawEmail));
+}
+
+function unsubscribeWhere(column: "token" | "email", value: string): boolean {
   const db = getDb();
   return tx(db, () => {
-    const row = db.prepare("SELECT email FROM subscribers WHERE token = ? AND status != 'unsubscribed'").get(tok) as { email: string } | undefined;
+    const row = db.prepare(`SELECT email FROM subscribers WHERE ${column} = ? AND status != 'unsubscribed'`).get(value) as { email: string } | undefined;
     if (!row) return false;
     const now = nowIso();
-    db.prepare("UPDATE subscribers SET status = 'unsubscribed', unsubscribed_at = ? WHERE token = ?").run(now, tok);
+    db.prepare("UPDATE subscribers SET status = 'unsubscribed', unsubscribed_at = ? WHERE email = ?").run(now, row.email);
     db.prepare(`UPDATE consent_log SET unsubscribed_at = ? WHERE id = (
       SELECT id FROM consent_log WHERE email_hash = ? AND unsubscribed_at IS NULL ORDER BY id DESC LIMIT 1)`).run(now, emailHash(row.email));
-    db.prepare(`DELETE FROM outbox WHERE status = 'pending' AND to_addr = ? AND kind IN (${NEWSLETTER_KINDS.map(() => "?").join(",")})`)
+    db.prepare(`DELETE FROM outbox WHERE status IN ('pending','failed') AND to_addr = ? AND kind IN (${NEWSLETTER_KINDS.map(() => "?").join(",")})`)
       .run(row.email, ...NEWSLETTER_KINDS);
     return true;
   });

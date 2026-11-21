@@ -58,7 +58,7 @@ const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby
         <ol>
           <li>Rezygnację zgłaszasz e-mailem na <a href={`mailto:${site.email}`}>{site.email}</a>. Liczy się dzień, w którym dostanę wiadomość.</li>
           <li>Jeśli zrezygnujesz najpóźniej 7 dni przed warsztatami, zwrócę Ci całą wpłatę albo, jeśli wolisz, przeniosę rezerwację na inny termin z wolnymi miejscami.</li>
-          <li>Przy późniejszej rezygnacji wpłata nie podlega zwrotowi. Możesz jednak przekazać swoje miejsce innej osobie. Wystarczy, że przed warsztatami podasz mi e-mailem jej imię i nazwisko.</li>
+          <li>Przy późniejszej rezygnacji nie zwracam wpłaty, bo pierniki i materiały są już przygotowane, a miejsca w tak małej grupie zwykle nie zdążę zaproponować nikomu innemu. Możesz jednak przekazać swoje miejsce innej osobie. Wystarczy, że przed warsztatami podasz mi e-mailem jej imię i nazwisko.</li>
           <li>Jeśli zwolnione przez Ciebie miejsce zajmie osoba z listy rezerwowej, zwrócę Ci całą wpłatę.</li>
           <li>Zwroty wypłacam w ciągu 14 dni, tą samą metodą, którą opłacono rezerwację, chyba że ustalimy inaczej. Przy płatności voucherem kwota wraca na voucher.</li>
           <li>Warsztaty to usługa związana z wypoczynkiem, świadczona w oznaczonym dniu. Dlatego, zgodnie z art. 38 ust. 1 pkt 12 ustawy o prawach konsumenta, nie przysługuje Ci prawo odstąpienia od umowy zawartej na odległość. Obowiązują zasady rezygnacji z tego punktu.</li>
@@ -76,7 +76,7 @@ const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby
         <ol>
           <li>Warsztaty dla dzieci są dla dzieci w wieku od 6 do 12 lat i trwają 2 godziny.</li>
           <li>Rodzic lub opiekun zostaje z dzieckiem przez cały czas warsztatów i sprawuje nad nim opiekę. Nie wyłącza to mojej odpowiedzialności za bezpieczne warunki w pracowni.</li>
-          <li>Osoby w wieku od 13 do 17 lat mogą wziąć udział w warsztatach dla dorosłych bez opiekuna. Potrzebują pisemnej zgody rodzica lub opiekuna z numerem telefonu do niego. Zgodę przekazujesz mi przed rozpoczęciem warsztatów.</li>
+          <li>Osoby w wieku od 13 do 17 lat mogą wziąć udział w dziennych warsztatach dla dorosłych bez opiekuna (warsztaty wieczorne są tylko dla osób pełnoletnich). Potrzebują pisemnej zgody rodzica lub opiekuna z numerem telefonu do niego. Zgodę przekazujesz mi przed rozpoczęciem warsztatów.</li>
           <li>W kontakcie z dziećmi kieruję się <a href="/standardy-ochrony-maloletnich">standardami ochrony małoletnich</a>.</li>
         </ol>
 
@@ -101,7 +101,7 @@ const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby
           <li>Voucher zamawiasz przez formularz na stronie albo e-mailem. Zamówienie przez formularz jest niewiążące. Odpowiadam osobiście e-mailem z warunkami: ceną, formą vouchera i sposobem płatności. Umowa zostaje zawarta, gdy je potwierdzisz.</li>
           <li>Po wpłacie wysyłam voucher w PDF e-mailem albo przygotowuję wersję drukowaną do odbioru w pracowni.</li>
           <li>Przy zapisie na warsztaty wybierasz płatność voucherem i podajesz jego kod. Rezerwację potwierdzam e-mailem po sprawdzeniu kodu.</li>
-          <li>Jeśli warsztaty kosztują mniej niż wartość vouchera, reszta zostaje na voucherze do końca jego ważności. Jeśli kosztują więcej, różnicę dopłacasz przelewem.</li>
+          <li>Jeśli warsztaty kosztują mniej niż wartość vouchera, reszta zostaje na voucherze do końca jego ważności. Jeśli kosztują więcej, różnicę dopłacasz przelewem: kwotę i dane do przelewu podam w e-mailu po sprawdzeniu vouchera.</li>
           <li>Vouchera nie wymieniam na gotówkę.</li>
           <li>Od umowy zakupu vouchera możesz odstąpić bez podania przyczyny w ciągu 14 dni od jej zawarcia. Wystarczy wiadomość na <a href={`mailto:${site.email}`}>{site.email}</a>. Możesz użyć <a href="#formularz-odstapienia">wzoru formularza</a> z załącznika. Wpłatę zwracam w ciągu 14 dni od otrzymania Twojego oświadczenia.</li>
         </ol>
@@ -111,7 +111,9 @@ const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby
           <li>Zapytanie o pierniki wysyłasz przez formularz na stronie albo e-mailem. Zapytanie nie jest wiążące.</li>
           <li>Odpowiadam e-mailem z wyceną: ceną, sposobem dostawy, terminem realizacji i warunkami płatności. Umowa zostaje zawarta, gdy potwierdzisz tę wycenę.</li>
           <li>Pierniki personalizowane, czyli wykonane według Twojego projektu lub specyfikacji (np. własny kształt, logo, imiona, napisy), nie podlegają zwrotowi. Zgodnie z art. 38 ust. 1 pkt 3 ustawy o prawach konsumenta nie przysługuje Ci prawo odstąpienia od takiej umowy.</li>
-          <li>Od umowy o pierniki bez personalizacji, w standardowych wzorach z mojej oferty, możesz odstąpić bez podania przyczyny w ciągu 14 dni od ich odbioru. Wystarczy wiadomość na <a href={`mailto:${site.email}`}>{site.email}</a>. Możesz użyć <a href="#formularz-odstapienia">wzoru formularza</a> z załącznika. Pierniki odsyłasz na swój koszt, a wpłatę zwracam w ciągu 14 dni od otrzymania Twojego oświadczenia.</li>
+          <li>Od umowy o pierniki bez personalizacji, w standardowych wzorach z mojej oferty, możesz odstąpić bez podania przyczyny w ciągu 14 dni od ich odbioru. Wystarczy wiadomość na <a href={`mailto:${site.email}`}>{site.email}</a>. Możesz użyć <a href="#formularz-odstapienia">wzoru formularza</a> z załącznika. Pierniki odsyłasz na swój koszt na adres, który podam w odpowiedzi na Twoje oświadczenie. Wpłatę zwracam w ciągu 14 dni od otrzymania oświadczenia, ale mogę się z tym wstrzymać, aż dostanę pierniki z powrotem albo dowód ich odesłania.</li>
+          <li>Prawo odstąpienia nie obejmuje pierników dostarczonych w zapieczętowanym opakowaniu, jeśli otworzysz je po odbiorze: ze względów higienicznych nie mogę ich przyjąć z powrotem (art. 38 ust. 1 pkt 5 ustawy o prawach konsumenta).</li>
+          <li>Przy zamówieniach firmowych z personalizacją termin realizacji rezerwuję po wpłacie przedpłaty w wysokości 15% wyceny. Zaliczam ją na poczet ceny.</li>
           <li>Odpowiadam za zgodność pierników z umową, także za uszkodzenia powstałe w transporcie. Jeśli paczka dotrze uszkodzona, zrób zdjęcie i napisz do mnie. Reklamacje rozpatruję tak jak w <a href="#reklamacje">punkcie 12</a>.</li>
         </ol>
 
@@ -128,7 +130,7 @@ const groupMinPeople = `${site.groupMin} ${plural(site.groupMin, "osoba", "osoby
 
         <h2 id="reklamacje">12. Reklamacje</h2>
         <ol>
-          <li>Odpowiadam za zgodność warsztatów, voucherów i pierników z umową na zasadach ustawy o prawach konsumenta.</li>
+          <li>Odpowiadam za zgodność pierników z umową na zasadach ustawy o prawach konsumenta, a za należyte przeprowadzenie warsztatów i realizację voucherów na zasadach Kodeksu cywilnego.</li>
           <li>Reklamację zgłaszasz e-mailem na <a href={`mailto:${site.email}`}>{site.email}</a>. Napisz, czego dotyczy (termin warsztatów, zamówienie, voucher albo usługa na stronie), co poszło nie tak i czego oczekujesz.</li>
           <li>Odpowiem e-mailem w ciągu 14 dni od otrzymania reklamacji.</li>
           <li>Jako konsument możesz też skorzystać z pozasądowych sposobów rozpatrywania reklamacji, np. z pomocy miejskiego lub powiatowego rzecznika konsumentów.</li>

@@ -14,7 +14,7 @@ const schema = z.object({
   email: fields.email,
   phone: fields.phone.optional().or(z.literal("")),
   notes: fields.notes,
-  consent: z.literal(true, "Zaznacz zgodę na kontakt, żebym mogła dać Ci znać."),
+  consent: z.literal(true, "Zaznacz prośbę o kontakt, żebym mogła dać Ci znać."),
 });
 
 export const POST: APIRoute = ({ request }) =>

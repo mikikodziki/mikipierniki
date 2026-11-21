@@ -2,7 +2,7 @@
 import type { InquiryRequest } from "@/lib/types";
 import { getDb, nowIso } from "./db";
 import { inquiryAutoreply, inquiryNotify } from "./emails";
-import { enqueue } from "./mail";
+import { enqueue, underHourlyCap } from "./mail";
 import { normalizeEmail } from "./util";
 
 const AUTOREPLY_INTERVAL_MS = 24 * 60 * 60 * 1000;
@@ -17,7 +17,7 @@ export function saveInquiry(req: InquiryRequest): void {
   // the auto-reply goes out once per address per day; the inquiry is always saved and the owner always notified
   const replied = db.prepare("SELECT 1 FROM outbox WHERE kind = 'inquiry-autoreply' AND to_addr = ? AND created_at > ?")
     .get(email, new Date(Date.now() - AUTOREPLY_INTERVAL_MS).toISOString());
-  enqueue(...(replied ? [notify] : [notify, inquiryAutoreply(email, req.name, req.kind)]));
+  enqueue(...(replied || !underHourlyCap("inquiry-autoreply") ? [notify] : [notify, inquiryAutoreply(email, req.name, req.kind)]));
 }
 
 export interface InquiryRow {

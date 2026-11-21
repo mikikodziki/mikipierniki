@@ -6,8 +6,10 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { config } from "./config";
+import { emailHash } from "./util";
 
-const migrations: string[] = [
+/** SQL, or a function for a step SQLite can't do alone; each runs once, in order, in its own transaction. */
+const migrations: (string | ((conn: DatabaseSync) => void))[] = [
   `
   CREATE TABLE terms (
     id TEXT PRIMARY KEY,
@@ -122,6 +124,13 @@ const migrations: string[] = [
   );
   CREATE INDEX consent_log_email ON consent_log (email_hash);
   `,
+  // subscribers who confirmed before consent_log existed get their row too (sha256 needs JS)
+  (conn) => {
+    const rows = conn.prepare("SELECT email, created_at, confirmed_at FROM subscribers WHERE status = 'active'").all() as unknown as
+      { email: string; created_at: string; confirmed_at: string | null }[];
+    const add = conn.prepare("INSERT INTO consent_log (email_hash, consent_version, subscribed_at, confirmed_at) VALUES (?, 'przed-2026-11-21', ?, ?)");
+    for (const r of rows) add.run(emailHash(r.email), r.created_at, r.confirmed_at);
+  },
 ];
 
 let db: DatabaseSync | undefined;
@@ -134,7 +143,9 @@ export function getDb(): DatabaseSync {
   const { user_version } = conn.prepare("PRAGMA user_version").get() as { user_version: number };
   for (let v = user_version; v < migrations.length; v++) {
     tx(conn, () => {
-      conn.exec(migrations[v]);
+      const m = migrations[v];
+      if (typeof m === "string") conn.exec(m);
+      else m(conn);
       conn.exec(`PRAGMA user_version = ${v + 1}`);
     });
   }

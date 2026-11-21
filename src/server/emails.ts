@@ -116,7 +116,7 @@ export function interestThanks(to: string, name: string, terms: Term[], withdraw
       { p: "dziękuję za zgłoszenie. Zapisałam, że pasują Ci te terminy:" },
       { list: terms.map(termLine) },
       { p: `Gdy na któryś z nich zbierze się grupa (od ${site.groupMin} osób), napiszę do Ciebie z linkiem do rezerwacji. Do tego czasu niczego nie płacisz i nic Cię nie wiąże.` },
-      { small: `Plany się zmieniły? Zgłoszenie wycofasz tutaj: ${url(`/zapis/wypisz?t=${withdrawToken}`)}\nJeśli to nie Ty wypełniałaś(-eś) formularz, kliknij link do wycofania, a usunę zgłoszenie.` },
+      { small: `Plany się zmieniły? Zgłoszenie wycofasz tutaj: ${url(`/zapis/wypisz?t=${withdrawToken}`)}\nJeśli to nie Ty wypełniałaś(-eś) formularz, kliknij link do wycofania, a wycofam zgłoszenie.` },
     ]),
   };
 }
@@ -192,7 +192,7 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
       { details: bookingDetails(b, t, true) },
       { p: "Dane do przelewu:" },
       { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
-      { p: `Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami.${b.paymentDueAt ? ` Termin wpłaty: ${dueText(b.paymentDueAt)}.` : ""} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
+      { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
       ...bookingInfo(),
     ]),
   };
@@ -205,6 +205,7 @@ export function bookingVoucher(b: BookingMailData, t: Term): Mail {
     ...render([
       hi(b.name),
       { p: `dziękuję za rezerwację! Sprawdzę kod vouchera ${b.voucherCode ?? ""} i potwierdzę rezerwację mailem, zwykle tego samego dnia.` },
+      ...(b.total > site.voucherPrice ? [{ p: `Rezerwacja kosztuje ${pln(b.total)}, więcej niż voucher (${pln(site.voucherPrice)}). W mailu po sprawdzeniu vouchera napiszę, ile i jak dopłacić.` }] : []),
       { details: bookingDetails(b, t, true) },
       ...bookingInfo(),
     ]),
@@ -219,6 +220,7 @@ export function bookingWaitlist(b: BookingMailData, t: Term): Mail {
       hi(b.name),
       { p: `wszystkie miejsca na ${whenInText(t)} są już zajęte, więc zapisałam Cię na listę rezerwową (${people(b.people, t.priceUnit)}).` },
       { p: "Gdy zwolni się miejsce, napiszę do Ciebie z danymi do wpłaty. Do tego czasu niczego nie płacisz." },
+      ...bookingInfo(),
     ]),
   };
 }
@@ -244,7 +246,9 @@ export function bookingCancelled(b: BookingMailData, t: Term, why: "term" | "sin
     ...render([
       hi(b.name),
       why === "term"
-        ? { p: `bardzo mi przykro, ale muszę odwołać warsztaty „${t.title}” ${whenInText(t)}. Jeśli wpłata już do mnie dotarła, zwrócę całą kwotę albo przeniosę Cię na inny termin. Odpisz na tego maila, co wybierasz.` }
+        ? { p: `bardzo mi przykro, ale muszę odwołać warsztaty „${t.title}” ${whenInText(t)}. ${b.payment === "voucher"
+          ? "Przywrócę kwotę na Twoim voucherze i przedłużę jego ważność o 3 miesiące, a jeśli wolisz, przeniosę Cię na inny termin."
+          : "Jeśli wpłata już do mnie dotarła, wybierasz: zwrot całej kwoty w ciągu 14 dni albo inny termin."} Odpisz na tego maila, co wybierasz.` }
         : { p: `anulowałam rezerwację ${b.id} na ${whenInText(t)}. Jeśli to pomyłka albo wpłata jest już w drodze, odpisz na tego maila, a wszystko wyjaśnimy.` },
       { button: { label: "Zobacz inne terminy", url: url("/warsztaty#terminy") } },
     ]),
@@ -274,7 +278,7 @@ export function bookingNotify(b: BookingMailData, t: Term, status: string): Mail
         ["Numer", b.id], ["Termin", termLine(t)], ["Imię i nazwisko", b.name], ["E-mail", b.email],
         [t.priceUnit === "dziecko" ? "Dzieci" : "Osoby", String(b.people)],
         ...(b.guardians ? [["Rodzice", String(b.guardians)] as [string, string]] : []),
-        ["Płatność", b.payment === "voucher" ? `voucher ${b.voucherCode ?? ""}` : "przelew"], ["Kwota", pln(b.total)],
+        ["Płatność", b.payment === "voucher" ? "voucher (kod w panelu)" : "przelew"], ["Kwota", pln(b.total)],
       ] },
       { button: { label: "Otwórz w panelu", url: url(`/panel/termin/${t.id}`) } },
     ], { signature: false }),
@@ -336,7 +340,7 @@ export function inquiryAutoreply(to: string, name: string, kind: InquiryKind): M
     subject: `Dziękuję za wiadomość (${inquiryLabel[kind].toLowerCase()})`,
     ...render([
       hi(name),
-      { p: "dziękuję za wiadomość! Odpiszę najpóźniej w ciągu 24 godzin, zwykle tego samego dnia." },
+      { p: "dziękuję za wiadomość! Odpisuję zwykle w ciągu 24 godzin (w weekendy i w szczycie sezonu bywa dłużej)." },
       ...(kind === "zamowienie" ? [{ p: "Masz zdjęcie inspiracji albo logo? Odpowiedz na tego maila i dołącz je, na tej podstawie zrobię foremkę." }] : []),
       { small: "Jeśli to nie Ty pisałaś(-eś) przez formularz na mikipierniki.pl, zignoruj tę wiadomość." },
     ]),

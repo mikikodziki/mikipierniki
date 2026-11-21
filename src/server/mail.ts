@@ -21,6 +21,17 @@ export interface Mail {
 
 const MAX_ATTEMPTS = 8;
 
+/**
+ * Mail to an address nobody has confirmed yet (newsletter confirmation, form auto-replies) is
+ * capped per kind and hour, so the forms can't be used to flood someone's inbox from our address.
+ * Far above real traffic; past it the form still answers the same and saves what it saves.
+ */
+export function underHourlyCap(kind: string, max = 30): boolean {
+  const { n } = getDb().prepare("SELECT COUNT(*) AS n FROM outbox WHERE kind = ? AND created_at > ?")
+    .get(kind, new Date(Date.now() - 60 * 60 * 1000).toISOString()) as { n: number };
+  return n < max;
+}
+
 export function enqueue(...mails: Mail[]): void {
   const stmt = getDb().prepare(`INSERT INTO outbox (kind, to_addr, reply_to, subject, text, html, headers, send_after, created_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`);
@@ -58,7 +69,10 @@ export async function flushOutbox(): Promise<void> {
     const due = db.prepare(`SELECT * FROM outbox WHERE status = 'pending' AND send_after <= ? ORDER BY id LIMIT 50`)
       .all(nowIso()) as unknown as OutboxRow[];
     const t = getTransport();
+    const stillPending = db.prepare("SELECT 1 FROM outbox WHERE id = ? AND status = 'pending'");
     for (const m of due) {
+      // an unsubscribe or withdrawal during this batch removes the row; don't send it from memory
+      if (!stillPending.get(m.id)) continue;
       try {
         if (!t && !config.mailToFiles) throw new Error("SMTP_HOST is not set; e-mail can't be sent");
         if (t) {

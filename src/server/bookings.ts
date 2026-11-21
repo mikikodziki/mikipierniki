@@ -21,6 +21,13 @@ const PAYMENT_DAYS = 3;
 /** Transfers are due 3 days after the booking, but no later than the day before the workshop. */
 const dueDate = (t: Pick<Term, "startsAt">) =>
   new Date(Math.min(Date.now() + PAYMENT_DAYS * 24 * HOUR, new Date(t.startsAt).getTime() - 24 * HOUR)).toISOString();
+/** Least time to pay a seat freed close to the workshop, when the day-before deadline has passed or is near. */
+const LATE_ADMIT_HOURS = 12;
+/** A seat offered from the waitlist: the usual deadline, but never one that has passed or is minutes away (and never after the start). */
+const admitDueDate = (t: Pick<Term, "startsAt">) => {
+  const floor = Math.min(Date.now() + LATE_ADMIT_HOURS * HOUR, new Date(t.startsAt).getTime());
+  return new Date(Math.max(new Date(dueDate(t)).getTime(), floor)).toISOString();
+};
 
 export interface BookingRow {
   id: string; term_id: string; status: BookingStatus; name: string; email: string; phone: string; people: number;
@@ -52,6 +59,8 @@ export function createBooking(req: BookingRequest): BookingResult {
     throw new UserError("Zapisy chwilowo nie działają. Napisz do mnie albo zadzwoń, a zarezerwuję miejsce ręcznie.", 503);
   }
   if (req.people > term.capacity) throw new UserError(`Na jeden termin mogę przyjąć najwyżej ${term.capacity} osób.`);
+  // the regulamin and the child-protection standards: a parent stays for the whole children's workshop
+  if (term.type === "dzieci" && (req.guardians ?? 0) < 1) throw new UserError("Na warsztatach dla dzieci zostaje co najmniej jeden rodzic lub opiekun.");
 
   const db = getDb();
   const email = normalizeEmail(req.email);
@@ -117,9 +126,10 @@ export function admitFromWaitlist(id: string): void {
   tx(db, () => {
     const { b, t } = load(id);
     if (b.status !== "waitlist") throw new UserError("Ta osoba nie jest na liście rezerwowej.");
+    if (new Date(t.startsAt).getTime() <= Date.now()) throw new UserError("Te warsztaty już się zaczęły.");
     const left = t.capacity - seatsTaken(t.id);
     if (left < b.people) throw new UserError(`Wolnych miejsc: ${left}, a ta rezerwacja potrzebuje ${b.people}.`);
-    const due = dueDate(t);
+    const due = admitDueDate(t);
     db.prepare("UPDATE bookings SET status = 'awaiting_payment', payment_due_at = ? WHERE id = ?").run(due, id);
     enqueue(bookingAwaitingTransfer({ ...mailData(b), paymentDueAt: due }, t, `zwolniło się miejsce na warsztatach ${whenInText(t)}! Rezerwacja czeka na Ciebie.`));
   });

@@ -4,6 +4,7 @@
  * data-book="<termId>" (or ?termin=<termId> in the URL) opens it with that term preselected.
  */
 import type { Term } from "@/lib/types";
+import { bookingClosed } from "@/lib/api";
 import { shortDate, pln } from "@/lib/format";
 import { site } from "@/lib/site";
 import Cookie from "../Cookie.astro";
@@ -11,7 +12,8 @@ import Cookie from "../Cookie.astro";
 interface Props {
   terms: Term[];
 }
-const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
+// a term less than 48 hours away is shown as closed on its card, so it isn't offered here either
+const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingClosed(t)).map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
 ---
 {payload.length > 0 && <dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
   <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload).replace(/</g, "\\u003c")} />
@@ -39,7 +41,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
           </select>
         </label>
         <label class="field" for="su-guardians" id="su-guardians-wrap">Rodzice na sali <span class="hint">bez opłaty</span>
-          <input class="input" type="number" id="su-guardians" name="guardians" min="0" max={site.bookingMax} value="1" inputmode="numeric" />
+          <input class="input" type="number" id="su-guardians" name="guardians" min="1" max={site.bookingMax} value="1" inputmode="numeric" />
         </label>
       </div>
       <label class="field" for="su-name">Imię i nazwisko
@@ -122,8 +124,8 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
       $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
       $("su-sum").textContent = `${bookingTotal(t, n(people))} zł`;
       submit.textContent = waitlist ? "Dopisz mnie do listy" : "Rezerwuję z obowiązkiem zapłaty";
-      // the seats-left message depends on the term, so it follows a change of term
-      if (people.getAttribute("aria-invalid") === "true") setFieldError(people, check(people));
+      // more people than seats left shows at once, and follows a change of term
+      setFieldError(people, check(people));
     }
 
     function open(id: string) {
@@ -147,12 +149,14 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
         if (t.seatsLeft > 0 && count > t.seatsLeft) return `Na ten termin ${plural(t.seatsLeft, "zostało", "zostały", "zostało")} ${t.seatsLeft} ${seatsWord(t.seatsLeft)}. Zmniejsz liczbę osób albo wybierz inny termin.`;
         return null;
       }
+      if (el === guardians && n(guardians) < 1) return "Na warsztatach dla dzieci zostaje co najmniej jeden rodzic lub opiekun.";
       if (el.id === "su-voucher") return pay() === "voucher" && !el.value.trim() ? "Wpisz numer vouchera albo wybierz przelew." : null;
       return messageFor(el);
     }
 
     function validate() {
-      const fields = [people, "su-name", "su-email", "su-phone", "su-voucher", "su-terms"].map((f) => (typeof f === "string" ? $<HTMLInputElement>(f) : f));
+      const kids = current().type === "dzieci";
+      const fields = [people, ...(kids ? [guardians] : []), "su-name", "su-email", "su-phone", "su-voucher", "su-terms"].map((f) => (typeof f === "string" ? $<HTMLInputElement>(f) : f));
       const bad = fields.filter((el) => {
         const msg = check(el);
         setFieldError(el, msg);
@@ -226,4 +230,6 @@ const payload = Astro.props.terms.filter((t) => t.status === "open").map((t) => 
   .summary { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 16px; border-radius: 12px; background: var(--sunk); font-size: .95rem; }
   .summary b { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; }
   .rules-note { font-size: .88rem; color: var(--ink-soft); }
+  /* the long button label wraps on narrow phones; give the two lines room for Polish accents */
+  @media (max-width: 420px) { #su-submit { line-height: 1.3; text-wrap: balance; } }
 </style>

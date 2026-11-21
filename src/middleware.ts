@@ -59,10 +59,13 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
   }
 
   const res = await next();
-  if (isPanel || path.startsWith("/api/") || route.startsWith("/api/")) {
+  // pages opened from a mail link carry a personal token in the address and show the e-mail
+  const tokenPage = /^\/(newsletter|zapis)\//.test(path);
+  if (isPanel || tokenPage || path.startsWith("/api/") || route.startsWith("/api/")) {
     try {
       res.headers.set("cache-control", "no-store");
       res.headers.set("x-robots-tag", "noindex, nofollow");
+      if (tokenPage) res.headers.set("referrer-policy", "no-referrer");
     } catch {
       // redirects built with Response.redirect have immutable headers; they carry no data anyway
     }

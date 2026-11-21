@@ -47,7 +47,9 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
         ) : (
         <div class:list={["seats", { low, soldOut }]}>
           <span>
-            {soldOut ? (
+            {closed ? (
+              <>Zapisy online są już zamknięte. Zadzwoń, może znajdzie się miejsce.</>
+            ) : soldOut ? (
               <><b>Brak miejsc</b> · lista rezerwowa</>
             ) : low ? (
               <><b>{plural(term.seatsLeft, "Zostało", "Zostały", "Zostało")} {term.seatsLeft} {seatsWord(term.seatsLeft)}</b> z {term.capacity}</>
@@ -64,7 +66,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
           {proposed ? (
             <button class="btn btn-primary btn-small" type="button" data-interest={term.id}>Pasuje mi</button>
           ) : closed ? (
-            <span class="closed">Zapisy zamknięte</span>
+            <a class="closed" href={site.phoneHref}>Zadzwoń: {site.phone}</a>
           ) : (
             <button class="btn btn-primary btn-small" type="button" data-book={term.id}>
               {soldOut ? "Lista rezerwowa" : "Zapisz się"}
@@ -123,7 +125,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 
   .foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
   .price { font-family: var(--display); font-weight: var(--display-weight); font-size: 1.4rem; color: var(--on-dark); }
-  .closed { font-size: .9rem; font-weight: 600; color: var(--sand); }
+  .closed { font-size: .9rem; font-weight: 600; color: var(--sand); text-decoration: underline; text-underline-offset: 3px; }
   .price small { font-family: var(--body); font-weight: 400; font-size: .8rem; color: color-mix(in srgb, var(--on-dark) 85%, transparent); }
 
   /* touch screens have no hover: keep everything open */
