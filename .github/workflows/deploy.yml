@@ -9,6 +9,11 @@ name: Deploy
 on:
   push:
     branches: [main]
+    # A push that only touches documentation doesn't deploy (it runs if any other file changed).
+    # The site has no Markdown pages, so *.md is never part of the build.
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
   workflow_dispatch:
 
 concurrency: deploy
