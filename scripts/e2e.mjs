@@ -95,6 +95,26 @@ try {
   check("static /faq still served", (await get("/faq")).status === 200);
   check("unknown page → 404", (await get("/nie-ma-takiej")).status === 404);
 
+  // ---------- headers from deploy/start.mjs ----------
+  const secure = (res) => res.headers.get("strict-transport-security")?.startsWith("max-age=") && res.headers.get("x-content-type-options") === "nosniff"
+    && res.headers.get("x-frame-options") === "DENY" && res.headers.get("content-security-policy") === "frame-ancestors 'none'"
+    && res.headers.get("permissions-policy")?.includes("camera=()");
+  const hdrs = (res) => [...res.headers].filter(([k]) => /strict|x-content|x-frame|security-policy|referrer|permissions|cache-control/.test(k)).map((h) => h.join(": ")).join(" | ");
+  for (const p of ["/", "/faq", "/nie-ma-takiej", "/fonts/jost-latin.woff2", "/panel"]) {
+    r = await get(p);
+    check(`${p} (${r.status}) carries the security headers`, secure(r), hdrs(r));
+  }
+  r = await get("/faq");
+  check("pages ask for no third-party referrer beyond the origin", r.headers.get("referrer-policy") === "strict-origin-when-cross-origin", hdrs(r));
+  r = await get("/fonts/jost-latin.woff2");
+  check("a font is kept a year", r.status === 200 && r.headers.get("cache-control") === "public, max-age=31536000, immutable", hdrs(r));
+  r = await get("/zdjecia/gwiazdka-zlota-400.webp");
+  check("a photo is kept a week", r.status === 200 && r.headers.get("cache-control") === "public, max-age=604800", hdrs(r));
+  r = await get("/zdjecia/nie-ma-takiego.webp");
+  check("a missing photo (404) is not kept", r.status === 404 && !/max-age=[1-9]/.test(r.headers.get("cache-control") ?? ""), `${r.status} ${hdrs(r)}`);
+  r = await get("/apple-touch-icon-precomposed.png");
+  check("Safari's precomposed icon is there", r.status === 200 && r.headers.get("content-type") === "image/png", String(r.status));
+
   // ---------- panel auth ----------
   check("/panel without password → 401", (await get("/panel")).status === 401);
   check("/panel wrong password → 401", (await get("/panel", { authorization: "Basic " + Buffer.from("x:zle").toString("base64") })).status === 401);
