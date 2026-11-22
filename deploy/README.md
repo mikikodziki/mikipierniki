@@ -118,6 +118,7 @@ Co noc o 3:30 `backup.sh` robi kopię bazy (`sqlite3 .backup`) i sprawdza ją (`
 Kopia zostaje na serwerze, a spakowana trafia do S3 jako `db-RRRR-MM-DD-GGMM-<losowe>.sqlite.gz`.
 Wynik każdej nocy jest w `~/mikipierniki-data/backup.log`. Panel pokazuje go w zakładce „Kopie”
 i ostrzega paskiem na każdej stronie, gdy najnowsza kopia ma ponad dobę albo nie trafiła do S3.
+Wtedy aplikacja wysyła też maila na `MAIL_NOTIFY` i osobno na `MAIL_ADMIN` (raz na każdy problem).
 
 - **Konto:** AWS mikusi, profil `mikusia`, region `eu-north-1` (Sztokholm). Bez dodatkowych
   użytkowników i ról IAM.
@@ -134,13 +135,34 @@ i ostrzega paskiem na każdej stronie, gdy najnowsza kopia ma ponad dobę albo n
 - **Gdy seohost zmieni IP serwera:** wysyłka zacznie się kończyć błędem `403` w `backup.log`.
   Trzeba wtedy poprawić IP w polityce bucketu.
 
-Odtworzenie (na laptopie z `aws login --profile mikusia`):
+## Przywracanie kopii
+
+Z panelu: Kopie → „Przywróć…”. Przycisk tylko wysyła jednorazowy link (ważny 30 minut) na
+`MAIL_ADMIN`; bez tego ustawienia przycisku nie ma. Strona z linku (za hasłem panelu) pokazuje, co
+zniknie i co wróci, a bazę zmienia dopiero po wpisaniu daty kopii. Szczegóły w `src/server/restore.ts`:
+
+- wracają terminy, rezerwacje i chętni. Wysłane maile, powiadomienia (zgody i wypisy), zapytania
+  i statystyki zostają jak teraz. Przypomnienia wysłane i zgłoszenia wycofane po kopii się nie cofają,
+- obecny stan zapisuje się jako `backups/db-przed-przywroceniem-….sqlite` (też znika po 30 dniach)
+  i można go przywrócić tak samo, czyli cofnąć przywrócenie,
+- plik bazy nie jest podmieniany, bo na seohost działa naraz kilka procesów aplikacji; kopia
+  zastępuje tabele w jednej transakcji.
+
+Kopia z S3 (na laptopie z `aws login --profile mikusia`): pobierz ją, wgraj do `backups/` pod nazwą
+nocnej kopii, której tam jeszcze nie ma, i przywróć z panelu:
 
 ```sh
 aws s3 ls s3://<bucket>/ --recursive --profile mikusia
-aws s3 cp s3://<bucket>/<ścieżka>/db-….sqlite.gz - --profile mikusia | gunzip > mikipierniki.sqlite
-sqlite3 mikipierniki.sqlite "PRAGMA integrity_check"
-# na serwerze: zatrzymaj aplikację, podmień plik, usuń mikipierniki.sqlite-wal i -shm, uruchom
+aws s3 cp s3://<bucket>/<ścieżka>/db-….sqlite.gz - --profile mikusia | gunzip > db-RRRR-MM-DD.sqlite
+sqlite3 db-RRRR-MM-DD.sqlite "PRAGMA integrity_check"
+rsync db-RRRR-MM-DD.sqlite mikipierniki:mikipierniki-data/backups/
+```
+
+Tylko gdy aplikacja w ogóle nie startuje: zatrzymaj ją, podmień `mikipierniki.sqlite`, usuń
+`mikipierniki.sqlite-wal` i `-shm`, uruchom. Wtedy przypomnienia i maile czekające w kopii mogą pójść
+drugi raz, a wypisy z powiadomień zrobione po kopii się cofną, więc sprawdź to w panelu.
+
+```sh
 cloudlinux-selector stop --json --interpreter nodejs --app-root mikipierniki
 cloudlinux-selector start --json --interpreter nodejs --app-root mikipierniki
 ```

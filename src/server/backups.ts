@@ -1,8 +1,8 @@
 /**
- * The nightly database copies made by deploy/backup.sh, read for the panel (Kopie) and its warning bar.
- * Read-only: the panel lists the copies kept on the server and what each night's run wrote to
- * backup.log. It cannot see the copies in S3 (the server may only send them there, see backup.sh)
- * and it never restores; that is done on the server by hand (deploy/README.md).
+ * The nightly database copies made by deploy/backup.sh, read for the panel (Kopie), its warning bar
+ * and the backup alert e-mail. This file only reads: the copies kept on the server and what each
+ * night's run wrote to backup.log. It cannot see the copies in S3 (the server may only send them
+ * there, see backup.sh). Restoring a copy is in restore.ts.
  */
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -12,10 +12,18 @@ import { config } from "./config";
 const STALE_MS = 26 * 60 * 60 * 1000;
 /** backup.sh names the server copy by day; .gz and backup.err exist only for a moment during a run. */
 const COPY = /^db-(\d{4}-\d{2}-\d{2})\.sqlite$/;
+/**
+ * The database as it was just before a restore from the panel (restore.ts), so a restore can be undone.
+ * backup.sh's 30-day clean-up (db-*.sqlite*) removes these too; the health check ignores them.
+ */
+const SAFETY = /^db-przed-przywroceniem-(\d{4}-\d{2}-\d{2})-\d{6}\.sqlite$/;
 /** One line per run: "2026-11-22 03:30:04 ok: …" or "… FAILED: …", in the server's time (Warsaw). */
 const LINE = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}):\d{2} (ok|FAILED): (.*)$/;
 
 export interface BackupCopy {
+  /** the file name in backups/ */
+  name: string;
+  kind: "nightly" | "safety";
   day: string;
   madeAt: Date;
   bytes: number;
@@ -37,7 +45,10 @@ export interface BackupRun {
 export interface BackupState {
   /** false when backups were never set up on this machine (e.g. a laptop) */
   configured: boolean;
+  /** nightly copies, newest first */
   copies: BackupCopy[];
+  /** states saved just before a restore, newest first */
+  safety: BackupCopy[];
   /** newest first */
   runs: BackupRun[];
   /** "bad": no copy from the last day; "warn": there is one, but the newest run failed or skipped S3 */
@@ -69,22 +80,41 @@ function parseRun(line: string): BackupRun | null {
   return { day, at, ok: false, copy: false, s3: "failed", text: "Nieznany błąd: szczegóły w backup.log na serwerze." };
 }
 
+export const backupDir = () => join(dirname(config.databasePath), "backups");
+
 function readCopies(dir: string): BackupCopy[] {
   if (!existsSync(dir)) return [];
   const copies: BackupCopy[] = [];
   for (const name of readdirSync(dir)) {
-    const day = COPY.exec(name)?.[1];
+    const nightly = COPY.exec(name)?.[1];
+    const day = nightly ?? SAFETY.exec(name)?.[1];
     if (!day) continue;
     try {
       const s = statSync(join(dir, name));
-      copies.push({ day, madeAt: s.mtime, bytes: s.size });
+      copies.push({ name, kind: nightly ? "nightly" : "safety", day, madeAt: s.mtime, bytes: s.size });
     } catch {
       // removed by the 30-day clean-up while we were reading
     }
   }
-  // newest first, by the day in the name (one file per day; a same-day re-run overwrites it)
-  return copies.sort((a, b) => b.day.localeCompare(a.day));
+  // newest first, by the name (one nightly file per day, a same-day re-run overwrites it; safety copies carry the time)
+  return copies.sort((a, b) => b.name.localeCompare(a.name));
 }
+
+/** A copy the panel may restore: only a name from the listing, so no path from a form ever reaches the disk. */
+export function findCopy(name: string): (BackupCopy & { path: string }) | undefined {
+  const dir = backupDir();
+  const c = readCopies(dir).find((x) => x.name === name);
+  return c && { ...c, path: join(dir, c.name) };
+}
+
+/** How a copy is named to people: by when it was made. */
+export function copyLabel(c: BackupCopy): string {
+  const at = c.madeAt.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
+  return c.kind === "nightly" ? `kopia z ${at}` : `stan sprzed przywrócenia, ${at}`;
+}
+
+/** What has to be typed to confirm a restore: the copy's day as people write it. */
+export const confirmPhrase = (c: BackupCopy) => c.day.split("-").reverse().join(".");
 
 /** The log gains one short line a night (about 35 KB a year), so reading it whole is fine. */
 function readRuns(log: string, limit: number): BackupRun[] {
@@ -102,20 +132,21 @@ export const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 /** Runs on every panel page (the warning bar), so a file it cannot read becomes a warning, never an error page. */
 export function backupState(limit = 30, now = Date.now()): BackupState {
-  const data = dirname(config.databasePath);
-  const dir = join(data, "backups");
-  const log = join(data, "backup.log");
+  const dir = backupDir();
+  const log = join(dirname(config.databasePath), "backup.log");
   const configured = existsSync(dir) || existsSync(log);
-  let copies: BackupCopy[];
+  let all: BackupCopy[];
   let runs: BackupRun[];
   try {
-    copies = readCopies(dir);
+    all = readCopies(dir);
     runs = readRuns(log, limit);
   } catch (e) {
     const code = (e as { code?: string }).code ?? "nieznany błąd";
-    return { configured, copies: [], runs: [], problem: { level: "bad", text: `Panel nie może odczytać kopii na serwerze (${code}).` } };
+    return { configured, copies: [], safety: [], runs: [], problem: { level: "bad", text: `Panel nie może odczytać kopii na serwerze (${code}).` } };
   }
-  return { configured, copies, runs, problem: configured ? judge(copies, runs, now) : null };
+  const copies = all.filter((c) => c.kind === "nightly");
+  const safety = all.filter((c) => c.kind === "safety");
+  return { configured, copies, safety, runs, problem: configured ? judge(copies, runs, now) : null };
 }
 
 /** Judged by the newest copy first, not by the log: a dead crontab writes no line at all. */

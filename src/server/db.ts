@@ -181,15 +181,25 @@ const migrations: (string | ((conn: DatabaseSync) => void))[] = [
   `
   ALTER TABLE inquiries ADD COLUMN hidden_at TEXT;
   `,
+  `
+  -- small facts the app keeps between runs (e.g. which backup problem was already e-mailed)
+  CREATE TABLE app_state (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+  -- one-time links that confirm a restore from the panel (src/server/restore.ts); only a hash is kept
+  CREATE TABLE restore_links (
+    token_hash TEXT PRIMARY KEY,
+    copy TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    used_at TEXT
+  );
+  `,
 ];
 
-let db: DatabaseSync | undefined;
+/** The schema version this code expects (PRAGMA user_version after all migrations). */
+export const SCHEMA_VERSION = migrations.length;
 
-export function getDb(): DatabaseSync {
-  if (db) return db;
-  mkdirSync(dirname(config.databasePath), { recursive: true });
-  const conn = new DatabaseSync(config.databasePath);
-  conn.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA secure_delete = ON;");
+/** Brings any connection up to the current schema: the live database on start, or a copy before a restore. */
+export function migrate(conn: DatabaseSync): void {
   const { user_version } = conn.prepare("PRAGMA user_version").get() as { user_version: number };
   for (let v = user_version; v < migrations.length; v++) {
     tx(conn, () => {
@@ -199,6 +209,16 @@ export function getDb(): DatabaseSync {
       conn.exec(`PRAGMA user_version = ${v + 1}`);
     });
   }
+}
+
+let db: DatabaseSync | undefined;
+
+export function getDb(): DatabaseSync {
+  if (db) return db;
+  mkdirSync(dirname(config.databasePath), { recursive: true });
+  const conn = new DatabaseSync(config.databasePath);
+  conn.exec("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000; PRAGMA secure_delete = ON;");
+  migrate(conn);
   db = conn;
   return conn;
 }

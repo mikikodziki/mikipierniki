@@ -1,6 +1,6 @@
 // End-to-end check of terms, interest, bookings, e-mail, newsletter, statistics and panel against the
 // production build. Starts the server the way production does (deploy/start.mjs next to dist/) on port 4390
-// (E2E_PORT, plus the next three) with a throwaway database and test settings; e-mails are written to that
+// (E2E_PORT, plus the next five) with a throwaway database and test settings; e-mails are written to that
 // folder instead of being sent.
 // Usage: npm run build && npm run test:e2e
 import { spawn } from "node:child_process";
@@ -19,7 +19,7 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const env = {
   ...process.env, HOST: "127.0.0.1", PORT: String(PORT), DATABASE_PATH: join(dataDir, "test.sqlite"),
   PANEL_PASSWORD: "sekret", CRON_TOKEN: "tok", BANK_ACCOUNT: "12 3456 7890 0000 0000 1111 2222",
-  BANK_RECIPIENT: "Dominika Testowa", STUDIO_ADDRESS: "ul. Testowa 1, Wrocław",
+  BANK_RECIPIENT: "Dominika Testowa", STUDIO_ADDRESS: "ul. Testowa 1, Wrocław", MAIL_ADMIN: "admin@example.com",
   // never send real mail from a test, even if the shell has SMTP settings
   SMTP_HOST: "", MAIL_TO_FILES: "1",
 };
@@ -122,6 +122,16 @@ try {
     check("Kopie shows a failed S3 upload by its code, never S3's reply", kopie.includes("nie trafiła do S3 (kod 403") && !kopie.includes("SEKRET-S3"));
     check("Kopie lists the server copy and nothing else from its folder", /data-label="Rozmiar"[^>]*>1 KB</.test(kopie) && !kopie.includes("backup.err"));
     check("panel warning bar when the last copy missed S3", (await page("/panel/zapytania")).includes("Kopie bazy: kopia na serwerze jest, ale nie trafiła do S3"));
+    const cron = () => get("/api/cron", { "x-cron-token": "tok" });
+    const alerts = () => byKind("backup-alert");
+    await cron();
+    const s3Alerts = alerts().filter((m) => m.includes("nie trafiła do S3 (kod 403"));
+    check("backup alert mailed to Dominika and, separately, to the administrator",
+      s3Alerts.some((m) => m.includes("To: mika@mikipierniki.pl")) && s3Alerts.some((m) => m.includes("To: admin@example.com")) && s3Alerts.length === 2, String(s3Alerts.length));
+    check("backup alert carries no part of S3's reply", alerts().every((m) => !m.includes("SEKRET-S3")));
+    const alertCount = alerts().length;
+    await cron();
+    check("the same problem is mailed once, not every run", alerts().length === alertCount, `${alerts().length - alertCount}`);
     appendFileSync(backupLog, "2026-11-22 09:00:00 ok: /x + S3 db-2026-11-22-0900-…\n");
     check("no warning bar once the next run goes fine", !(await page("/panel")).includes("Kopie bazy:"));
     // a run that dies after the copy but before its log line: the newest copy is a day ahead of the log
@@ -134,8 +144,11 @@ try {
     const dayAndHalfAgo = new Date(Date.now() - 30 * 60 * 60 * 1000);
     utimesSync(copy, dayAndHalfAgo, dayAndHalfAgo);
     check("warning bar when the newest copy is over a day old (e.g. cron stopped)", (await page("/panel")).includes("Kopie bazy: nie ma kopii bazy z ostatniej doby"));
+    await cron();
+    check("a new problem is mailed again", alerts().some((m) => m.includes("Nie ma kopii bazy z ostatniej doby") && m.includes("To: admin@example.com")));
     rmSync(backups, { recursive: true });
     rmSync(backupLog);
+    await cron();
   }
 
   // ---------- creating terms ----------
@@ -1134,7 +1147,7 @@ try {
     // a subscriber confirmed before consent_log existed: rolling the schema back makes the next start add their row
     d.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('stara@example.com', 'tok-stara', 'active', ?, ?)").run(ago(100), ago(99));
     // tables from later migrations go too, so their migrations can run again
-    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; ALTER TABLE inquiries DROP COLUMN hidden_at; PRAGMA user_version = 3");
+    d.exec("DROP TABLE stats_views; DROP TABLE stats_hours; DROP TABLE stats_forms; DROP TABLE stats_meta; DROP TABLE term_stats; ALTER TABLE inquiries DROP COLUMN hidden_at; DROP TABLE app_state; DROP TABLE restore_links; PRAGMA user_version = 3");
     d.close();
     p = await start(); // the first request starts the worker, which cleans up right away
     await sleep(500);
@@ -1156,6 +1169,130 @@ try {
     check("an ended term nobody signed up for stays live (its date can still be corrected)", !empty || empty.frozen === 0, JSON.stringify(empty));
     check("no errors from the clean-up server", !/Error/.test(rlog), rlog.slice(0, 500));
     d2.close();
+  }
+  // ---------- restore from the panel: two app processes on one database, as on seohost ----------
+  {
+    const rDir = join(dataDir, "restore");
+    const rPath = join(rDir, "r.sqlite");
+    mkdirSync(join(rDir, "backups"), { recursive: true });
+    const portA = PORT + 4, portB = PORT + 5;
+    const A = `http://127.0.0.1:${portA}`, B = `http://127.0.0.1:${portB}`;
+    let rlog = "";
+    const startR = async (port) => {
+      const p = startApp({ ...env, PORT: String(port), DATABASE_PATH: rPath }, ["ignore", "ignore", "pipe"]);
+      p.stderr.on("data", (b) => { rlog += b; });
+      for (let i = 0; i < 100; i++) { try { await fetch(`http://127.0.0.1:${port}/warsztaty`); break; } catch { await sleep(100); } }
+      return p;
+    };
+    const pA = await startR(portA);
+    const pB = await startR(portB);
+    const at = (base, p, init = {}) => fetch(base + p, { redirect: "manual", ...init, headers: { authorization: auth, ...(init.headers ?? {}) } });
+    const form = (base, p, data) => at(base, p, { method: "POST", headers: { origin: base, "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(data) });
+    const rMails = (kind) => (existsSync(join(rDir, "mail")) ? readdirSync(join(rDir, "mail")).filter((f) => f.endsWith(`-${kind}.txt`)).sort().map((f) => readFileSync(join(rDir, "mail", f), "utf8")) : []);
+    const lastLink = () => { const m = rMails("restore-link").at(-1) ?? ""; return { to: /^To: (.*)$/m.exec(m)?.[1], path: /https:\/\/mikipierniki\.pl(\/panel\/kopie\/przywroc\?t=[\w-]+)/.exec(m)?.[1] }; };
+    try {
+      const rdb = new DatabaseSync(rPath);
+      rdb.exec("PRAGMA busy_timeout = 5000");
+      const iso = (h) => new Date(Date.now() + h * 3600_000).toISOString();
+      const one = (sql, ...a) => rdb.prepare(sql).get(...a);
+      // an open term starting in 20 h, inside the day-before reminder window
+      rdb.prepare("INSERT INTO terms (id, status, type, title, starts_at, ends_at, price, price_unit, capacity, photo, photo_alt, created_at, updated_at) VALUES ('rt', 'open', 'dorosli', 'Przywracany termin', ?, ?, 450, 'osoba', 10, 'swieta-stol', 'x', ?, ?)")
+        .run(iso(20), iso(24), iso(-48), iso(-48));
+      const booking = (id, name) => rdb.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, 'rt', 'confirmed', ?, ?, '500600700', 1, 'przelew', 450, ?, ?)")
+        .run(id, name, `${id.toLowerCase()}@example.com`, iso(-1), iso(-1));
+      booking("R-KEEP", "Stała Osoba");
+      booking("R-GONE", "Usunięta Osoba");
+      rdb.prepare("INSERT INTO interest (token, term_id, name, email, people, created_at) VALUES ('tk', 'rt', 'Wycofana Osoba', 'wycofa@example.com', 2, ?)").run(iso(-1));
+      rdb.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('wypisze@example.com', 'tok-w', 'active', ?, ?)").run(iso(-30), iso(-30));
+      rdb.prepare("INSERT INTO outbox (kind, to_addr, subject, text, html, send_after, created_at) VALUES ('stale-test', 'x@example.com', 's', 't', 'h', ?, ?)").run(iso(0), iso(0));
+      // the nightly copy, made with the schema of the previous release (as an older copy would be)
+      const copyPath = join(rDir, "backups", "db-2026-11-20.sqlite");
+      rdb.exec(`VACUUM INTO '${copyPath}'`);
+      const old = new DatabaseSync(copyPath);
+      old.exec("DROP TABLE app_state; DROP TABLE restore_links; PRAGMA user_version = 6");
+      old.close();
+      // after the copy: the reminder and the queued mail go out, then things change
+      await fetch(A + "/api/cron", { headers: { "x-cron-token": "tok" } });
+      await settle();
+      check("restore setup: both reminders and the queued mail went out after the copy", rMails("booking-reminder").length === 2 && rMails("stale-test").length === 1, `${rMails("booking-reminder").length}/${rMails("stale-test").length}`);
+      rdb.exec("DELETE FROM bookings WHERE id = 'R-GONE'");
+      booking("R-NEW", "Nowa Osoba");
+      rdb.prepare("UPDATE interest SET withdrawn_at = ? WHERE email = 'wycofa@example.com'").run(iso(0));
+      rdb.prepare("UPDATE subscribers SET status = 'unsubscribed', unsubscribed_at = ? WHERE email = 'wypisze@example.com'").run(iso(0));
+      rdb.prepare("INSERT INTO inquiries (kind, name, email, message, created_at) VALUES ('kontakt', 'Pytająca', 'pyta@example.com', 'Pytanie po kopii', ?)").run(iso(0));
+
+      check("Kopie offers restore when MAIL_ADMIN is set", (await (await at(A, "/panel/kopie")).text()).includes("Przywróć…"));
+      let r = await form(A, "/panel/kopie", { action: "request-restore", copy: "../r.sqlite" });
+      check("restore request for a path outside the list is refused", (r.headers.get("location") ?? "").includes("err="), r.headers.get("location"));
+      r = await form(A, "/panel/kopie", { action: "request-restore", copy: "db-2026-11-20.sqlite" });
+      await settle();
+      check("restore request → link mailed, nothing restored yet", (r.headers.get("location") ?? "").includes("ok=") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'"), r.headers.get("location"));
+      const link = lastLink();
+      check("the restore link goes only to the administrator", link.to === "admin@example.com" && !!link.path && rMails("restore-link").length === 1, JSON.stringify(link));
+      check("the restore page asks for the panel password", (await fetch(A + link.path, { redirect: "manual" })).status === 401);
+      let html = await (await at(A, link.path)).text();
+      check("the restore page lists what disappears and what comes back", html.includes("Znikną") && html.includes("Nowa Osoba") && html.includes("Wrócą") && html.includes("Usunięta Osoba") && html.includes("20.11.2026"));
+      check("opening the restore page changes nothing", !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"));
+      const t = new URL(link.path, A).searchParams.get("t");
+      r = await form(A, "/panel/kopie/przywroc", { t, confirm: "21.11.2026" });
+      check("a wrong date → 422, database unchanged", r.status === 422 && (await r.text()).includes("Wpisz datę kopii") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'"), String(r.status));
+      r = await form(A, "/panel/kopie/przywroc", { t, confirm: " 20.11.2026 " });
+      check("the right date restores the copy", r.status === 303 && (r.headers.get("location") ?? "").includes("ok="), `${r.status} ${r.headers.get("location")}`);
+      check("rows added after the copy are gone, rows deleted since are back", !one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"));
+      check("the copy is brought to the current schema", one("PRAGMA user_version").user_version === 7 && !!one("SELECT 1 AS x FROM sqlite_master WHERE name = 'restore_links'"));
+      check("a reminder sent after the copy stays sent", !!one("SELECT reminded_at FROM bookings WHERE id = 'R-KEEP'").reminded_at);
+      check("a booking deleted after its reminder comes back marked as reminded (from the outbox)", !!one("SELECT reminded_at FROM bookings WHERE id = 'R-GONE'").reminded_at);
+      check("a withdrawal made after the copy stays", !!one("SELECT withdrawn_at FROM interest WHERE email = 'wycofa@example.com'").withdrawn_at);
+      check("newsletter unsubscribes, sent mail and inquiries are kept as they are now",
+        one("SELECT status FROM subscribers WHERE email = 'wypisze@example.com'").status === "unsubscribed"
+        && !one("SELECT 1 AS x FROM outbox WHERE status = 'pending' AND kind = 'stale-test'")
+        && !!one("SELECT 1 AS x FROM inquiries WHERE message = 'Pytanie po kopii'"));
+      const safety = readdirSync(join(rDir, "backups")).filter((f) => /^db-przed-przywroceniem-\d{4}-\d{2}-\d{2}-\d{6}\.sqlite$/.test(f));
+      check("the state before the restore is saved next to the nightly copies", safety.length === 1, readdirSync(join(rDir, "backups")).join(","));
+      await settle();
+      check("restore-done mail to Dominika and the administrator", rMails("restore-done").filter((m) => /^To: (mika@mikipierniki\.pl|admin@example\.com)$/m.test(m)).length === 2);
+      rdb.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at) VALUES ('R-MARK', 'rt', 'confirmed', 'Znacznik', 'mark@example.com', '500600700', 1, 'przelew', 450, ?)").run(iso(0));
+      r = await form(A, "/panel/kopie/przywroc", { t, confirm: "20.11.2026" });
+      check("a used link can't restore again", (r.headers.get("location") ?? "").includes("err=") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-MARK'"), r.headers.get("location"));
+      // the other process: no second reminder, no stale mail, reads and writes the restored database
+      await fetch(B + "/api/cron", { headers: { "x-cron-token": "tok" } });
+      await settle();
+      const remindersFor = (id) => rMails("booking-reminder").filter((m) => m.includes(id)).length;
+      check("after a restore no reminder or queued mail goes out twice (other process)", remindersFor("R-KEEP") === 1 && remindersFor("R-GONE") === 1 && rMails("stale-test").length === 1,
+        `${remindersFor("R-KEEP")}/${remindersFor("R-GONE")}/${rMails("stale-test").length}`);
+      check("the other process reads the restored database without a restart", (await (await at(B, "/panel/termin/rt")).text()).includes("Usunięta Osoba"));
+      r = await form(B, "/panel", { type: "dorosli", title: "Po przywróceniu", date: new Date(Date.now() + 40 * 86400000).toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" }), start: "11:00", end: "15:00", capacity: "10", price: "450", cookies: "6–8", photo: "swieta-stol", status: "proposed" });
+      check("the other process writes to the restored database", r.status === 303 && !!one("SELECT 1 AS x FROM terms WHERE title = 'Po przywróceniu'"), String(r.status));
+      // an expired link
+      await form(B, "/panel/kopie", { action: "request-restore", copy: "db-2026-11-20.sqlite" });
+      await settle();
+      rdb.exec("UPDATE restore_links SET expires_at = '2000-01-01T00:00:00.000Z' WHERE used_at IS NULL");
+      const expired = lastLink().path;
+      check("an expired link says so", (await (await at(A, expired)).text()).includes("wygasł"));
+      r = await form(A, "/panel/kopie/przywroc", { t: new URL(expired, A).searchParams.get("t"), confirm: "20.11.2026" });
+      check("an expired link can't restore", (r.headers.get("location") ?? "").includes("err=") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-MARK'"));
+      // a broken copy
+      writeFileSync(join(rDir, "backups", "db-2026-11-19.sqlite"), "x".repeat(8192));
+      await form(A, "/panel/kopie", { action: "request-restore", copy: "db-2026-11-19.sqlite" });
+      await settle();
+      const broken = lastLink().path;
+      check("a broken copy is refused on the restore page", (await (await at(A, broken)).text()).includes("uszkodzona"));
+      r = await form(A, "/panel/kopie/przywroc", { t: new URL(broken, A).searchParams.get("t"), confirm: "19.11.2026" });
+      check("a broken copy can't be restored, database unchanged", (r.headers.get("location") ?? "").includes("uszkodzona") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-MARK'"), r.headers.get("location"));
+      check("no temp files left next to the database", readdirSync(rDir).every((f) => !f.startsWith(".restore-")), readdirSync(rDir).join(","));
+      // undo: restoring the saved state brings back what the restore removed
+      await form(A, "/panel/kopie", { action: "request-restore", copy: safety[0] });
+      await settle();
+      const undo = lastLink().path;
+      const undoDay = safety[0].slice("db-przed-przywroceniem-".length, "db-przed-przywroceniem-".length + 10).split("-").reverse().join(".");
+      r = await form(A, "/panel/kopie/przywroc", { t: new URL(undo, A).searchParams.get("t"), confirm: undoDay });
+      check("restoring the saved state undoes the restore", r.status === 303 && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"), `${r.status} ${r.headers.get("location")}`);
+      rdb.close();
+    } finally {
+      pA.kill();
+      pB.kill();
+    }
+    check("no errors from the restore servers", !/Error/.test(rlog), rlog.slice(0, 800));
   }
   check("no server errors logged", !/\[api\]|\[stats\]|Error/.test(log), log.slice(0, 500));
 } finally {

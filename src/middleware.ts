@@ -62,7 +62,8 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
 
   const res = await next();
   // pages opened from a mail link carry a personal token in the address and show the e-mail
-  const tokenPage = /^\/(newsletter|zapis)\//.test(path);
+  // (the restore confirmation too: its one-time link goes only to the administrator)
+  const tokenPage = /^\/(newsletter|zapis)\//.test(path) || path === "/panel/kopie/przywroc";
   if (isPanel || tokenPage || path.startsWith("/api/") || route.startsWith("/api/")) {
     try {
       res.headers.set("cache-control", "no-store");
