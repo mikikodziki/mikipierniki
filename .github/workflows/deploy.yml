@@ -59,6 +59,18 @@ jobs:
           ssh seohost 'set -e
             cd ~/mikipierniki
             selector() { cloudlinux-selector "$@" --json --interpreter nodejs --app-root mikipierniki | grep -q "\"success\""; }
+            # LiteSpeed starts new processes after a restart, but the ones started before it keep taking
+            # requests from the same socket with the code they loaded (one lived through two deploys), so
+            # they are stopped here: the check below and every visitor after it get the build in dist/.
+            # A request one of them is answering at that moment fails; for a deploy that is acceptable.
+            restart() {
+              since=$(date +%s)
+              selector restart || echo "Restart reported an error; the check below decides"
+              for pid in $(pgrep -u "$(id -u)" -f "^lsnode:$HOME/mikipierniki/"); do
+                age=$(ps -o etimes= -p "$pid") || continue
+                if [ $(( $(date +%s) - age )) -le "$since" ]; then kill "$pid" 2>/dev/null || true; fi
+              done
+            }
             cp .upload/package.json .upload/start.mjs .
             install -m 700 .upload/cron.sh .upload/backup.sh ../mikipierniki-data/
             if ! cmp -s package-lock.json .upload/package-lock.json; then
@@ -68,7 +80,7 @@ jobs:
             rm -rf dist.prev
             mv dist dist.prev
             mv dist.next dist
-            selector restart || echo "Restart reported an error; the check below decides"
+            restart
             for i in 1 2 3 4 5 6 7 8 9 10; do
               if curl -fsS -m 10 -A mikipierniki-deploy -o /dev/null https://mikipierniki.pl/warsztaty; then exit 0; fi
               sleep 3
@@ -76,5 +88,5 @@ jobs:
             echo "Health check failed, restoring the previous build"
             rm -rf dist
             mv dist.prev dist
-            selector restart
+            restart
             exit 1'
