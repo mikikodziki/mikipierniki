@@ -1,0 +1,13 @@
+---
+/**
+ * Page copy that keeps "35 zł" and ranges ("3–4", "11:00–15:00") in one piece at a line end: a
+ * no-break space before "zł", each range in a .nw span. No invisible characters go into the text,
+ * so copying it and find-in-page see a plain "3–4".
+ */
+interface Props {
+  text: string;
+}
+const RANGE = /(\d[\d:]*–\d[\d:]*)/;
+const parts = Astro.props.text.replace(/(\d) zł/g, "$1 zł").split(RANGE);
+---
+{parts.map((part, i) => (i % 2 ? <span class="nw">{part}</span> : part))}

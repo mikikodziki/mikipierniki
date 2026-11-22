@@ -74,6 +74,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 .prose { display: grid; gap: 16px; max-width: 68ch; }
 .prose h2 { font-size: clamp(1.5rem, 3vw, 1.9rem); margin-top: 16px; }
 .prose ul, .prose ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+/* a value that must not split at a line end: hours, ranges, booking codes */
+.nw { white-space: nowrap; }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* FAQ block: heading left, questions right */

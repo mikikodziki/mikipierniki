@@ -1,5 +1,5 @@
 ---
-import { glue } from "@/lib/format";
+import Glued from "./Glued.astro";
 
 interface Props {
   eyebrow: string;
@@ -16,7 +16,7 @@ const { eyebrow, title, lead } = Astro.props;
   <div class="wrap">
     <span class="eyebrow">{eyebrow}</span>
     <h1>{title}</h1>
-    {lead && <p class="lead">{glue(lead)}</p>}
+    {lead && <p class="lead"><Glued text={lead} /></p>}
     <slot />
   </div>
 </header>
