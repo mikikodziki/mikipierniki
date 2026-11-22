@@ -111,10 +111,17 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .menu-btn[aria-expanded="true"] .burger::before { top: 0; transform: rotate(45deg); }
   .menu-btn[aria-expanded="true"] .burger::after { top: 0; transform: rotate(-45deg); }
 
+  /* an overlay under the bar, not part of the page flow: closing it (e.g. when Tab leaves it) doesn't
+     move the page, so the element that just got focus stays where the browser scrolled it */
   .mobile-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: var(--panel-gap);
+    right: var(--panel-gap);
     max-width: var(--panel-max);
-    margin: 8px auto 0;
+    margin-inline: auto;
     padding: 8px 20px 14px;
+    box-shadow: var(--panel-shadow);
     display: grid;
     background: var(--surface);
     color: var(--ink);
