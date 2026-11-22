@@ -203,6 +203,9 @@ export function migrate(conn: DatabaseSync): void {
   const { user_version } = conn.prepare("PRAGMA user_version").get() as { user_version: number };
   for (let v = user_version; v < migrations.length; v++) {
     tx(conn, () => {
+      // several processes start together after a deploy: another one may have run this step while
+      // this one waited for the write lock
+      if ((conn.prepare("PRAGMA user_version").get() as { user_version: number }).user_version > v) return;
       const m = migrations[v];
       if (typeof m === "string") conn.exec(m);
       else m(conn);

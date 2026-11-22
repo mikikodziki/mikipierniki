@@ -58,14 +58,15 @@ const LIMIT = 100;
         <p class="note">
           Terminy, zapisy i chętni wrócą do stanu z kopii. Bez zmian zostaną: wysłane maile, lista powiadomień (z wypisami),
           zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a kto w tym
-          czasie wycofał „Pasuje mi”, zostanie wycofany. Rezerwacje anulowane albo opłacone po kopii wrócą do stanu z kopii:
-          sprawdź je niżej. Obecny stan zapisze się na serwerze, więc przywrócenie da się cofnąć.
+          czasie wycofał „Pasuje mi”, zostanie wycofany. Terminy i rezerwacje zmienione po kopii (odwołane, anulowane,
+          opłacone, przeniesione) wrócą do stanu z kopii: sprawdź je niżej. Obecny stan zapisze się na serwerze, więc
+          przywrócenie da się cofnąć.
         </p>
       </section>
 
       <section class="box">
         <h2>Co się zmieni</h2>
-        {preview.lost.length + preview.back.length + preview.changedBookings.length + preview.changed === 0 && <p>Terminy, zapisy i chętni są teraz tacy sami jak w kopii.</p>}
+        {preview.lost.length + preview.back.length + preview.changedTerms.length + preview.changedBookings.length + preview.changed === 0 && <p>Terminy, zapisy i chętni są teraz tacy sami jak w kopii.</p>}
         {preview.lost.length > 0 && (
           <>
             <h3>Znikną: dodane po zrobieniu kopii ({preview.lost.length})</h3>
@@ -78,7 +79,15 @@ const LIMIT = 100;
             <h3>Wrócą: usunięte po zrobieniu kopii ({preview.back.length})</h3>
             <ul>{preview.back.slice(0, LIMIT).map((c) => <li>{c.what}: {c.label}</li>)}</ul>
             {preview.back.length > LIMIT && <p class="note">…i {preview.back.length - LIMIT} więcej.</p>}
-            <p class="note">Jeśli ktoś z tej listy prosił o usunięcie swoich danych, po przywróceniu usuń go jeszcze raz.</p>
+            <p class="note">Jeśli ktoś z tej listy prosił o usunięcie swoich danych albo wycofał zgłoszenie, po przywróceniu usuń go jeszcze raz.</p>
+          </>
+        )}
+        {preview.changedTerms.length > 0 && (
+          <>
+            <h3>Terminy zmienione po zrobieniu kopii ({preview.changedTerms.length})</h3>
+            <ul>{preview.changedTerms.slice(0, LIMIT).map((c) => <li>{c.label}</li>)}</ul>
+            {preview.changedTerms.length > LIMIT && <p class="note">…i {preview.changedTerms.length - LIMIT} więcej.</p>}
+            {preview.uncancelled && <p class="note">Odwołany termin wróci razem z zapisami i chętnymi. Jeśli przy odwołaniu poszły maile, ludzie myślą, że termin się nie odbędzie: napisz do nich albo odwołaj go jeszcze raz.</p>}
           </>
         )}
         {preview.changedBookings.length > 0 && (
@@ -89,7 +98,7 @@ const LIMIT = 100;
             <p class="note">Ktoś, kto po kopii zrezygnował, znów będzie zapisany i dostanie przypomnienie dzień przed warsztatami. Po przywróceniu anuluj go jeszcze raz.</p>
           </>
         )}
-        {preview.changed > 0 && <p>Terminy i zgłoszenia „Pasuje mi” zmienione po zrobieniu kopii (wrócą do wersji z kopii): {preview.changed}.</p>}
+        {preview.changed > 0 && <p>Zgłoszenia „Pasuje mi” zmienione po zrobieniu kopii (wrócą do wersji z kopii): {preview.changed}.</p>}
       </section>
 
       <section class="box">

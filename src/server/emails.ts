@@ -422,7 +422,7 @@ export function backupAlert(to: string, problem: { level: "bad" | "warn"; text: 
     subject: problem.level === "bad" ? "Kopia bazy strony się nie udała" : "Kopia bazy strony: coś wymaga uwagi",
     ...render([
       { p: problem.text },
-      { p: `Strona i zapisy działają normalnie; chodzi tylko o nocną kopię zapasową bazy.${alsoSentTo ? ` Ta sama wiadomość poszła też ${alsoSentTo}.` : ""} Gdy kopia znów się uda, czerwony pasek w panelu zniknie.` },
+      { p: `Strona i zapisy działają normalnie; chodzi tylko o nocną kopię zapasową bazy.${alsoSentTo ? ` Ta sama wiadomość poszła też ${alsoSentTo}.` : ""} Gdy kopia znów się uda, czerwony pasek w panelu zniknie. Dopóki problem trwa, ta wiadomość przyjdzie raz na dobę.` },
       { button: { label: "Zobacz kopie w panelu", url: url("/panel/kopie") } },
     ], { signature: false }),
   };
@@ -449,7 +449,7 @@ export function restoreDone(to: string, copy: string, safety: string): Mail {
     subject: "Baza strony przywrócona z kopii",
     ...render([
       { p: `Baza strony została przywrócona: ${copy}. Terminy, zapisy i chętni są teraz takie jak w tej kopii.` },
-      { p: "Bez zmian zostały: wysłane maile, lista powiadomień (z wypisami), zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a osoby, które w tym czasie wycofały „Pasuje mi”, nie wrócą na listę." },
+      { p: "Bez zmian zostały: wysłane maile, lista powiadomień (z wypisami), zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a osoby, które w tym czasie wycofały „Pasuje mi”, nie wrócą na listę. Wróciło za to to, co usunięto po zrobieniu kopii: jeśli ktoś prosił o usunięcie swoich danych, usuń go w panelu jeszcze raz." },
       { p: `Stan sprzed przywrócenia jest zapisany na serwerze (${safety}) i można do niego wrócić z panelu.` },
       { button: { label: "Otwórz panel", url: url("/panel/kopie") } },
     ], { signature: false }),

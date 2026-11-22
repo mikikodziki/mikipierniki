@@ -146,14 +146,17 @@ zniknie i co wróci, a bazę zmienia dopiero po wpisaniu daty kopii. Szczegóły
 
 - wracają terminy, rezerwacje i chętni. Wysłane maile, powiadomienia (zgody i wypisy), zapytania
   i statystyki zostają jak teraz. Przypomnienia wysłane i „Pasuje mi” wycofane po kopii się nie cofają;
-  rezerwacje anulowane albo opłacone po kopii wracają do stanu z kopii (strona potwierdzenia je wypisuje),
+  terminy odwołane i rezerwacje anulowane, opłacone albo przeniesione po kopii wracają do stanu z kopii
+  (strona potwierdzenia je wypisuje),
 - obecny stan zapisuje się jako `backups/db-przed-przywroceniem-….sqlite` (też znika po 30 dniach)
   i można go przywrócić tak samo, czyli cofnąć przywrócenie,
 - plik bazy nie jest podmieniany, bo na seohost działa naraz kilka procesów aplikacji; kopia
   zastępuje tabele w jednej transakcji.
 
-Kopia z S3 (na laptopie z `aws login --profile mikusia`): pobierz ją, wgraj do `backups/` pod nazwą
-nocnej kopii, której tam jeszcze nie ma, i przywróć z panelu:
+Kopia z S3 (na laptopie z `aws login --profile mikusia`): pobierz ją, wgraj do `backups/` jako
+`db-RRRR-MM-DD.sqlite` z dniem z jej nazwy w S3 (`db-RRRR-MM-DD-GGMM-….sqlite.gz`) i przywróć z panelu.
+Panel pokaże ją pod tym dniem, bez godziny, i tę datę trzeba wpisać. Jeśli kopia z tego dnia wciąż jest
+w `backups/`, to ta sama noc i nie trzeba nic pobierać.
 
 ```sh
 aws s3 ls s3://<bucket>/ --recursive --profile mikusia

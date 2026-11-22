@@ -1,7 +1,7 @@
 ---
 import CopyTable from "@/components/panel/CopyTable.astro";
 import Panel from "@/layouts/Panel.astro";
-import { backupState } from "@/server/backups";
+import { backupState, copyWhen } from "@/server/backups";
 import { UserError } from "@/server/http";
 import { flushOutbox } from "@/server/mail";
 import { back } from "@/server/panel";
@@ -24,7 +24,6 @@ if (Astro.request.method === "POST") {
 
 const state = backupState();
 const canRestore = restoreEnabled();
-const dt = (d: Date) => d.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
 const s3Label = { sent: "wysłana", off: "nie ustawiona", failed: "nie" } as const;
 const newest = state.copies[0];
 ---
@@ -35,7 +34,7 @@ const newest = state.copies[0];
     ) : (
       <p>
         {state.problem ? <span class="pill pill--warn">{state.problem.level === "bad" ? "Problem" : "Uwaga"}</span> : <span class="pill pill--ok">W porządku</span>}{" "}
-        {state.problem ? state.problem.text : <>Ostatnia kopia: {newest && dt(newest.madeAt)}, {state.runs[0]?.s3 === "sent" ? "na serwerze i w S3" : "na serwerze"}.</>}
+        {state.problem ? state.problem.text : <>Ostatnia kopia: {newest && copyWhen(newest)}, {state.runs[0]?.s3 === "sent" ? "na serwerze i w S3" : "na serwerze"}.</>}
       </p>
     )}
     <p class="note">
