@@ -3,7 +3,7 @@
  * locally: .env). Nothing here ends up in the browser.
  */
 import {
-  BANK_ACCOUNT, BANK_RECIPIENT, CRON_TOKEN, DATABASE_PATH, MAIL_FROM, MAIL_NOTIFY, MAIL_TO_FILES,
+  BANK_ACCOUNT, BANK_RECIPIENT, CRON_TOKEN, DATABASE_PATH, MAIL_ADMIN, MAIL_FROM, MAIL_NOTIFY, MAIL_TO_FILES,
   PANEL_PASSWORD, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_USER, STUDIO_ADDRESS,
 } from "astro:env/server";
 
@@ -22,6 +22,8 @@ export const config = {
   mailFrom: clean(MAIL_FROM) ?? "Miki Pierniki <mika@mikipierniki.pl>",
   /** Where Dominika gets notified about new sign-ups and inquiries */
   mailNotify: clean(MAIL_NOTIFY) ?? "mika@mikipierniki.pl",
+  /** The administrator (set only in the server's .env): a copy of backup alerts, and restore links go only here */
+  mailAdmin: clean(MAIL_ADMIN),
   panelPassword: clean(PANEL_PASSWORD),
   cronToken: clean(CRON_TOKEN),
   bankAccount: clean(BANK_ACCOUNT),

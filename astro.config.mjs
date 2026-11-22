@@ -30,6 +30,8 @@ export default defineConfig({
       BANK_ACCOUNT: secret(),
       BANK_RECIPIENT: secret(),
       STUDIO_ADDRESS: secret(),
+      /** The site's administrator: gets a copy of backup alerts and the only link that confirms a restore from the panel */
+      MAIL_ADMIN: secret(),
     },
   },
 });

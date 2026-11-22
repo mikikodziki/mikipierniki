@@ -1,8 +1,9 @@
 /**
- * Background work: send queued e-mail, day-before reminders and the retention clean-up promised
- * in the privacy policy. Runs every minute inside the server process, and /api/cron triggers it
+ * Background work: send queued e-mail, day-before reminders, the retention clean-up promised
+ * in the privacy policy and the alert when the nightly database copy fails. Runs every minute inside the server process, and /api/cron triggers it
  * too (cron calls it via deploy/cron.sh, so it also runs after a restart with no visitors).
  */
+import { checkBackupAlert } from "./backup-alert";
 import { notifyOverdue, sendReminders } from "./bookings";
 import { getDb, tx } from "./db";
 import { flushOutbox } from "./mail";
@@ -68,6 +69,11 @@ export async function tick(): Promise<void> {
   }
   sendReminders();
   notifyOverdue();
+  try {
+    checkBackupAlert();
+  } catch (e) {
+    console.error("[backup-alert]", e);
+  }
   if (Date.now() - lastCleanup > 60 * 60 * 1000) {
     cleanup();
     lastCleanup = Date.now();

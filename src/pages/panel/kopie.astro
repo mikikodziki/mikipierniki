@@ -1,13 +1,30 @@
 ---
+import CopyTable from "@/components/panel/CopyTable.astro";
 import Panel from "@/layouts/Panel.astro";
 import { backupState } from "@/server/backups";
+import { UserError } from "@/server/http";
+import { flushOutbox } from "@/server/mail";
+import { back } from "@/server/panel";
+import { requestRestore, restoreEnabled } from "@/server/restore";
 
 export const prerender = false;
 
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData().catch(() => new FormData());
+  try {
+    if (f.get("action") !== "request-restore") throw new UserError("Nieznana akcja.");
+    requestRestore(String(f.get("copy") ?? ""));
+    void flushOutbox();
+    return back("/panel/kopie", { ok: "Link do potwierdzenia poszedł mailem do administratora strony. Działa 30 minut; bez niego baza się nie zmieni." });
+  } catch (e) {
+    if (e instanceof UserError) return back("/panel/kopie", { err: e.message });
+    throw e;
+  }
+}
+
 const state = backupState();
+const canRestore = restoreEnabled();
 const dt = (d: Date) => d.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
-const day = (iso: string) => iso.split("-").reverse().join(".");
-const size = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`);
 const s3Label = { sent: "wysłana", off: "nie ustawiona", failed: "nie" } as const;
 const newest = state.copies[0];
 ---
@@ -23,11 +40,16 @@ const newest = state.copies[0];
     )}
     <p class="note">
       Co noc o 3:30 serwer kopiuje całą bazę: terminy, zapisy, chętnych, zapytania, powiadomienia i statystyki. Kopia zostaje
-      na serwerze i trafia do Amazon S3, na Twoje konto AWS. Obie znikają po 30 dniach.
+      na serwerze i trafia do Amazon S3, na Twoje konto AWS. Obie znikają po 30 dniach. Gdy kopia się nie uda, dostaniesz maila.
     </p>
     <p class="note">
       Kopii w S3 panel nie widzi: serwer może je tylko wysyłać, nie może ich czytać ani kasować. Dzięki temu ktoś, kto
-      włamałby się na hosting, nie usunie kopii w S3. Cofnięcie bazy do którejś kopii robi się na serwerze, nie w panelu.
+      włamałby się na hosting, nie usunie kopii w S3.
+    </p>
+    <p class="note">
+      {canRestore
+        ? "Przywrócić kopię może tylko administrator strony: „Przywróć…” wysyła mu jednorazowy link, a on sprawdza, co się zmieni, i potwierdza. Wysłane maile, lista powiadomień, zapytania i statystyki zostają takie jak teraz. Przed przywróceniem zapisuje się obecny stan, więc da się to cofnąć."
+        : "Przywracanie z panelu jest wyłączone (na serwerze nie ma adresu administratora). Kopię można przywrócić na serwerze."}
     </p>
   </section>
 
@@ -57,22 +79,15 @@ const newest = state.copies[0];
   {state.configured && (
     <section class="box">
       <h2>Kopie na serwerze</h2>
-      {state.copies.length === 0 ? <p>Na serwerze nie ma żadnej kopii.</p> : (
-        <div class="scroll">
-          <table class="tbl">
-            <thead><tr><th>Dzień</th><th>Zrobiona</th><th>Rozmiar</th></tr></thead>
-            <tbody>
-              {state.copies.map((c) => (
-                <tr>
-                  <td class="nowrap">{day(c.day)}</td>
-                  <td data-label="Zrobiona">{dt(c.madeAt)}</td>
-                  <td data-label="Rozmiar">{size(c.bytes)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {state.copies.length === 0 ? <p>Na serwerze nie ma żadnej kopii.</p> : <CopyTable copies={state.copies} canRestore={canRestore} />}
+    </section>
+  )}
+
+  {state.safety.length > 0 && (
+    <section class="box">
+      <h2>Stan sprzed przywrócenia</h2>
+      <p class="note">Tak wyglądała baza tuż przed przywróceniem kopii. Przywrócenie tego stanu cofa tamto przywrócenie. Znika po 30 dniach, jak nocne kopie.</p>
+      <CopyTable copies={state.safety} canRestore={canRestore} />
     </section>
   )}
 </Panel>

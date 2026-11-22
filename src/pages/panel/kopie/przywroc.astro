@@ -1,0 +1,108 @@
+---
+/**
+ * Confirming a restore (src/server/restore.ts). Opened from the one-time link mailed to the administrator;
+ * behind the panel password like the rest of /panel. Opening it changes nothing: the restore runs only
+ * on the POST below, with the copy's date typed in.
+ */
+import Panel from "@/layouts/Panel.astro";
+import { confirmPhrase, copyLabel } from "@/server/backups";
+import { UserError } from "@/server/http";
+import { flushOutbox } from "@/server/mail";
+import { back } from "@/server/panel";
+import { linkTarget, previewRestore, restoreWithLink, type Preview } from "@/server/restore";
+
+export const prerender = false;
+
+let token = Astro.url.searchParams.get("t") ?? "";
+let typedError = "";
+if (Astro.request.method === "POST") {
+  const f = await Astro.request.formData().catch(() => new FormData());
+  token = String(f.get("t") ?? "");
+  try {
+    const done = restoreWithLink(token, String(f.get("confirm") ?? ""));
+    void flushOutbox();
+    return back("/panel/kopie", { ok: `Baza przywrócona: ${done.copy}. Stan sprzed przywrócenia jest niżej, w „Stan sprzed przywrócenia”.` });
+  } catch (e) {
+    if (!(e instanceof UserError)) throw e;
+    // a typo in the date: show the page again; anything else (used, expired, broken copy): back to the list
+    if (e.status !== 422) return back("/panel/kopie", { err: e.message });
+    typedError = e.message;
+    Astro.response.status = 422;
+  }
+}
+
+const target = linkTarget(token);
+let preview: Preview | undefined;
+let error = "error" in target ? target.error : "";
+if (!("error" in target)) {
+  try {
+    preview = previewRestore(target.copy);
+  } catch (e) {
+    if (!(e instanceof UserError)) throw e;
+    error = e.message;
+  }
+}
+const until = "expiresAt" in target ? new Date(target.expiresAt).toLocaleTimeString("pl-PL", { timeZone: "Europe/Warsaw", timeStyle: "short" }) : "";
+const LIMIT = 100;
+---
+<Panel title="Przywrócenie bazy">
+  {error || !preview || "error" in target ? (
+    <section class="box">
+      <p>{error}</p>
+      <p><a class="btn btn-ghost btn-small" href="/panel/kopie">Wróć do kopii</a></p>
+    </section>
+  ) : (
+    <>
+      <section class="box">
+        <p>Przywracasz bazę: <strong>{copyLabel(target.copy)}</strong>. Link działa do {until}.</p>
+        <p class="note">
+          Terminy, zapisy i chętni wrócą do stanu z kopii. Bez zmian zostaną: wysłane maile, lista powiadomień (z wypisami),
+          zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a kto w tym
+          czasie wycofał zgłoszenie, zostanie wycofany. Obecny stan zapisze się na serwerze, więc przywrócenie da się cofnąć.
+        </p>
+      </section>
+
+      <section class="box">
+        <h2>Co się zmieni</h2>
+        {preview.lost.length + preview.back.length + preview.changed === 0 && <p>Terminy, zapisy i chętni są teraz tacy sami jak w kopii.</p>}
+        {preview.lost.length > 0 && (
+          <>
+            <h3>Znikną: dodane po zrobieniu kopii ({preview.lost.length})</h3>
+            <ul>{preview.lost.slice(0, LIMIT).map((c) => <li>{c.what}: {c.label}</li>)}</ul>
+            {preview.lost.length > LIMIT && <p class="note">…i {preview.lost.length - LIMIT} więcej.</p>}
+          </>
+        )}
+        {preview.back.length > 0 && (
+          <>
+            <h3>Wrócą: usunięte po zrobieniu kopii ({preview.back.length})</h3>
+            <ul>{preview.back.slice(0, LIMIT).map((c) => <li>{c.what}: {c.label}</li>)}</ul>
+            {preview.back.length > LIMIT && <p class="note">…i {preview.back.length - LIMIT} więcej.</p>}
+            <p class="note">Jeśli ktoś z tej listy prosił o usunięcie swoich danych, po przywróceniu usuń go jeszcze raz.</p>
+          </>
+        )}
+        {preview.changed > 0 && <p>Zmienione po zrobieniu kopii (wrócą do wersji z kopii): {preview.changed}.</p>}
+      </section>
+
+      <section class="box">
+        <form method="post" class="confirm">
+          <input type="hidden" name="t" value={token} />
+          <label class="field" for="rs-confirm">Żeby potwierdzić, wpisz datę kopii: {confirmPhrase(target.copy)}
+            <input class="input" id="rs-confirm" name="confirm" required autocomplete="off" inputmode="numeric"
+              aria-invalid={typedError ? "true" : undefined} aria-describedby={typedError ? "rs-err" : undefined} />
+            {typedError && <span class="field-msg" id="rs-err">{typedError}</span>}
+          </label>
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Przywróć bazę</button>
+            <a class="btn btn-ghost" href="/panel/kopie">Anuluj</a>
+          </div>
+        </form>
+      </section>
+    </>
+  )}
+</Panel>
+
+<style>
+  h3 { font-size: 1.05rem; }
+  ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+  .confirm { display: grid; gap: 14px; max-width: 420px; }
+</style>
