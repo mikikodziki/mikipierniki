@@ -252,7 +252,7 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
               const overdue = b.status === "awaiting_payment" && b.payment_due_at && new Date(b.payment_due_at).getTime() < now;
               return (<>
                 <tr class:list={{ muted: b.status === "cancelled" }}>
-                  <td>{b.id}<br /><span class="note">{dt(b.created_at)}</span></td>
+                  <td><span class="nw">{b.id}</span><br /><span class="note">{dt(b.created_at)}</span></td>
                   <td>{b.name}</td>
                   <td><a href={`mailto:${b.email}`}>{b.email}</a><br />{b.phone}</td>
                   <td data-label="Osób">{b.people}{b.guardians ? <><br /><span class="note">+ {b.guardians} rodz.</span></> : null}</td>
