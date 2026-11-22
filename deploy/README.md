@@ -102,6 +102,27 @@ skryptów w przeglądarce.
 - Jeśli kiedyś LiteSpeed ma sam wydawać pliki z `dist/client`, to tylko zasoby (`/_astro`,
   `/fonts`, `/zdjecia`), nie HTML, bo inaczej odwiedziny przestaną się liczyć.
 
+## Nagłówki i pamięć przeglądarki
+
+Też w `start.mjs`, dla każdej odpowiedzi:
+
+- **Bezpieczeństwo:**
+  - HSTS na 30 dni;
+  - `nosniff`;
+  - zakaz pokazywania strony w ramce na innej stronie (`X-Frame-Options` i `frame-ancestors`);
+  - `Referrer-Policy: strict-origin-when-cross-origin`;
+  - `Permissions-Policy` bez kamery, mikrofonu i lokalizacji.
+
+  Middleware może nadpisać każdy z nich, bo nagłówek Astro wygrywa. Tak strony z linków w mailach
+  dostają `same-origin`.
+- **HSTS:** podnieś do roku (`max-age=31536000`) dopiero po pierwszym udanym automatycznym
+  odnowieniu certyfikatu, czyli ok. stycznia 2027. Przeglądarka pamięta HSTS do końca podanego
+  czasu i nowe wdrożenie tego nie cofnie.
+- **Pamięć przeglądarki:** fonty z `/fonts` są trzymane rok, zdjęcia z `/zdjecia` tydzień. Pliki
+  w `/_astro` mają hash w nazwie, więc Astro i tak daje im rok.
+  - Zmieniony font musi dostać nową nazwę pliku.
+  - Zdjęcie podmienione pod tą samą nazwą pokaże się u odwiedzających najpóźniej po tygodniu.
+
 ## Codzienna obsługa
 
 ```sh
