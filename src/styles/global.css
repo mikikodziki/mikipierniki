@@ -150,6 +150,8 @@ main { display: grid; gap: var(--panel-gap); padding-inline: var(--panel-gap); p
 /* Forms */
 .field { display: flex; flex-wrap: wrap; align-items: baseline; align-content: start; gap: 6px; font-weight: 500; font-size: .75rem; letter-spacing: var(--caps); text-transform: uppercase; }
 .field > .input { flex: 1 0 100%; }
+/* a field reached with the keyboard keeps its label above it clear of the header too (after a failed send, focusFirst in field-errors.ts scrolls by hand, as Safari ignores this) */
+.field :is(input, select, textarea, button) { scroll-margin-top: 140px; }
 .field .hint { font-weight: 400; color: var(--ink-soft); font-size: .75rem; letter-spacing: .04em; text-transform: none; }
 /* a hint under the field, so fields side by side start at the same height */
 .field > .hint--below { flex: 1 0 100%; }
