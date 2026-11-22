@@ -1,5 +1,5 @@
 ---
-import { glue } from "@/lib/format";
+import Glued from "./Glued.astro";
 import type { FaqItem } from "@/lib/types";
 
 interface Props {
@@ -13,7 +13,7 @@ const { items, openFirst = true } = Astro.props;
   {items.map((f, i) => (
     <details open={openFirst && i === 0}>
       <summary>{f.q}</summary>
-      <div class="answer"><p>{glue(f.a)}</p></div>
+      <div class="answer"><p><Glued text={f.a} /></p></div>
     </details>
   ))}
 </div>
