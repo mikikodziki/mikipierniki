@@ -18,7 +18,9 @@ export default defineConfig({
     // Since Astro 7.4 a request's address takes its host from the Host header only for these; any
     // other host reads as "localhost", and the middleware's origin check would refuse every form.
     // Production is reached as mikipierniki.pl (LiteSpeed redirects www); the other two are the
-    // local server and the e2e run.
+    // local server and the e2e run. Testing from a phone on the LAN (http://192.168.…) or on a test
+    // domain needs that host here too. For these hosts Astro also believes X-Forwarded-Host/-Proto;
+    // a browser can't send those cross-site, so the origin check still stops other sites' forms.
     allowedDomains: [{ hostname: "mikipierniki.pl" }, { hostname: "127.0.0.1" }, { hostname: "localhost" }],
   },
   env: {
