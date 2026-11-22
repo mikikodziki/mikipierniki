@@ -3,6 +3,7 @@ import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
 import SectionHead from "@/components/SectionHead.astro";
 import Piping from "@/components/Piping.astro";
+import Glued from "@/components/Glued.astro";
 import FaqList from "@/components/FaqList.astro";
 import InquiryForm from "@/components/InquiryForm.astro";
 import TermsList from "@/components/workshops/TermsList.astro";
@@ -129,7 +130,7 @@ const closedFacts = [
         <li>Na warsztaty dla dzieci zapraszam dzieci od 6 do 12 lat. Rodzic lub opiekun zostaje z dzieckiem przez cały czas. Młodzież od 13 do 17 lat może przyjść na dzienne warsztaty dla dorosłych bez opiekuna, z pisemną zgodą rodzica i numerem telefonu do niego. Jak dbam o bezpieczeństwo dzieci, opisują moje <a href="/standardy-ochrony-maloletnich">standardy ochrony małoletnich</a>. W sezonie mam tylko dwa terminy dla dzieci.</li>
         <li>Grupa liczy od {site.groupMin} do {site.groupMax} osób. Jeśli na dany termin zapisze się mniej niż {site.groupMin} osoby, mogę go odwołać najpóźniej {legal.lowTurnoutNoticeDays} dni wcześniej. Wtedy w ciągu 14 dni zwracam całą wpłatę albo przenoszę Cię na inny termin.</li>
         <li>Zapis wysłany przyciskiem „Rezerwuję z obowiązkiem zapłaty” jest wiążący. Płacisz przelewem w ciągu 3 dni, najpóźniej dzień przed warsztatami. Zapisy przez stronę zamykam 2 dni przed startem. Zasady rezygnacji opisuje <a href="/regulamin#rezygnacja">regulamin</a>.</li>
-        <li>Każda osoba dekoruje 6–8 pierników i zabiera do domu wszystkie.</li>
+        <li>Każda osoba dekoruje <span class="nw">6–8</span> pierników i zabiera do domu wszystkie.</li>
       </ul>
     </div>
   </section>
@@ -176,7 +177,7 @@ const closedFacts = [
         />
         <ul class="occasions">
           {closedFacts.map((o) => (
-            <li><b>{o.title}</b><span>{o.text}</span></li>
+            <li><b>{o.title}</b><span><Glued text={o.text} /></span></li>
           ))}
         </ul>
         <p class="pitch-note">Napisz, ile Was będzie, ile mamy czasu i gdzie chcecie się spotkać, a odeślę propozycję razem z wyceną.</p>
