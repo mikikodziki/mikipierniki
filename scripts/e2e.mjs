@@ -152,6 +152,16 @@ try {
     check("warning bar when the newest copy is over a day old (e.g. cron stopped)", (await page("/panel")).includes("Kopie bazy: nie ma kopii bazy z ostatniej doby"));
     await cron();
     check("a new problem is mailed again", alerts().some((m) => m.includes("Nie ma kopii bazy z ostatniej doby") && m.includes("To: admin@example.com")));
+    // the same problem a day later (e.g. cron still stopped): mailed again, once
+    const staleAlerts = () => alerts().filter((m) => m.includes("Nie ma kopii bazy z ostatniej doby")).length;
+    const staleBefore = staleAlerts();
+    const d = db();
+    d.exec("PRAGMA busy_timeout = 5000");
+    d.prepare("UPDATE app_state SET value = ? WHERE key = 'backup_alert_sent_at'").run(new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString());
+    d.close();
+    await cron();
+    await cron();
+    check("a problem that lasts is mailed again a day later, once", staleAlerts() === staleBefore + 2, `${staleAlerts() - staleBefore}`);
     rmSync(backups, { recursive: true });
     rmSync(backupLog);
     await cron();
@@ -922,7 +932,10 @@ try {
   await panel(`/panel/termin/${t2}`, { action: "cancel", notify: "on" });
   await settle();
   check("cancel proposed term → 'nie dojdzie do skutku' only to active interest", mails().length === beforeC + 1 && lastMails(1)[0].includes("hania@example.com") && lastMails(1)[0].includes("nie uda się"));
-  check("cancelled term's interest deleted", db().prepare("SELECT COUNT(*) n FROM interest WHERE term_id = ?").get(t2).n === 0);
+  // withdrawn rows stay until the term's own clean-up, so a restored copy still knows who withdrew (restore.ts)
+  const leftC = db().prepare("SELECT withdrawn_at, phone, notes FROM interest WHERE term_id = ?").all(t2);
+  check("cancelled term's active interest deleted, withdrawn rows kept without phone or notes",
+    leftC.length > 0 && leftC.every((x) => x.withdrawn_at && x.phone === null && x.notes === null), JSON.stringify(leftC));
   check("cancelled term gone from site", !(await (await get("/warsztaty")).text()).includes(`data-interest="${t2}"`));
 
   // ---------- inquiry ----------
@@ -1204,26 +1217,59 @@ try {
       // an open term starting in 20 h, inside the day-before reminder window
       rdb.prepare("INSERT INTO terms (id, status, type, title, starts_at, ends_at, price, price_unit, capacity, photo, photo_alt, created_at, updated_at) VALUES ('rt', 'open', 'dorosli', 'Przywracany termin', ?, ?, 450, 'osoba', 10, 'swieta-stol', 'x', ?, ?)")
         .run(iso(20), iso(24), iso(-48), iso(-48));
-      const booking = (id, name) => rdb.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, 'rt', 'confirmed', ?, ?, '500600700', 1, 'przelew', 450, ?, ?)")
-        .run(id, name, `${id.toLowerCase()}@example.com`, iso(-1), iso(-1));
+      // an open term in 10 days (no reminders yet, sign-ups can still be told it's open) and a proposal cancelled after the copy
+      const term = (id, status, title, h) => rdb.prepare("INSERT INTO terms (id, status, type, title, starts_at, ends_at, price, price_unit, capacity, photo, photo_alt, created_at, updated_at) VALUES (?, ?, 'dorosli', ?, ?, ?, 450, 'osoba', 10, 'swieta-stol', 'x', ?, ?)")
+        .run(id, status, title, iso(h), iso(h + 4), iso(-48), iso(-48));
+      term("rf", "open", "Dalszy termin", 240);
+      term("rc", "proposed", "Odwoływany termin", 300);
+      const booking = (id, name, termId = "rt") => rdb.prepare("INSERT INTO bookings (id, term_id, status, name, email, phone, people, payment, total, created_at, paid_at) VALUES (?, ?, 'confirmed', ?, ?, '500600700', 1, 'przelew', 450, ?, ?)")
+        .run(id, termId, name, `${id.toLowerCase()}@example.com`, iso(-1), iso(-1));
       booking("R-KEEP", "Stała Osoba");
       booking("R-GONE", "Usunięta Osoba");
-      rdb.prepare("INSERT INTO interest (token, term_id, name, email, people, created_at) VALUES ('tk', 'rt', 'Wycofana Osoba', 'wycofa@example.com', 2, ?)").run(iso(-1));
+      booking("R-MOVED", "Przeniesiona Osoba", "rf");
+      // R-MOVED had a reminder for an earlier date before the copy; the move cleared its marker (bookings.ts)
+      rdb.prepare("INSERT INTO outbox (kind, to_addr, subject, text, html, send_after, created_at, status, sent_at) VALUES ('booking-reminder', 'r-moved@example.com', 's', 'Rezerwacja R-MOVED', 'h', ?, ?, 'sent', ?)")
+        .run(iso(-3), iso(-3), iso(-3));
+      const interest = (token, termId, name, email) => rdb.prepare("INSERT INTO interest (token, term_id, name, email, phone, people, notes, created_at) VALUES (?, ?, ?, ?, '500100200', 2, 'alergia na orzechy', ?)")
+        .run(token, termId, name, email, iso(-1));
+      interest("tk", "rt", "Wycofana Osoba", "wycofa@example.com");
+      interest("tn", "rf", "Powiadomiona Osoba", "powiadom@example.com");
+      interest("tc1", "rc", "Odwołana Wycofana", "odw-wyc@example.com");
+      interest("tc2", "rc", "Odwołana Chętna", "odw-chet@example.com");
       rdb.prepare("INSERT INTO subscribers (email, token, status, created_at, confirmed_at) VALUES ('wypisze@example.com', 'tok-w', 'active', ?, ?)").run(iso(-30), iso(-30));
       rdb.prepare("INSERT INTO outbox (kind, to_addr, subject, text, html, send_after, created_at) VALUES ('stale-test', 'x@example.com', 's', 't', 'h', ?, ?)").run(iso(0), iso(0));
+      const schema = one("PRAGMA user_version").user_version;
       // the nightly copy, made with the schema of the previous release (as an older copy would be)
       const copyPath = join(rDir, "backups", "db-2026-11-20.sqlite");
       rdb.exec(`VACUUM INTO '${copyPath}'`);
       const old = new DatabaseSync(copyPath);
       old.exec("DROP TABLE app_state; DROP TABLE restore_links; PRAGMA user_version = 6");
       old.close();
-      // after the copy: the reminder and the queued mail go out, then things change
+      // after the copy: R-MOVED moves to the date inside the reminder window, the reminders and the queued
+      // mail go out, then things change
+      rdb.exec("UPDATE bookings SET term_id = 'rt' WHERE id = 'R-MOVED'");
       await fetch(A + "/api/cron", { headers: { "x-cron-token": "tok" } });
       await settle();
-      check("restore setup: both reminders and the queued mail went out after the copy", rMails("booking-reminder").length === 2 && rMails("stale-test").length === 1, `${rMails("booking-reminder").length}/${rMails("stale-test").length}`);
+      const remindersFor = (id) => rMails("booking-reminder").filter((m) => m.includes(id)).length;
+      check("restore setup: the reminders and the queued mail went out after the copy",
+        remindersFor("R-KEEP") === 1 && remindersFor("R-GONE") === 1 && remindersFor("R-MOVED") === 1 && rMails("stale-test").length === 1,
+        `${remindersFor("R-KEEP")}/${remindersFor("R-GONE")}/${remindersFor("R-MOVED")}/${rMails("stale-test").length}`);
       rdb.exec("DELETE FROM bookings WHERE id = 'R-GONE'");
       booking("R-NEW", "Nowa Osoba");
-      rdb.prepare("UPDATE interest SET withdrawn_at = ? WHERE email = 'wycofa@example.com'").run(iso(0));
+      const interestId = (email) => String(one("SELECT id FROM interest WHERE email = ?", email).id);
+      await form(A, "/panel/termin/rt", { action: "interest-withdraw", interest: interestId("wycofa@example.com") });
+      // "your date is open" goes to the one interested in rf, then that sign-up is erased
+      await form(A, "/panel/termin/rf", { action: "notify" });
+      await fetch(A + "/api/cron", { headers: { "x-cron-token": "tok" } });
+      await settle();
+      check("restore setup: the term-opened mail went out", rMails("term-opened").some((m) => /^To: powiadom@example\.com$/m.test(m)));
+      await form(A, "/panel/termin/rf", { action: "interest-delete", interest: interestId("powiadom@example.com"), confirm: "on" });
+      // a withdrawal, then the term is cancelled without mails
+      await form(A, "/panel/termin/rc", { action: "interest-withdraw", interest: interestId("odw-wyc@example.com") });
+      await form(A, "/panel/termin/rc", { action: "cancel" });
+      check("a cancelled term keeps its withdrawn sign-ups (name and address only) and drops the rest",
+        one("SELECT status FROM terms WHERE id = 'rc'").status === "cancelled" && one("SELECT COUNT(*) AS n FROM interest WHERE term_id = 'rc'").n === 1
+        && one("SELECT phone FROM interest WHERE email = 'odw-wyc@example.com'").phone === null);
       rdb.prepare("UPDATE subscribers SET status = 'unsubscribed', unsubscribed_at = ? WHERE email = 'wypisze@example.com'").run(iso(0));
       rdb.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE id = 'R-KEEP'").run(iso(0));
       rdb.prepare("INSERT INTO inquiries (kind, name, email, message, created_at) VALUES ('kontakt', 'Pytająca', 'pyta@example.com', 'Pytanie po kopii', ?)").run(iso(0));
@@ -1240,17 +1286,37 @@ try {
       let html = await (await at(A, link.path)).text();
       check("the restore page lists what disappears and what comes back", html.includes("Znikną") && html.includes("Nowa Osoba") && html.includes("Wrócą") && html.includes("Usunięta Osoba") && html.includes("20.11.2026"));
       check("the restore page lists a booking cancelled since the copy with its status change", html.includes("Stała Osoba") && html.includes("teraz anulowana, opłacona, po przywróceniu potwierdzona, opłacona"));
+      check("the restore page names a term cancelled since the copy and warns about the cancellation",
+        html.includes("Odwoływany termin") && html.includes("teraz odwołany, po przywróceniu propozycja") && html.includes("Odwołany termin wróci"));
+      check("the restore page says a booking moved since the copy goes back to its date", html.includes("Przeniesiona Osoba") && html.includes("wróci na termin Dalszy termin"));
       check("opening the restore page changes nothing", !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"));
       const t = new URL(link.path, A).searchParams.get("t");
       r = await form(A, "/panel/kopie/przywroc", { t, confirm: "21.11.2026" });
       check("a wrong date → 422, database unchanged", r.status === 422 && (await r.text()).includes("Wpisz datę kopii") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'"), String(r.status));
-      r = await form(A, "/panel/kopie/przywroc", { t, confirm: " 20.11.2026 " });
-      check("the right date restores the copy", r.status === 303 && (r.headers.get("location") ?? "").includes("ok="), `${r.status} ${r.headers.get("location")}`);
+      // leftovers of a restore cut short (e.g. by a deploy) two hours ago
+      const dead = join(rDir, "backups", ".restore-0badc0ffee00.sqlite");
+      writeFileSync(dead, "x");
+      utimesSync(dead, new Date(Date.now() - 2 * 3600_000), new Date(Date.now() - 2 * 3600_000));
+      // the same link confirmed in both processes at once: it restores once
+      const both = await Promise.all([form(A, "/panel/kopie/przywroc", { t, confirm: " 20.11.2026 " }), form(B, "/panel/kopie/przywroc", { t, confirm: "20.11.2026" })]);
+      const where = both.map((x) => `${x.status} ${x.headers.get("location")}`);
+      check("the right date restores the copy, once, though both processes got it", both.every((x) => x.status === 303)
+        && both.filter((x) => (x.headers.get("location") ?? "").includes("ok=")).length === 1
+        && both.filter((x) => (x.headers.get("location") ?? "").includes("err=")).length === 1, where.join(" | "));
       check("rows added after the copy are gone, rows deleted since are back", !one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"));
-      check("the copy is brought to the current schema", one("PRAGMA user_version").user_version === 7 && !!one("SELECT 1 AS x FROM sqlite_master WHERE name = 'restore_links'"));
+      check("the copy is brought to the current schema", one("PRAGMA user_version").user_version === schema && !!one("SELECT 1 AS x FROM sqlite_master WHERE name = 'restore_links'"));
       check("a reminder sent after the copy stays sent", !!one("SELECT reminded_at FROM bookings WHERE id = 'R-KEEP'").reminded_at);
       check("a booking deleted after its reminder comes back marked as reminded (from the outbox)", !!one("SELECT reminded_at FROM bookings WHERE id = 'R-GONE'").reminded_at);
-      check("a withdrawal made after the copy stays", !!one("SELECT withdrawn_at FROM interest WHERE email = 'wycofa@example.com'").withdrawn_at);
+      check("a withdrawal made after the copy stays, without the phone and notes the copy still had",
+        (({ withdrawn_at, phone, notes }) => !!withdrawn_at && phone === null && notes === null)(one("SELECT withdrawn_at, phone, notes FROM interest WHERE email = 'wycofa@example.com'")));
+      check("a term cancelled after the copy comes back with its sign-ups, and who withdrew before the cancellation stays withdrawn",
+        one("SELECT status FROM terms WHERE id = 'rc'").status === "proposed"
+        && (({ withdrawn_at, phone }) => !!withdrawn_at && phone === null)(one("SELECT withdrawn_at, phone FROM interest WHERE email = 'odw-wyc@example.com'"))
+        && one("SELECT withdrawn_at FROM interest WHERE email = 'odw-chet@example.com'").withdrawn_at === null);
+      check("a booking moved after the copy goes back to its date, without the reminder sent for the other date",
+        (({ term_id, reminded_at }) => term_id === "rf" && reminded_at === null)(one("SELECT term_id, reminded_at FROM bookings WHERE id = 'R-MOVED'")));
+      check("a sign-up erased after its term-opened mail comes back marked as told (from the outbox)", !!one("SELECT notified_at FROM interest WHERE email = 'powiadom@example.com'").notified_at);
+      check("leftovers of a restore cut short are removed", !existsSync(dead));
       check("newsletter unsubscribes, sent mail and inquiries are kept as they are now",
         one("SELECT status FROM subscribers WHERE email = 'wypisze@example.com'").status === "unsubscribed"
         && !one("SELECT 1 AS x FROM outbox WHERE status = 'pending' AND kind = 'stale-test'")
@@ -1265,9 +1331,9 @@ try {
       // the other process: no second reminder, no stale mail, reads and writes the restored database
       await fetch(B + "/api/cron", { headers: { "x-cron-token": "tok" } });
       await settle();
-      const remindersFor = (id) => rMails("booking-reminder").filter((m) => m.includes(id)).length;
-      check("after a restore no reminder or queued mail goes out twice (other process)", remindersFor("R-KEEP") === 1 && remindersFor("R-GONE") === 1 && rMails("stale-test").length === 1,
-        `${remindersFor("R-KEEP")}/${remindersFor("R-GONE")}/${rMails("stale-test").length}`);
+      check("after a restore no reminder or queued mail goes out twice (other process)",
+        remindersFor("R-KEEP") === 1 && remindersFor("R-GONE") === 1 && remindersFor("R-MOVED") === 1 && rMails("stale-test").length === 1,
+        `${remindersFor("R-KEEP")}/${remindersFor("R-GONE")}/${remindersFor("R-MOVED")}/${rMails("stale-test").length}`);
       check("the other process reads the restored database without a restart", (await (await at(B, "/panel/termin/rt")).text()).includes("Usunięta Osoba"));
       r = await form(B, "/panel", { type: "dorosli", title: "Po przywróceniu", date: new Date(Date.now() + 40 * 86400000).toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" }), start: "11:00", end: "15:00", capacity: "10", price: "450", cookies: "6–8", photo: "swieta-stol", status: "proposed" });
       check("the other process writes to the restored database", r.status === 303 && !!one("SELECT 1 AS x FROM terms WHERE title = 'Po przywróceniu'"), String(r.status));
@@ -1287,7 +1353,8 @@ try {
       check("a broken copy is refused on the restore page", (await (await at(A, broken)).text()).includes("uszkodzona"));
       r = await form(A, "/panel/kopie/przywroc", { t: new URL(broken, A).searchParams.get("t"), confirm: "19.11.2026" });
       check("a broken copy can't be restored, database unchanged", (r.headers.get("location") ?? "").includes("uszkodzona") && !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-MARK'"), r.headers.get("location"));
-      check("no temp files left next to the database", readdirSync(rDir).every((f) => !f.startsWith(".restore-")), readdirSync(rDir).join(","));
+      const around = [...readdirSync(rDir), ...readdirSync(join(rDir, "backups"))];
+      check("no temp files left next to the database or the copies", around.every((f) => !f.startsWith(".restore-")), around.join(","));
       // undo: restoring the saved state brings back what the restore removed
       await form(A, "/panel/kopie", { action: "request-restore", copy: safety[0] });
       await settle();

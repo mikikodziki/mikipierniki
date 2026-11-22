@@ -110,8 +110,10 @@ export function cancelTerm(id: string, notify: boolean): { bookings: number; int
   const db = getDb();
   return tx(db, () => {
     setTermStatus(id, "cancelled");
-    // interest in a date that won't happen has no purpose left, and the e-mail says it was deleted
-    const dropInterest = () => db.prepare("DELETE FROM interest WHERE term_id = ?").run(id);
+    // interest in a date that won't happen has no purpose left, and the e-mail says it was deleted.
+    // Withdrawn rows (name and address only) stay until the term's own clean-up, as the privacy policy
+    // says, so restoring a copy from before the cancellation still knows who withdrew (restore.ts).
+    const dropInterest = () => db.prepare("DELETE FROM interest WHERE term_id = ? AND withdrawn_at IS NULL").run(id);
     if (!notify) {
       db.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE term_id = ? AND status != 'cancelled'").run(new Date().toISOString(), id);
       dropInterest();

@@ -22,6 +22,12 @@ const COPY = /^db-(\d{4}-\d{2}-\d{2})\.sqlite$/;
  * backup.sh's 30-day clean-up (db-*.sqlite*) removes these too; the health check ignores them.
  */
 const SAFETY = /^db-przed-przywroceniem-(\d{4}-\d{2}-\d{2})-\d{6}\.sqlite$/;
+/**
+ * Temp files of a restore (restore.ts): the copy being checked and the state before it, both full copies
+ * of the database. A restore cut short leaves them behind; tick.ts removes those after an hour. The dot
+ * keeps them out of the list above and out of backup.sh's clean-up (db-*).
+ */
+export const RESTORE_TEMP = ".restore-";
 /** One line per run: "2026-11-22 03:30:04 ok: …" or "… FAILED: …", in the server's time (Warsaw). */
 const LINE = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}):\d{2} (ok|FAILED): (.*)$/;
 
@@ -30,7 +36,13 @@ export interface BackupCopy {
   name: string;
   kind: "nightly" | "safety";
   day: string;
+  /** the file's time: when it was written here (staleness and the 03:30 grace go by this) */
   madeAt: Date;
+  /**
+   * false when the file's time is not on the day in its name, i.e. a copy brought back from S3: then
+   * the file's time is when it was copied in, and only the day in the name says when it was made
+   */
+  exact: boolean;
   bytes: number;
 }
 
@@ -96,7 +108,8 @@ function readCopies(dir: string): BackupCopy[] {
     if (!day) continue;
     try {
       const s = statSync(join(dir, name));
-      copies.push({ name, kind: nightly ? "nightly" : "safety", day, madeAt: s.mtime, bytes: s.size });
+      const exact = s.mtime.toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" }) === day;
+      copies.push({ name, kind: nightly ? "nightly" : "safety", day, madeAt: s.mtime, exact, bytes: s.size });
     } catch {
       // removed by the 30-day clean-up while we were reading
     }
@@ -112,11 +125,18 @@ export function findCopy(name: string): (BackupCopy & { path: string }) | undefi
   return c && { ...c, path: join(dir, c.name) };
 }
 
+/** When a copy was made, as people read it: "20.11.2026, 03:30", or only the day when the time is not known. */
+export function copyWhen(c: BackupCopy): string {
+  return c.exact ? c.madeAt.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" }) : confirmPhrase(c);
+}
+
 /** How a copy is named to people: by when it was made. */
 export function copyLabel(c: BackupCopy): string {
-  const at = c.madeAt.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
-  return c.kind === "nightly" ? `kopia z ${at}` : `stan sprzed przywrócenia, ${at}`;
+  return c.kind === "nightly" ? `kopia z ${copyWhen(c)}` : `stan sprzed przywrócenia, ${copyWhen(c)}`;
 }
+
+/** No later than the copy was made: its time, or the start of the day in its name (+02:00 is never after Warsaw's midnight). */
+export const madeNoLaterThan = (c: BackupCopy): Date => (c.exact ? c.madeAt : new Date(`${c.day}T00:00:00+02:00`));
 
 /** What has to be typed to confirm a restore: the copy's day as people write it. */
 export const confirmPhrase = (c: BackupCopy) => c.day.split("-").reverse().join(".");

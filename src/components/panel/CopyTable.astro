@@ -1,13 +1,12 @@
 ---
 /** Database copies in the panel (Kopie): when, size, and "Przywróć…" when restoring from the panel is on. */
-import type { BackupCopy } from "@/server/backups";
+import { type BackupCopy, copyWhen } from "@/server/backups";
 
 interface Props {
   copies: BackupCopy[];
   canRestore: boolean;
 }
 const { copies, canRestore } = Astro.props;
-const dt = (d: Date) => d.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
 const size = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`);
 ---
 <div class="scroll">
@@ -16,14 +15,14 @@ const size = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round
     <tbody>
       {copies.map((c) => (
         <tr>
-          <td class="nowrap">{dt(c.madeAt)}</td>
+          <td class="nowrap">{copyWhen(c)}</td>
           <td data-label="Rozmiar">{size(c.bytes)}</td>
           {canRestore && (
             <td>
               <form method="post" action="/panel/kopie">
                 <input type="hidden" name="action" value="request-restore" />
                 <input type="hidden" name="copy" value={c.name} />
-                <button class="btn btn-ghost btn-small" type="submit" aria-label={`Przywróć bazę: ${c.kind === "nightly" ? "kopia" : "stan sprzed przywrócenia"} z ${dt(c.madeAt)}`}>Przywróć…</button>
+                <button class="btn btn-ghost btn-small" type="submit" aria-label={`Przywróć bazę: ${c.kind === "nightly" ? "kopia" : "stan sprzed przywrócenia"} z ${copyWhen(c)}`}>Przywróć…</button>
               </form>
             </td>
           )}

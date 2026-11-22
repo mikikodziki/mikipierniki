@@ -3,7 +3,10 @@
  * in the privacy policy and the alert when the nightly database copy fails. Runs every minute inside the server process, and /api/cron triggers it
  * too (cron calls it via deploy/cron.sh, so it also runs after a restart with no visitors).
  */
+import { existsSync, readdirSync, rmSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { checkBackupAlert } from "./backup-alert";
+import { backupDir, RESTORE_TEMP } from "./backups";
 import { notifyOverdue, sendReminders } from "./bookings";
 import { getDb, tx } from "./db";
 import { flushOutbox } from "./mail";
@@ -27,6 +30,23 @@ export function cleanup(now = Date.now()): void {
   // secure_delete zeroes freed pages in the database file; this also empties the write-ahead log,
   // which still holds copies of the pages as they were before the deletes
   db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+  dropRestoreLeftovers(now);
+}
+
+/** A restore cut short (e.g. its process stopped by a deploy) leaves full copies of the database in backups/. */
+function dropRestoreLeftovers(now: number): void {
+  const dir = backupDir();
+  if (!existsSync(dir)) return;
+  for (const name of readdirSync(dir)) {
+    if (!name.startsWith(RESTORE_TEMP)) continue;
+    const file = join(dir, name);
+    try {
+      // a restore takes seconds; an hour leaves any running one alone
+      if (statSync(file).mtimeMs < now - 60 * 60 * 1000) rmSync(file, { force: true });
+    } catch {
+      // removed meanwhile
+    }
+  }
 }
 
 function deleteExpired(db: ReturnType<typeof getDb>, now: number): void {
@@ -55,6 +75,8 @@ function deleteExpired(db: ReturnType<typeof getDb>, now: number): void {
   db.prepare("DELETE FROM subscribers WHERE status = 'unsubscribed' AND unsubscribed_at < ?").run(ago(1));
   db.prepare("DELETE FROM subscribers WHERE status = 'pending' AND created_at < ?").run(ago(30));
   db.prepare("DELETE FROM inquiries WHERE created_at < ?").run(ago(365));
+  // restore links work 30 minutes; a used or expired one has nothing left to do
+  db.prepare("DELETE FROM restore_links WHERE expires_at < ?").run(ago(1));
   // sent mail holds names and addresses; keep it only long enough to answer "did you get my e-mail?"
   // (customer e-mails can carry booking details, so they follow the same 30 days)
   db.prepare("DELETE FROM outbox WHERE status = 'sent' AND sent_at < ?").run(ago(30));
