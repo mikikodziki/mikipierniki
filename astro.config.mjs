@@ -12,8 +12,15 @@ export default defineConfig({
   build: { format: "file", inlineStylesheets: "always" },
   // Pages stay prerendered; only routes with `prerender = false` (terms, forms, panel) run on the server.
   adapter: node({ mode: "standalone" }),
-  // Our middleware checks the origin itself, because one-click unsubscribe POSTs from mail apps carry none.
-  security: { checkOrigin: false },
+  security: {
+    // Our middleware checks the origin itself, because one-click unsubscribe POSTs from mail apps carry none.
+    checkOrigin: false,
+    // Since Astro 7.4 a request's address takes its host from the Host header only for these; any
+    // other host reads as "localhost", and the middleware's origin check would refuse every form.
+    // Production is reached as mikipierniki.pl (LiteSpeed redirects www); the other two are the
+    // local server and the e2e run.
+    allowedDomains: [{ hostname: "mikipierniki.pl" }, { hostname: "127.0.0.1" }, { hostname: "localhost" }],
+  },
   env: {
     schema: {
       DATABASE_PATH: secret(),
