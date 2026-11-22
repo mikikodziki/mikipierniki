@@ -29,7 +29,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
         <span class="tag">{workshopTypeLabel[term.type]}</span>
         {proposed && <span class="tag tag--soft">Propozycja terminu</span>}
       </div>
-      <p class="when">{termDate(term.startsAt)} · {weekday(term.startsAt)} · {timeRange(term)}</p>
+      <p class="when">{termDate(term.startsAt)} · {weekday(term.startsAt)} · <span class="nw">{timeRange(term)}</span></p>
       <h3>{term.title}</h3>
     </div>
 
@@ -79,6 +79,8 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
 </article>
 
 <style>
+  /* the hours stay on one line ("11:00–15:00", not "11:00–" / "15:00") */
+  .nw { white-space: nowrap; }
   .term {
     position: relative;
     display: block;

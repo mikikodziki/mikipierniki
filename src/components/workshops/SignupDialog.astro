@@ -128,7 +128,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
       $("su-eyebrow").textContent = waitlist ? "Lista rezerwowa" : "Rezerwacja";
       $("signup-title").textContent = waitlist ? "Zapis na listę rezerwową" : "Zapis na warsztaty";
       $("su-sum-label").textContent = waitlist ? "Kwota, jeśli zwolni się miejsce" : "Do zapłaty";
-      $("su-sum").textContent = `${bookingTotal(t, n(people))} zł`;
+      $("su-sum").textContent = `${bookingTotal(t, n(people))}\u00a0zł`;
       submit.textContent = waitlist ? "Dopisz mnie do listy" : "Rezerwuję z obowiązkiem zapłaty";
       // more people than seats left shows at once, and follows a change of term
       setFieldError(people, check(people));
@@ -206,7 +206,7 @@ const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingC
         $("su-done-text").textContent =
           res.status === "waitlist" ? `Jeśli zwolni się miejsce na ${date}, zaproponuję je osobom z listy w kolejności zapisów. Gdy przyjdzie Twoja kolej, napiszę do Ciebie.`
           : req.payment === "voucher" ? `Rezerwacja na ${date} zapisana. Szczegóły z adresem pracowni wysłałam na ${req.email}. Sprawdzę voucher i potwierdzę rezerwację mailem.`
-          : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total} zł) i adres pracowni wysłałam na ${req.email}. Wpłać w ciągu 3 dni, najpóźniej dzień przed warsztatami. Po wpłacie dostaniesz potwierdzenie.`;
+          : `Miejsce na ${date} czeka na Ciebie. Dane do przelewu (${res.total}\u00a0zł) i adres pracowni wysłałam na ${req.email}. Wpłać w ciągu 3 dni, najpóźniej dzień przed warsztatami. Po wpłacie dostaniesz potwierdzenie.`;
         // the same words whether or not the address was already on the list
         $("su-done-news").hidden = !req.newsletter;
         // consent is given anew each time, so the next booking starts unticked

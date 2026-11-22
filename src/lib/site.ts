@@ -5,7 +5,8 @@ export const site = {
   owner: "Dominika",
   tagline: "Warsztaty lukrowania pierników i pierniki na zamówienie",
   email: "mika@mikipierniki.pl",
-  phone: "880 122 269",
+  /** with no-break spaces, so the number never splits across lines */
+  phone: "880\u00a0122\u00a0269",
   phoneHref: "tel:+48880122269",
   instagram: "https://instagram.com/mikipierniki",
   instagramHandle: "@mikipierniki",

@@ -21,7 +21,14 @@ export const termDate = (iso: string, now = new Date()) => {
   return year === yearFmt.format(now) ? shortDate(iso) : `${shortDate(iso)} ${year}`;
 };
 
-export const pln = (n: number) => `${n} zł`;
+/** "450 zł" with a no-break space, so the amount never ends a line without its "zł" */
+export const pln = (n: number) => `${n}\u00a0zł`;
+
+/**
+ * Page copy only (mail texts stay plain): keeps "35 zł" and ranges like "3–4" or "11:00–15:00" in one
+ * piece at a line end, with a no-break space before "zł" and a word joiner after the dash.
+ */
+export const glue = (s: string) => s.replace(/(\d) zł/g, "$1\u00a0zł").replace(/(\d)–(?=\d)/g, "$1–\u2060");
 
 /** Polish plural: 1 miejsce, 2–4 miejsca, 5+ miejsc (12–14 → miejsc) */
 export function plural(n: number, one: string, few: string, many: string): string {
