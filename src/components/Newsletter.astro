@@ -22,9 +22,10 @@ const {
           <button class="btn btn-primary" type="submit">Powiadom mnie</button>
           <div class="hp" aria-hidden="true"><label for="news-website">Strona www</label><input type="text" id="news-website" tabindex="-1" autocomplete="off" /></div>
         </form>
-        <p class="consent" id="news-consent">Klikając „Powiadom mnie”, zgadzasz się na e-maile od Miki Pierniki o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Zapis potwierdzisz linkiem z pierwszego maila. Wypiszesz się jednym kliknięciem w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>.</p>
+        <!-- right under the field, not below the consent text, which takes six lines on a phone -->
         <p class="form-error" id="news-err" role="alert" hidden>Wpisz poprawny adres e-mail, np. imie@gmail.com.</p>
         <p class="form-error" id="news-fail" role="alert" hidden>Nie udało się zapisać. Spróbuj ponownie za chwilę.</p>
+        <p class="consent" id="news-consent">Klikając „Powiadom mnie”, zgadzasz się na e-maile od Miki Pierniki o nowych terminach warsztatów i nowościach w ofercie (np. vouchery, pierniki świąteczne). Zapis potwierdzisz linkiem z pierwszego maila. Wypiszesz się jednym kliknięciem w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci">polityce prywatności</a>.</p>
         <p class="form-ok" id="news-ok" role="status" tabindex="-1" hidden>Prawie gotowe! Jeśli tego adresu nie ma jeszcze na liście, wysłałam na niego link. Kliknij go, żeby potwierdzić zapis.</p>
       </div>
     </div>
