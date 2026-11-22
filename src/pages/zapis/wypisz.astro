@@ -2,7 +2,7 @@
 /** Withdraws an interest sign-up for proposed dates. GET shows what will be withdrawn, POST does it. */
 import Base from "@/layouts/Base.astro";
 import PageHead from "@/components/PageHead.astro";
-import { shortDate } from "@/lib/format";
+import { termDate } from "@/lib/format";
 import { interestByToken, withdrawInterest } from "@/server/interest";
 
 export const prerender = false;
@@ -23,7 +23,7 @@ const active = rows.filter((r) => !r.withdrawn && r.term);
       <div><a class="btn btn-primary" href="/warsztaty">Zobacz warsztaty</a></div>
     </PageHead>
   ) : (
-    <PageHead eyebrow="Zgłoszenie" title="Wycofać zgłoszenie?" lead={`Przestanę pisać w sprawie terminów: ${active.map((r) => `${shortDate(r.term!.startsAt)} (${r.term!.title})`).join(", ")}.`}>
+    <PageHead eyebrow="Zgłoszenie" title="Wycofać zgłoszenie?" lead={`Przestanę pisać w sprawie terminów: ${active.map((r) => `${termDate(r.term!.startsAt)} (${r.term!.title})`).join(", ")}.`}>
       <form method="post"><button class="btn btn-primary" type="submit">Tak, wycofuję</button></form>
     </PageHead>
   )}
