@@ -22,6 +22,8 @@ export interface BackupCopy {
 }
 
 export interface BackupRun {
+  /** "2026-11-22": the day in the copy's file name */
+  day: string;
   /** "22.11.2026, 03:30", Warsaw time as written in the log */
   at: string;
   ok: boolean;
@@ -51,19 +53,20 @@ function parseRun(line: string): BackupRun | null {
   const at = `${d}.${mo}.${y}, ${time}`;
   if (result === "ok") {
     return rest.includes("+ S3")
-      ? { at, ok: true, copy: true, s3: "sent", text: "Kopia na serwerze i w S3." }
-      : { at, ok: true, copy: true, s3: "off", text: "Kopia jest tylko na serwerze, bo wysyłka do S3 nie jest ustawiona." };
+      ? { day, at, ok: true, copy: true, s3: "sent", text: "Kopia na serwerze i w S3." }
+      : { day, at, ok: true, copy: true, s3: "off", text: "Kopia jest tylko na serwerze, bo wysyłka do S3 nie jest ustawiona." };
   }
   if (rest.startsWith("S3 upload")) {
     // "S3 upload of db-…: 403 <S3's reply>"; only the status code is shown
     const code = /^S3 upload of \S+: (\d{3}|curl error)/.exec(rest)?.[1];
     const why = code === "403" ? " (kod 403: zwykle zmiana adresu IP serwera)" : code ? ` (${code === "curl error" ? "brak połączenia" : `kod ${code}`})` : "";
-    return { at, ok: false, copy: true, s3: "failed", text: `Kopia na serwerze jest, ale nie trafiła do S3${why}.` };
+    return { day, at, ok: false, copy: true, s3: "failed", text: `Kopia na serwerze jest, ale nie trafiła do S3${why}.` };
   }
-  if (rest.startsWith("gzip")) return { at, ok: false, copy: true, s3: "failed", text: "Kopia na serwerze jest, ale nie udało się jej spakować do wysyłki do S3." };
-  if (rest.startsWith("integrity check")) return { at, ok: false, copy: false, s3: "failed", text: "Kopia nie przeszła sprawdzenia (może być uszkodzona)." };
-  if (rest.startsWith("sqlite3")) return { at, ok: false, copy: false, s3: "failed", text: "Nie udało się zrobić kopii." };
-  return { at, ok: false, copy: false, s3: "failed", text: "Nieznany błąd: szczegóły w backup.log na serwerze." };
+  if (rest.startsWith("gzip")) return { day, at, ok: false, copy: true, s3: "failed", text: "Kopia na serwerze jest, ale nie udało się jej spakować do wysyłki do S3." };
+  // a failed copy or check leaves that day's file broken or half-written
+  if (rest.startsWith("integrity check")) return { day, at, ok: false, copy: false, s3: "failed", text: "Kopia nie przeszła sprawdzenia (może być uszkodzona)." };
+  if (rest.startsWith("sqlite3")) return { day, at, ok: false, copy: false, s3: "failed", text: "Nie udało się zrobić kopii." };
+  return { day, at, ok: false, copy: false, s3: "failed", text: "Nieznany błąd: szczegóły w backup.log na serwerze." };
 }
 
 function readCopies(dir: string): BackupCopy[] {
@@ -79,7 +82,8 @@ function readCopies(dir: string): BackupCopy[] {
       // removed by the 30-day clean-up while we were reading
     }
   }
-  return copies.sort((a, b) => b.madeAt.getTime() - a.madeAt.getTime());
+  // newest first, by the day in the name (one file per day; a same-day re-run overwrites it)
+  return copies.sort((a, b) => b.day.localeCompare(a.day));
 }
 
 /** The log gains one short line a night (about 35 KB a year), so reading it whole is fine. */
@@ -96,24 +100,35 @@ function readRuns(log: string, limit: number): BackupRun[] {
 /** For a sentence continued after a colon. */
 export const lowerFirst = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
+/** Runs on every panel page (the warning bar), so a file it cannot read becomes a warning, never an error page. */
 export function backupState(limit = 30, now = Date.now()): BackupState {
   const data = dirname(config.databasePath);
   const dir = join(data, "backups");
   const log = join(data, "backup.log");
   const configured = existsSync(dir) || existsSync(log);
-  const copies = readCopies(dir);
-  const runs = readRuns(log, limit);
-  let problem: BackupState["problem"] = null;
-  if (configured) {
-    // judged by the newest copy, not by the log: a dead crontab writes no line at all
-    const newest = copies[0];
-    const last = runs[0];
-    if (!newest || now - newest.madeAt.getTime() > STALE_MS) {
-      problem = { level: "bad", text: `Nie ma kopii bazy z ostatniej doby.${last && !last.ok ? ` Ostatnia próba ${last.at}: ${lowerFirst(last.text)}` : ""}` };
-    } else if (last && (!last.ok || last.s3 === "off")) {
-      // on the server S3 is expected; "off" means backup.env is gone
-      problem = { level: "warn", text: last.text };
-    }
+  let copies: BackupCopy[];
+  let runs: BackupRun[];
+  try {
+    copies = readCopies(dir);
+    runs = readRuns(log, limit);
+  } catch (e) {
+    const code = (e as { code?: string }).code ?? "nieznany błąd";
+    return { configured, copies: [], runs: [], problem: { level: "bad", text: `Panel nie może odczytać kopii na serwerze (${code}).` } };
   }
-  return { configured, copies, runs, problem };
+  return { configured, copies, runs, problem: configured ? judge(copies, runs, now) : null };
+}
+
+/** Judged by the newest copy first, not by the log: a dead crontab writes no line at all. */
+function judge(copies: BackupCopy[], runs: BackupRun[], now: number): BackupState["problem"] {
+  const newest = copies[0];
+  const last = runs[0];
+  if (!newest || now - newest.madeAt.getTime() > STALE_MS) {
+    return { level: "bad", text: `Nie ma kopii bazy z ostatniej doby.${last && !last.ok ? ` Ostatnia próba ${last.at}: ${lowerFirst(last.text)}` : ""}` };
+  }
+  if (last && !last.copy) return { level: "bad", text: `Ostatnia próba ${last.at}: ${lowerFirst(last.text)}` };
+  // the script stopped after the copy but before its log line, so S3 is unknown
+  if (!last || last.day !== newest.day) return { level: "warn", text: "Najnowsza kopia jest na serwerze, ale serwer nie zapisał, czy trafiła do S3." };
+  // on the server S3 is expected; "off" means backup.env is gone
+  if (!last.ok || last.s3 === "off") return { level: "warn", text: last.text };
+  return null;
 }

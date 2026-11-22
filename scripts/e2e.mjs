@@ -124,6 +124,13 @@ try {
     check("panel warning bar when the last copy missed S3", (await page("/panel/zapytania")).includes("Kopie bazy: kopia na serwerze jest, ale nie trafiła do S3"));
     appendFileSync(backupLog, "2026-11-22 09:00:00 ok: /x + S3 db-2026-11-22-0900-…\n");
     check("no warning bar once the next run goes fine", !(await page("/panel")).includes("Kopie bazy:"));
+    // a run that dies after the copy but before its log line: the newest copy is a day ahead of the log
+    writeFileSync(join(backups, "db-2026-11-23.sqlite"), "x");
+    check("warning when the newest copy has no log line (S3 unknown)", (await page("/panel")).includes("Kopie bazy: najnowsza kopia jest na serwerze, ale serwer nie zapisał, czy trafiła do S3"));
+    appendFileSync(backupLog, "2026-11-23 03:30:01 FAILED: integrity check of /x/db-2026-11-23.sqlite\n");
+    check("a fresh but broken copy is a problem, not a note", (await page("/panel")).includes("Kopie bazy: ostatnia próba 23.11.2026, 03:30: kopia nie przeszła sprawdzenia"));
+    rmSync(join(backups, "db-2026-11-23.sqlite"));
+    appendFileSync(backupLog, "2026-11-23 09:00:00 ok: /x + S3 db-2026-11-23-0900-…\n");
     const dayAndHalfAgo = new Date(Date.now() - 30 * 60 * 60 * 1000);
     utimesSync(copy, dayAndHalfAgo, dayAndHalfAgo);
     check("warning bar when the newest copy is over a day old (e.g. cron stopped)", (await page("/panel")).includes("Kopie bazy: nie ma kopii bazy z ostatniej doby"));
