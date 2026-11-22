@@ -1,0 +1,82 @@
+---
+import Panel from "@/layouts/Panel.astro";
+import { backupState } from "@/server/backups";
+
+export const prerender = false;
+
+const state = backupState();
+const dt = (d: Date) => d.toLocaleString("pl-PL", { timeZone: "Europe/Warsaw", dateStyle: "short", timeStyle: "short" });
+const day = (iso: string) => iso.split("-").reverse().join(".");
+const size = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1).replace(".", ",")} MB`);
+const s3Label = { sent: "wysłana", off: "nie ustawiona", failed: "nie" } as const;
+const newest = state.copies[0];
+---
+<Panel title="Kopie bazy">
+  <section class="box">
+    {!state.configured ? (
+      <p>Na tym komputerze nie ma kopii. Robi je tylko serwer, co noc o 3:30.</p>
+    ) : (
+      <p>
+        {state.problem ? <span class="pill pill--warn">{state.problem.level === "bad" ? "Problem" : "Uwaga"}</span> : <span class="pill pill--ok">W porządku</span>}{" "}
+        {state.problem ? state.problem.text : <>Ostatnia kopia: {newest && dt(newest.madeAt)}, {state.runs[0]?.s3 === "sent" ? "na serwerze i w S3" : "na serwerze"}.</>}
+      </p>
+    )}
+    <p class="note">
+      Co noc o 3:30 serwer kopiuje całą bazę: terminy, zapisy, chętnych, zapytania, powiadomienia i statystyki. Kopia zostaje
+      na serwerze i trafia do S3 (Amazon, konto Mikusi). Obie znikają po 30 dniach.
+    </p>
+    <p class="note">
+      Kopii w S3 panel nie widzi: serwer może je tylko wysyłać, nie może ich czytać ani kasować. Dzięki temu ktoś, kto
+      włamałby się na hosting, nie usunie kopii w S3. Cofnięcie bazy do którejś kopii robi się na serwerze, nie w panelu.
+    </p>
+  </section>
+
+  {state.configured && (
+    <section class="box">
+      <h2>Ostatnie noce</h2>
+      {state.runs.length === 0 ? <p>Serwer nie zapisał jeszcze żadnej kopii.</p> : (
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Kiedy</th><th>Wynik</th><th>S3</th><th>Co się stało</th></tr></thead>
+            <tbody>
+              {state.runs.map((r) => (
+                <tr>
+                  <td class="nowrap">{r.at}</td>
+                  <td data-label="Wynik"><span class={`pill ${r.ok ? "pill--ok" : "pill--warn"}`}>{r.ok ? "udana" : "błąd"}</span></td>
+                  <td data-label="S3">{s3Label[r.s3]}</td>
+                  <td>{r.text}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )}
+
+  {state.configured && (
+    <section class="box">
+      <h2>Kopie na serwerze</h2>
+      {state.copies.length === 0 ? <p>Na serwerze nie ma żadnej kopii.</p> : (
+        <div class="scroll">
+          <table class="tbl">
+            <thead><tr><th>Dzień</th><th>Zrobiona</th><th>Rozmiar</th></tr></thead>
+            <tbody>
+              {state.copies.map((c) => (
+                <tr>
+                  <td class="nowrap">{day(c.day)}</td>
+                  <td data-label="Zrobiona">{dt(c.madeAt)}</td>
+                  <td data-label="Rozmiar">{size(c.bytes)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )}
+</Panel>
+
+<style>
+  .nowrap { white-space: nowrap; }
+</style>

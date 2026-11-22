@@ -1,6 +1,7 @@
 ---
 /** Layout for Dominika's admin panel (/panel). Not indexed, no site header or footer. */
 import "@/styles/global.css";
+import { backupState, lowerFirst } from "@/server/backups";
 import { outboxStats } from "@/server/mail";
 
 interface Props {
@@ -10,12 +11,14 @@ const { title } = Astro.props;
 const ok = Astro.url.searchParams.get("ok");
 const err = Astro.url.searchParams.get("err");
 const mail = outboxStats();
+const backup = backupState(1).problem;
 const here = Astro.url.pathname;
 const nav = [
   { href: "/panel", label: "Terminy" },
   { href: "/panel/newsletter", label: "Powiadomienia" },
   { href: "/panel/zapytania", label: "Zapytania" },
   { href: "/panel/statystyki", label: "Statystyki" },
+  { href: "/panel/kopie", label: "Kopie" },
 ];
 ---
 <!doctype html>
@@ -46,6 +49,12 @@ const nav = [
           <input type="hidden" name="action" value="retry-mail" />
           <button class="btn btn-ghost btn-small" type="submit">Wyślij ponownie</button>
         </form>
+      )}
+      {backup && here !== "/panel/kopie" && (
+        <p class="flash flash--err" role="alert">
+          <span>Kopie bazy: {lowerFirst(backup.text)}</span>
+          <a class="btn btn-ghost btn-small" href="/panel/kopie">Zobacz kopie</a>
+        </p>
       )}
       <h1>{title}</h1>
       <slot />
