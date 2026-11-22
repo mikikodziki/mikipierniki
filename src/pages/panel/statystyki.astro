@@ -396,6 +396,11 @@ const yearTotals = years.map((year) => {
   .terms th { white-space: normal; vertical-align: bottom; }
   .terms td { overflow-wrap: normal; }
   .nw { white-space: nowrap; }
+  /* nine columns: a little less space between them, so long months ("30 października") still fit at ~1100px */
+  @media (min-width: 701px) {
+    .terms th, .terms td { padding-inline: 7px; }
+    .terms th:first-child, .terms td:first-child { padding-left: 10px; }
+  }
 
   /* a thin bar under the label: one hue, proportional to the largest row */
   .bars td:first-child { position: relative; padding-bottom: 14px; }

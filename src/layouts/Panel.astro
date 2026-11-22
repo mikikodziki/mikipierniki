@@ -67,7 +67,7 @@ const nav = [
   .flash { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: var(--radius); font-weight: 600; }
   .flash--ok { background: color-mix(in srgb, var(--tan) 35%, var(--ground)); }
   .flash--err { background: color-mix(in srgb, var(--berry) 14%, var(--ground)); color: var(--berry); }
-  /* minmax(0, 1fr): nothing inside (e.g. a wide table in <details>) can make the card wider; a wide table scrolls in its .scroll box */
+  /* minmax(0, 1fr): nothing inside (e.g. a wide table in <details>) can make the card's column wider than the card; a wide table scrolls in its .scroll box */
   .box { background: var(--ground); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 24px); box-shadow: var(--panel-shadow); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
   .note { color: var(--ink-soft); font-size: .92rem; }
   .scroll { overflow-x: auto; }
