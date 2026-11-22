@@ -1,5 +1,6 @@
 ---
 import Photo from "../Photo.astro";
+import Glued from "../Glued.astro";
 import { seasonFor } from "@/lib/site";
 import type { Season } from "@/lib/types";
 
@@ -75,12 +76,12 @@ const buildSeason = seasonFor(new Date());
       <div class="copy" data-for-season={v.season}>
         <span class="badge">{v.badge}</span>
         <h1>{v.title}<em>{v.em}</em>{v.after}</h1>
-        <p class="lead">{v.lead}</p>
+        <p class="lead"><Glued text={v.lead} /></p>
         <div class="actions">
           <a class="btn btn-primary" href="/warsztaty">Zobacz terminy</a>
           <a class="btn btn-ghost" href="/zamowienia">Zamów pierniki</a>
         </div>
-        <p class="note">Pracownia we Wrocławiu · grupy 4–10 osób · wszystko w cenie</p>
+        <p class="note"><Glued text="Pracownia we Wrocławiu · grupy 4–10 osób · wszystko w cenie" /></p>
       </div>
     ))}
   </div>
