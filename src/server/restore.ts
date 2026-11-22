@@ -18,7 +18,7 @@ import { createHash, randomBytes } from "node:crypto";
 import { copyFileSync, renameSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { shortDate } from "@/lib/format";
+import { termDate } from "@/lib/format";
 import type { TermStatus } from "@/lib/types";
 import { backupDir, type BackupCopy, confirmPhrase, copyLabel, findCopy, madeNoLaterThan, RESTORE_TEMP } from "./backups";
 import { config } from "./config";
@@ -127,7 +127,7 @@ export function previewRestore(copy: Copy): Preview {
   return withCopy(copy, (db) => {
     const list = (sql: string, what: Change["what"], from: "main" | "src", other: "main" | "src") =>
       (db.prepare(sql.replaceAll("$from", from).replaceAll("$other", other)).all() as { label: string; starts_at: string }[])
-        .map((r) => ({ what, label: `${r.label}, ${shortDate(r.starts_at)}` }));
+        .map((r) => ({ what, label: `${r.label}, ${termDate(r.starts_at)}` }));
     const terms = `SELECT t.title AS label, t.starts_at FROM $from.terms t WHERE t.id NOT IN (SELECT id FROM $other.terms) ORDER BY t.starts_at`;
     const bookings = `SELECT b.name || ' (' || b.people || ' os.) – ' || COALESCE(t.title, '?') AS label, COALESCE(t.starts_at, b.created_at) AS starts_at
       FROM $from.bookings b LEFT JOIN $from.terms t ON t.id = b.term_id WHERE b.id NOT IN (SELECT id FROM $other.bookings) ORDER BY b.created_at`;
@@ -148,7 +148,7 @@ export function previewRestore(copy: Copy): Preview {
       { title: string; starts_at: string; now_status: TermStatus; was_status: TermStatus }[];
     const changedTerms = termRows.map((r): Change => ({
       what: "termin",
-      label: `${r.title}, ${shortDate(r.starts_at)}: ${r.now_status === r.was_status ? "inne dane (np. data, godziny, cena) wrócą do wersji z kopii" : `teraz ${TERM_STATUS[r.now_status]}, po przywróceniu ${TERM_STATUS[r.was_status]}`}`,
+      label: `${r.title}, ${termDate(r.starts_at)}: ${r.now_status === r.was_status ? "inne dane (np. data, godziny, cena) wrócą do wersji z kopii" : `teraz ${TERM_STATUS[r.now_status]}, po przywróceniu ${TERM_STATUS[r.was_status]}`}`,
     }));
     const uncancelled = termRows.some((r) => r.now_status === "cancelled" && r.was_status !== "cancelled");
     const rows = db.prepare(`SELECT m.name, m.people, COALESCE(t.title, '?') AS title, COALESCE(t.starts_at, m.created_at) AS starts_at,
@@ -163,10 +163,10 @@ export function previewRestore(copy: Copy): Preview {
       const now = state(r.now_status, r.now_paid);
       const was = state(r.was_status, r.was_paid);
       const what = [
-        ...(r.moved ? [`wróci na termin ${r.was_title}, ${shortDate(r.was_starts_at)}`] : []),
+        ...(r.moved ? [`wróci na termin ${r.was_title}, ${termDate(r.was_starts_at)}`] : []),
         ...(now !== was ? [`teraz ${now}, po przywróceniu ${was}`] : []),
       ];
-      return { what: "rezerwacja", label: `${r.name} (${r.people} os.) – ${r.title}, ${shortDate(r.starts_at)}: ${what.length ? what.join("; ") : "inne dane wrócą do wersji z kopii"}` };
+      return { what: "rezerwacja", label: `${r.name} (${r.people} os.) – ${r.title}, ${termDate(r.starts_at)}: ${what.length ? what.join("; ") : "inne dane wrócą do wersji z kopii"}` };
     });
     return { lost: side("main", "src"), back: side("src", "main"), changedTerms, uncancelled, changedBookings, changed };
   });
