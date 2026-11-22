@@ -2,7 +2,7 @@
  * E-mail templates, in Polish and in Dominika's voice like the site.
  * Each returns plain text plus a light HTML version built from the same blocks.
  */
-import { plural, pln, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { plural, pln, shortDate, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { legal, site } from "@/lib/site";
 import type { InquiryKind, Term } from "@/lib/types";
 import { config } from "./config";
@@ -106,7 +106,8 @@ const bookingInfo = (): Block[] => [
 ];
 
 /** "17 listopada, godz. 14:30" */
-const dueText = (iso: string) => `${termDate(iso)}, godz. ${warsawParts(iso).time}`;
+/** the payment deadline is always days away, so it needs no year */
+const dueText = (iso: string) => `${shortDate(iso)}, godz. ${warsawParts(iso).time}`;
 
 /* ---------- interest in proposed dates ---------- */
 
@@ -194,7 +195,7 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
       { p: intro ?? `dziękuję za rezerwację! Miejsce na ${termDate(t.startsAt)} czeka na Ciebie.` },
       { details: bookingDetails(b, t, true) },
       { p: "Dane do przelewu:" },
-      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${termDate(t.startsAt)}`]] },
+      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
       { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
       { small: CORRECTION_LINE },
       ...bookingInfo(),
@@ -395,7 +396,7 @@ export function bookingChanged(
     ]
     : [
       { p: "Dane do przelewu:" },
-      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${termDate(t.startsAt)}`]] },
+      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
       { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
     ];
   return {
