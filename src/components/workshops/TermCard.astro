@@ -1,7 +1,7 @@
 ---
 import type { Term } from "@/lib/types";
 import { bookingClosed, venueById } from "@/lib/api";
-import { day, LOW_SEATS, month, plural, pln, seatsWord, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { LOW_SEATS, plural, pln, seatsWord, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
 import Photo from "../Photo.astro";
 
@@ -29,7 +29,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
         <span class="tag">{workshopTypeLabel[term.type]}</span>
         {proposed && <span class="tag tag--soft">Propozycja terminu</span>}
       </div>
-      <p class="when">{day(term.startsAt)} {month(term.startsAt)} · {weekday(term.startsAt)} · {timeRange(term)}</p>
+      <p class="when">{termDate(term.startsAt)} · {weekday(term.startsAt)} · {timeRange(term)}</p>
       <h3>{term.title}</h3>
     </div>
 
