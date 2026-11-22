@@ -2,7 +2,7 @@
  * E-mail templates, in Polish and in Dominika's voice like the site.
  * Each returns plain text plus a light HTML version built from the same blocks.
  */
-import { plural, pln, shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { plural, pln, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { legal, site } from "@/lib/site";
 import type { InquiryKind, Term } from "@/lib/types";
 import { config } from "./config";
@@ -73,9 +73,9 @@ const firstName = (name: string) => {
 };
 const hi = (name: string): Block => ({ p: firstName(name) ? `Cześć ${firstName(name)},` : "Cześć," });
 /** "sobota, 14 listopada, 11:00–15:00": for detail tables and lists */
-export const when = (t: Term) => `${weekday(t.startsAt)}, ${shortDate(t.startsAt)}, ${timeRange(t)}`;
+export const when = (t: Term) => `${weekday(t.startsAt)}, ${termDate(t.startsAt)}, ${timeRange(t)}`;
 /** "14 listopada (sobota, 11:00–15:00)": reads right inside a sentence, whatever the case ("na …", "warsztatów …") */
-export const whenInText = (t: Term) => `${shortDate(t.startsAt)} (${weekday(t.startsAt)}, ${timeRange(t)})`;
+export const whenInText = (t: Term) => `${termDate(t.startsAt)} (${weekday(t.startsAt)}, ${timeRange(t)})`;
 const termLine = (t: Term) => `${when(t)} · ${t.title} (${workshopTypeLabel[t.type].toLowerCase()})`;
 const url = (path: string) => `${config.siteUrl}${path}`;
 const people = (n: number, unit: Term["priceUnit"]) =>
@@ -106,7 +106,7 @@ const bookingInfo = (): Block[] => [
 ];
 
 /** "17 listopada, godz. 14:30" */
-const dueText = (iso: string) => `${shortDate(iso)}, godz. ${warsawParts(iso).time}`;
+const dueText = (iso: string) => `${termDate(iso)}, godz. ${warsawParts(iso).time}`;
 
 /* ---------- interest in proposed dates ---------- */
 
@@ -132,7 +132,7 @@ export function interestNotify(name: string, email: string, count: number, terms
       { p: "Ktoś zgłosił chęć udziału w proponowanych terminach:" },
       { details: [["Imię i nazwisko", name], ["E-mail", email], ["Liczba osób", String(count)]] },
       { list: terms.map(termLine) },
-      ...terms.map((t): Block => ({ button: { label: terms.length > 1 ? `Panel: ${shortDate(t.startsAt)}` : "Otwórz termin w panelu", url: url(`/panel/termin/${t.id}`) } })),
+      ...terms.map((t): Block => ({ button: { label: terms.length > 1 ? `Panel: ${termDate(t.startsAt)}` : "Otwórz termin w panelu", url: url(`/panel/termin/${t.id}`) } })),
     ], { signature: false }),
   };
 }
@@ -140,7 +140,7 @@ export function interestNotify(name: string, email: string, count: number, terms
 export function termOpened(to: string, name: string, t: Term, withdrawToken: string): Mail {
   return {
     kind: "term-opened", to,
-    subject: `Termin ${shortDate(t.startsAt)} potwierdzony, zapisy otwarte`,
+    subject: `Termin ${termDate(t.startsAt)} potwierdzony, zapisy otwarte`,
     ...render([
       hi(name),
       { p: "mam dobrą wiadomość: termin, który Ci pasował, odbędzie się." },
@@ -156,7 +156,7 @@ export function termOpened(to: string, name: string, t: Term, withdrawToken: str
 export function termDropped(to: string, name: string, t: Term): Mail {
   return {
     kind: "term-dropped", to,
-    subject: `Termin ${shortDate(t.startsAt)} nie dojdzie do skutku`,
+    subject: `Termin ${termDate(t.startsAt)} nie dojdzie do skutku`,
     ...render([
       hi(name),
       { p: `tym razem nie uda się zorganizować warsztatów „${t.title}” ${whenInText(t)}. Twoje zgłoszenie na ten termin usunęłam.` },
@@ -191,10 +191,10 @@ export function bookingAwaitingTransfer(b: BookingMailData, t: Term, intro?: str
     subject: `Rezerwacja ${b.id}: dane do przelewu`,
     ...render([
       hi(b.name),
-      { p: intro ?? `dziękuję za rezerwację! Miejsce na ${shortDate(t.startsAt)} czeka na Ciebie.` },
+      { p: intro ?? `dziękuję za rezerwację! Miejsce na ${termDate(t.startsAt)} czeka na Ciebie.` },
       { details: bookingDetails(b, t, true) },
       { p: "Dane do przelewu:" },
-      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
+      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${termDate(t.startsAt)}`]] },
       { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
       { small: CORRECTION_LINE },
       ...bookingInfo(),
@@ -220,7 +220,7 @@ export function bookingVoucher(b: BookingMailData, t: Term): Mail {
 export function bookingWaitlist(b: BookingMailData, t: Term): Mail {
   return {
     kind: "booking-waitlist", to: b.email,
-    subject: `Lista rezerwowa: ${shortDate(t.startsAt)}`,
+    subject: `Lista rezerwowa: ${termDate(t.startsAt)}`,
     ...render([
       hi(b.name),
       // the number identifies the entry in replies, and lets the panel drop this mail when the entry changes
@@ -250,7 +250,7 @@ export function bookingConfirmed(b: BookingMailData, t: Term): Mail {
 export function bookingCancelled(b: BookingMailData, t: Term, why: "term" | "single"): Mail {
   return {
     kind: "booking-cancelled", to: b.email,
-    subject: why === "term" ? `Warsztaty ${shortDate(t.startsAt)} odwołane` : `Rezerwacja ${b.id} anulowana`,
+    subject: why === "term" ? `Warsztaty ${termDate(t.startsAt)} odwołane` : `Rezerwacja ${b.id} anulowana`,
     ...render([
       hi(b.name),
       why === "term"
@@ -266,7 +266,7 @@ export function bookingCancelled(b: BookingMailData, t: Term, why: "term" | "sin
 export function bookingReminder(b: BookingMailData, t: Term): Mail {
   return {
     kind: "booking-reminder", to: b.email,
-    subject: `Do zobaczenia jutro! Warsztaty ${shortDate(t.startsAt)}`,
+    subject: `Do zobaczenia jutro! Warsztaty ${termDate(t.startsAt)}`,
     ...render([
       hi(b.name),
       { p: "przypominam, że jutro widzimy się na warsztatach." },
@@ -280,7 +280,7 @@ export function bookingNotify(b: BookingMailData, t: Term, status: string): Mail
   const label = status === "waitlist" ? "Lista rezerwowa" : b.payment === "voucher" ? "Rezerwacja (voucher)" : "Rezerwacja (przelew)";
   return {
     kind: "booking-notify", to: config.mailNotify, replyTo: b.email,
-    subject: `${label}: ${b.name}, ${shortDate(t.startsAt)} (${b.people} os.)`,
+    subject: `${label}: ${b.name}, ${termDate(t.startsAt)} (${b.people} os.)`,
     ...render([
       { details: [
         ["Numer", b.id], ["Termin", termLine(t)], ["Imię i nazwisko", b.name], ["E-mail", b.email],
@@ -296,7 +296,7 @@ export function bookingNotify(b: BookingMailData, t: Term, status: string): Mail
 export function bookingOverdue(b: BookingMailData, t: Term): Mail {
   return {
     kind: "booking-overdue", to: config.mailNotify, replyTo: b.email,
-    subject: `Brak wpłaty: ${b.id}, ${b.name}, ${shortDate(t.startsAt)}`,
+    subject: `Brak wpłaty: ${b.id}, ${b.name}, ${termDate(t.startsAt)}`,
     ...render([
       { p: `Minął termin wpłaty za rezerwację ${b.id} (${b.name}, ${b.people} os., ${pln(b.total)}) na ${whenInText(t)}, a w panelu nie jest oznaczona jako opłacona.` },
       { p: "Jeśli przelew dotarł, kliknij „Opłacone”. Jeśli nie, możesz napisać do tej osoby (odpowiedz na tego maila) albo anulować rezerwację i zwolnić miejsce." },
@@ -395,7 +395,7 @@ export function bookingChanged(
     ]
     : [
       { p: "Dane do przelewu:" },
-      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${shortDate(t.startsAt)}`]] },
+      { details: [["Odbiorca", config.bankRecipient ?? ""], ["Numer konta", config.bankAccount ?? ""], ["Kwota", pln(b.total)], ["Tytuł", `${b.id} warsztaty ${termDate(t.startsAt)}`]] },
       { p: `${b.paymentDueAt ? `Termin wpłaty: ${dueText(b.paymentDueAt)}.` : "Na wpłatę masz 3 dni, nie później niż dzień przed warsztatami."} Gdy przelew dotrze, potwierdzę rezerwację mailem.` },
     ];
   return {

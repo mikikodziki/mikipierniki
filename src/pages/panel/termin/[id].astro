@@ -1,7 +1,7 @@
 ---
 import Panel from "@/layouts/Panel.astro";
 import TermForm from "@/components/panel/TermForm.astro";
-import { plural, pln, shortDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
+import { plural, pln, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
 import { admitFromWaitlist, bookingsForTerm, cancelBooking, createBooking, deleteBooking, editBooking, markPaid } from "@/server/bookings";
 import { bookingBlockers } from "@/server/config";
@@ -92,7 +92,7 @@ if (Astro.request.method === "POST") {
         const total = r.total === r.oldTotal ? "" : ` Kwota zmieniła się z ${pln(r.oldTotal)} na ${pln(r.total)}${r.paid ? ": rozlicz dopłatę albo zwrot." : "."}`;
         const promoted = r.promoted ? " Na nowym terminie były wolne miejsca, więc rezerwacja zeszła z listy rezerwowej i czeka na wpłatę." : "";
         const due = notify ? "" : dueToPassOn(r.newDue).replace(" Termin", " Nowy termin");
-        ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${shortDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${promoted}${due}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
+        ok = `Rezerwacja ${booking} ${r.movedTo ? `przeniesiona na ${termDate(r.movedTo.startsAt)}` : "poprawiona"}.${total}${promoted}${due}${notify ? " Wysyłam maila z poprawioną rezerwacją." : ""}`;
         break;
       }
       case "delete-booking":
@@ -142,11 +142,11 @@ const canAdd = term.status === "open" && new Date(term.startsAt).getTime() > now
 /** The phone rule of the public forms (fields.phone) */
 const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
 ---
-<Panel title={`${shortDate(term.startsAt)} · ${term.title}`}>
+<Panel title={`${termDate(term.startsAt)} · ${term.title}`}>
   <section class="box">
     <div class="actions">
       <span class={`pill pill--${term.status}`}>{statusLabel[term.status]}</span>
-      <span>{weekday(term.startsAt)}, {shortDate(term.startsAt)}, {timeRange(term)} · {workshopTypeLabel[term.type]} · {pln(term.price)}</span>
+      <span>{weekday(term.startsAt)}, {termDate(term.startsAt)}, {timeRange(term)} · {workshopTypeLabel[term.type]} · {pln(term.price)}</span>
     </div>
     <div class="grid3">
       <div><b>{interestPeople} os.</b><br /><span class="note">chętnych ({activeInterest.length} {plural(activeInterest.length, "zgłoszenie", "zgłoszenia", "zgłoszeń")}{interestPeople >= site.groupMin ? ", grupa się zbiera" : `, minimum to ${site.groupMin}`})</span></div>
@@ -314,8 +314,8 @@ const PHONE = "[0-9 +\\(\\)\\-]{9,20}";
                         {moveTargets.length > 0 ? (
                           <label class="field wide" for={`ed-term-${b.id}`}>Termin
                             <select class="input" id={`ed-term-${b.id}`} name="termId">
-                              <option value={term.id} selected>bez zmian ({shortDate(term.startsAt)})</option>
-                              {moveTargets.map((t) => <option value={t.id}>{shortDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
+                              <option value={term.id} selected>bez zmian ({termDate(term.startsAt)})</option>
+                              {moveTargets.map((t) => <option value={t.id}>{termDate(t.startsAt)}, {timeRange(t)} · {t.title} · wolne: {t.seatsLeft}</option>)}
                             </select>
                           </label>
                         ) : <input type="hidden" name="termId" value={term.id} />}
