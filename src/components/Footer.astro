@@ -62,5 +62,6 @@ const year = new Date().getFullYear();
   .copy { margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); font-size: .82rem; color: var(--ink-soft); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
   @media (max-width: 900px) { .foot { grid-template-columns: repeat(2, max-content); justify-content: start; } .brand { grid-column: 1 / -1; } }
   @media (max-width: 520px) { .foot { grid-template-columns: 1fr; } }
-  @media (max-width: 900px) { .foot-wrap { padding-bottom: 96px; } }
+  /* room for the fixed bottom CTA (MobileCta.astro, same breakpoint) */
+  @media (max-width: 1000px) { .foot-wrap { padding-bottom: 96px; } }
 </style>

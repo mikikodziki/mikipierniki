@@ -11,7 +11,8 @@ const { href = "/warsztaty", label = "Zapisz się na warsztaty" } = Astro.props;
 
 <style>
   .mobile-cta { display: none; }
-  @media (max-width: 900px) {
+  /* same breakpoint as the menu button in Header.astro */
+  @media (max-width: 1000px) {
     .mobile-cta {
       display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
       padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px));

@@ -128,11 +128,13 @@ const path = Astro.url.pathname.replace(/\.html$/, "").replace(/\/$/, "") || "/"
   .mobile-menu a[aria-current="page"] { color: var(--accent); }
   .mobile-menu a:hover, .mobile-menu a:focus-visible { color: var(--nav-hover); }
 
-  @media (max-width: 900px) {
+  /* the full bar needs ~926px (measured 2026-11-22; the bold current link changes it by a few px), so
+     below 1001px it becomes the menu button, with room to spare for other fonts and browsers */
+  @media (max-width: 1000px) {
     .main, .cta { display: none; }
     .menu-btn { display: grid; }
     .bar { height: 64px; padding: 0 12px 0 20px; }
     .brand { font-size: 1.25rem; }
   }
-  @media (min-width: 901px) { .mobile-menu { display: none !important; } }
+  @media (min-width: 1001px) { .mobile-menu { display: none !important; } }
 </style>
