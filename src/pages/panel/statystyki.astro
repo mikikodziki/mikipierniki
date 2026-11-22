@@ -320,23 +320,23 @@ const yearTotals = years.map((year) => {
     {terms.length === 0 ? <p>Brak terminów w tym okresie.</p> : (
       <>
         <div class="scroll">
-          <table class="tbl">
-            <thead><tr><th>Rok</th><th>Terminy</th><th>Chętni (Pasuje mi)</th><th>Zarezerwowane miejsca</th><th>Opłacone</th><th>Obłożenie</th><th>Wartość opłaconych</th></tr></thead>
+          <table class="tbl terms">
+            <thead><tr><th>Rok</th><th>Terminy</th><th>Chętni (Pasuje&nbsp;mi)</th><th>Zarezerwowane miejsca</th><th>Opłacone</th><th>Obłożenie</th><th>Wartość opłaconych</th></tr></thead>
             <tbody>{yearTotals.map((y) => <tr><td>{y.year}</td><td data-label="Terminy">{y.count}</td><td data-label="Chętni">{num(y.interest)}</td><td data-label="Zarezerwowane">{num(y.booked)}</td><td data-label="Opłacone">{num(y.paid)}</td><td data-label="Obłożenie">{y.fill}</td><td data-label="Wartość">{pln(y.revenue)}</td></tr>)}</tbody>
           </table>
         </div>
         <details>
           <summary>Każdy termin ({terms.length})</summary>
           <div class="scroll">
-            <table class="tbl">
-              <thead><tr><th>Kiedy</th><th>Warsztaty</th><th>Status</th><th>Chętni</th><th>Zarezerwowane</th><th>Opłacone</th><th>Obłożenie</th><th>Rezerwowa / anulowane</th><th>Wartość opłaconych</th></tr></thead>
+            <table class="tbl terms">
+              <thead><tr><th>Kiedy</th><th>Warsztaty</th><th>Status</th><th>Chętni</th><th>Zarezerwowane</th><th>Opłacone</th><th>Obłożenie</th><th>Rezerwowa&nbsp;/ anulowane</th><th>Wartość opłaconych</th></tr></thead>
               <tbody>
                 {terms.map((t) => (
                   <tr class:list={{ muted: t.status === "cancelled" }}>
-                    <td><a href={`/panel/termin/${t.id}`}>{shortDate(t.startsAt)} {t.startsAt.slice(0, 4)}</a></td>
+                    <td><a href={`/panel/termin/${t.id}`}><span class="nw">{shortDate(t.startsAt)}</span> {t.startsAt.slice(0, 4)}</a></td>
                     <td>{t.title}<br /><span class="note">{workshopTypeLabel[t.type]}</span></td>
                     <td><span class={`pill pill--${t.status}`}>{statusLabel[t.status]}</span></td>
-                    <td data-label="Chętni">{t.interestPeople} os. <span class="note">({t.interestEntries} zgł.)</span></td>
+                    <td data-label="Chętni"><span class="nw">{t.interestPeople} os.</span> <span class="note nw">({t.interestEntries} zgł.)</span></td>
                     <td data-label="Zarezerwowane">{t.bookedPeople} / {t.capacity}</td>
                     <td data-label="Opłacone">{t.paidPeople}</td>
                     <td data-label="Obłożenie">{pct(t.bookedPeople, t.capacity)}</td>
@@ -391,6 +391,11 @@ const yearTotals = years.map((year) => {
   .tbl td { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
   /* keeps the hidden screen-reader labels inside the scrolling box, so the page itself never scrolls sideways */
   .scroll { position: relative; }
+  /* the term tables hold only our own short values: headings wrap between words and no value breaks
+     inside a word ("grudn-ia"), so the columns share the card's width instead of the headings taking it all */
+  .terms th { white-space: normal; vertical-align: bottom; }
+  .terms td { overflow-wrap: normal; }
+  .nw { white-space: nowrap; }
 
   /* a thin bar under the label: one hue, proportional to the largest row */
   .bars td:first-child { position: relative; padding-bottom: 14px; }
