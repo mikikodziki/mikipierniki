@@ -2,10 +2,12 @@
 interface Props {
   href?: string;
   label?: string;
+  /** Name of the bar for screen readers (the aside is a landmark) */
+  region?: string;
 }
-const { href = "/warsztaty", label = "Zapisz się na warsztaty" } = Astro.props;
+const { href = "/warsztaty", label = "Zapisz się na warsztaty", region = "Szybki zapis" } = Astro.props;
 ---
-<aside class="mobile-cta" aria-label="Szybki zapis">
+<aside class="mobile-cta" aria-label={region}>
   <a class="btn btn-primary" href={href}>{label}</a>
 </aside>
 
