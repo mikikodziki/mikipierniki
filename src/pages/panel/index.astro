@@ -51,7 +51,7 @@ const blockers = bookingBlockers();
           <tbody>
             {terms.map((t) => (
               <tr class:list={{ muted: t.status === "cancelled" }}>
-                <td>{weekday(t.startsAt)}, {shortDate(t.startsAt)}<br /><span class="note">{timeRange(t)}</span></td>
+                <td>{weekday(t.startsAt)}, {shortDate(t.startsAt)}<br /><span class="note nw">{timeRange(t)}</span></td>
                 <td>{t.title}<br /><span class="note">{workshopTypeLabel[t.type]}</span></td>
                 <td><span class={`pill pill--${t.status}`}>{statusLabel[t.status]}</span></td>
                 <td data-label="Chętni">

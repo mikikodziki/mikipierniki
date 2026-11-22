@@ -79,6 +79,8 @@ const nav = [
   /* minmax(0, 1fr): nothing inside (e.g. a wide table in <details>) can make the card's column wider than the card; a wide table scrolls in its .scroll box */
   .box { background: var(--ground); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 24px); box-shadow: var(--panel-shadow); display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
   .note { color: var(--ink-soft); font-size: .92rem; }
+  /* a value that must not split: hours ("17:00–20:00"), booking codes ("MP-Q7SMB7"), dates */
+  .nw { white-space: nowrap; }
   .scroll { overflow-x: auto; }
   .tbl { width: 100%; border-collapse: collapse; font-size: .92rem; }
   .tbl th, .tbl td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
