@@ -77,7 +77,8 @@ Strefa zostaje w OVH (domena ma włączony DNSSEC). Rekordy:
 Każdy push na `main` (poza zmianami samej dokumentacji: `docs/`, pliki `.md`) uruchamia
 `.github/workflows/deploy.yml`: build, test E2E, wgranie do
 `~/mikipierniki/dist.next`, podmiana i restart, sprawdzenie `/warsztaty`. Jeśli strona nie odpowie,
-wraca poprzednie wydanie. Gdy wdrożenie się nie uda, a następny push zmienia tylko dokumentację,
+wraca poprzednie wydanie. Po restarcie deploy zatrzymuje procesy aplikacji uruchomione przed nim: LiteSpeed odpala
+nowe, ale stare dalej odbierają część zapytań ze starym kodem (jeden przeżył dwa wdrożenia). Gdy wdrożenie się nie uda, a następny push zmienia tylko dokumentację,
 nic się samo nie powtórzy: uruchom je ręcznie (Actions → Deploy → Run workflow). Ustawienia repozytorium (Settings → Secrets and variables → Actions):
 
 - sekrety: `DEPLOY_SSH_KEY` (klucz prywatny tylko do wdrożeń; publiczny w DirectAdmin → Klucze SSH),
@@ -107,9 +108,11 @@ skryptów w przeglądarce.
 ```sh
 tail -f ~/mikipierniki/stderr.log                     # błędy (też wysyłki maili)
 cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
+pkill -u "$(id -u)" -f "^lsnode:$HOME/mikipierniki/"  # po restarcie: stare procesy; nowe wstaną przy następnym wejściu
 sqlite3 ~/mikipierniki-data/mikipierniki.sqlite "select status, count(*) from outbox group by 1"
 # cofnięcie wydania:
 cd ~/mikipierniki && mv dist dist.bad && mv dist.prev dist && cloudlinux-selector restart --json --interpreter nodejs --app-root mikipierniki
+pkill -u "$(id -u)" -f "^lsnode:$HOME/mikipierniki/"
 ```
 
 ## Kopie bazy w S3
