@@ -96,9 +96,27 @@ export function liveFieldErrors(form: HTMLFormElement, check: (el: Field) => str
   form.addEventListener("change", update);
 }
 
-/** Moves focus to the first bad field (the styled button for a select or a date). */
+/**
+ * Moves focus to the first bad field (the styled button for a select or a date), with its label in
+ * view. On the page that is done by hand: Safari doesn't scroll at all to a field that is inside the
+ * window but under the sticky header, and other browsers leave the label above the field under it.
+ * A dialog scrolls itself, above the header.
+ */
 export function focusFirst(bad: Field[]): void {
-  if (bad[0]) focusTarget(bad[0]).focus();
+  if (!bad[0]) return;
+  const target = focusTarget(bad[0]);
+  if (target.closest("dialog")) {
+    target.focus();
+    return;
+  }
+  target.focus({ preventScroll: true });
+  const box = (bad[0].closest(".field, .check, fieldset") ?? target).getBoundingClientRect();
+  // the site's sticky header (Header.astro), not a page's own <header>
+  const top = (document.querySelector("header.top")?.getBoundingClientRect().bottom ?? 0) + 16;
+  // the fixed bar at the bottom on phones and tablets (MobileCta.astro)
+  const bar = document.querySelector(".mobile-cta");
+  const bottom = (bar && getComputedStyle(bar).display !== "none" ? bar.getBoundingClientRect().top : innerHeight) - 16;
+  if (box.top < top || box.bottom > bottom) scrollBy({ top: box.top - top });
 }
 
 /** Summary for the form's role="alert" line. */
