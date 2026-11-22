@@ -32,7 +32,7 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
         {proposed.map((t) => (
           <label class="radio" for={`in-t-${t.id}`}>
             <input type="checkbox" id={`in-t-${t.id}`} name="termIds" value={t.id} />
-            <span><b>{weekday(t.startsAt)}, {termDate(t.startsAt)}, {timeRange(t)}</b><br /><span class="sub">{t.title} · {workshopTypeLabel[t.type].toLowerCase()}</span></span>
+            <span><b>{weekday(t.startsAt)}, {termDate(t.startsAt)}, <span class="nw">{timeRange(t)}</span></b><br /><span class="sub">{t.title} · {workshopTypeLabel[t.type].toLowerCase()}</span></span>
           </label>
         ))}
       </fieldset>
@@ -189,6 +189,8 @@ const proposed = Astro.props.terms.filter((t) => t.status === "proposed");
 </script>
 
 <style>
+  /* the hours stay on one line ("11:00–15:00", not "11:00–" / "15:00") */
+  .nw { white-space: nowrap; }
   .intro { color: var(--ink-soft); font-size: .95rem; }
   .radio { align-items: start; }
   .radio b { font-weight: 600; }

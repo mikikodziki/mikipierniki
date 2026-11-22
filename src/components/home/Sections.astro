@@ -2,6 +2,7 @@
 /**
  * Mid-page homepage sections: how workshops work, audiences, custom orders.
  */
+import { glue } from "@/lib/format";
 import Photo from "../Photo.astro";
 import SectionHead from "../SectionHead.astro";
 
@@ -45,9 +46,9 @@ const orders: { photo: string; photoAlt: string; title: string; text: string; de
         <a class="card" href={a.href}>
           <span class="aud-pic"><Photo name={a.photo} alt={a.photoAlt} ratio="16 / 10" sizes="(max-width: 620px) 100vw, (max-width: 960px) 50vw, 25vw" /></span>
           <span class="aud-body">
-            <span class="aud-meta">{a.meta}</span>
+            <span class="aud-meta">{glue(a.meta)}</span>
             <h3>{a.title}</h3>
-            <p>{a.text}</p>
+            <p>{glue(a.text)}</p>
             <span class="go">{a.go} →</span>
           </span>
         </a>
@@ -65,7 +66,7 @@ const orders: { photo: string; photoAlt: string; title: string; text: string; de
           <div class="pic"><Photo name={o.photo} alt={o.photoAlt} ratio="4 / 3" sizes="(max-width: 860px) 100vw, 33vw" /></div>
           <div class="body">
             <h3>{o.title}</h3>
-            <p>{o.text}</p>
+            <p>{glue(o.text)}</p>
             <span class="deadline">Zamówienia najpóźniej <span>{o.deadline}</span></span>
             <a class="btn btn-ghost btn-small" href={o.href}>Zapytaj o wycenę</a>
           </div>

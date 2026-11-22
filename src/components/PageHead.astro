@@ -1,4 +1,6 @@
 ---
+import { glue } from "@/lib/format";
+
 interface Props {
   eyebrow: string;
   title: string;
@@ -14,7 +16,7 @@ const { eyebrow, title, lead } = Astro.props;
   <div class="wrap">
     <span class="eyebrow">{eyebrow}</span>
     <h1>{title}</h1>
-    {lead && <p class="lead">{lead}</p>}
+    {lead && <p class="lead">{glue(lead)}</p>}
     <slot />
   </div>
 </header>

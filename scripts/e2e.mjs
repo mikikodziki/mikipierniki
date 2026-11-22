@@ -51,7 +51,9 @@ const get = (p, h = {}) => fetch(BASE + p, { headers: h, redirect: "manual" });
 const api = (p, body, h = {}) => fetch(BASE + p, { method: "POST", headers: { "content-type": "application/json", origin: BASE, ...h }, body: JSON.stringify(body) });
 const panel = (p, form) => fetch(BASE + p, { method: "POST", headers: { authorization: auth, origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(form), redirect: "manual" });
 const mails = () => (existsSync(join(dataDir, "mail")) ? readdirSync(join(dataDir, "mail")).filter((f) => f.endsWith(".txt")).sort() : []);
-const mail = (f) => readFileSync(join(dataDir, "mail", f), "utf8");
+// prices and the phone carry no-break spaces (format.ts pln, site.phone); the checks compare words, so read them as plain spaces
+const plain = (s) => s.replace(/\u00a0/g, " ");
+const mail = (f) => plain(readFileSync(join(dataDir, "mail", f), "utf8"));
 const lastMails = (n) => mails().slice(-n).map(mail);
 const byKind = (kind) => mails().filter((f) => f.endsWith(`-${kind}.txt`)).map(mail);
 const sha = (s) => createHash("sha256").update(s).digest("hex");
@@ -432,7 +434,7 @@ try {
     for (const t of [pA, pB, pC, pD, pK, pL]) await panel(`/panel/termin/${t}`, { action: "open" });
     setStart(pL, 40);
     const startOf = (t) => new Date(db().prepare("SELECT starts_at FROM terms WHERE id = ?").get(t).starts_at).getTime();
-    const flash = (res, k) => new URL(res.headers.get("location") ?? "/", BASE).searchParams.get(k) ?? "";
+    const flash = (res, k) => plain(new URL(res.headers.get("location") ?? "/", BASE).searchParams.get(k) ?? "");
     const bk = (email) => db().prepare("SELECT * FROM bookings WHERE email = ?").get(email);
     const mailsTo = (email, kind) => mails().filter((f) => !kind || f.endsWith(`-${kind}.txt`)).map(mail).filter((x) => x.startsWith(`To: ${email}\n`));
     const add = (t, form) => panel(`/panel/termin/${t}`, { action: "add-booking", name: "Paula Panel", phone: "500 600 700", people: "1", payment: "przelew", notify: "on", ...form });
@@ -853,7 +855,7 @@ try {
     const piRow = (termId, email) => db().prepare("SELECT * FROM interest WHERE term_id = ? AND email = ?").get(termId, email);
     const piPage = async (termId) => (await get(`/panel/termin/${termId}`, { authorization: auth })).text();
     const piAct = (termId, action, row, form = {}) => panel(`/panel/termin/${termId}`, { action, interest: String(row.id), ...form });
-    const flash = (res, kind) => new URL(res.headers.get("location") ?? "/", BASE).searchParams.get(kind);
+    const flash = (res, kind) => { const v = new URL(res.headers.get("location") ?? "/", BASE).searchParams.get(kind); return v === null ? v : plain(v); };
     const ula = piRow(tPi, "pi-ula@example.com"), olek = piRow(tPi, "pi-olek@example.com");
     html = await piPage(tPi);
     check("date-pick rows offer Popraw, Wycofaj and Usuń; tally 2 + 1", html.includes(">3 os.</b>") && html.includes('value="interest-edit"') && html.includes('value="interest-withdraw"') && html.includes('value="interest-delete"'));
