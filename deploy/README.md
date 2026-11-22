@@ -116,7 +116,8 @@ cd ~/mikipierniki && mv dist dist.bad && mv dist.prev dist && cloudlinux-selecto
 
 Co noc o 3:30 `backup.sh` robi kopię bazy (`sqlite3 .backup`) i sprawdza ją (`integrity_check`).
 Kopia zostaje na serwerze, a spakowana trafia do S3 jako `db-RRRR-MM-DD-GGMM-<losowe>.sqlite.gz`.
-Wynik każdej nocy jest w `~/mikipierniki-data/backup.log`.
+Wynik każdej nocy jest w `~/mikipierniki-data/backup.log`. Panel pokazuje go w zakładce „Kopie”
+i ostrzega paskiem na każdej stronie, gdy najnowsza kopia ma ponad dobę albo nie trafiła do S3.
 
 - **Konto:** AWS mikusi, profil `mikusia`, region `eu-north-1` (Sztokholm). Bez dodatkowych
   użytkowników i ról IAM.

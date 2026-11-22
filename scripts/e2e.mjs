@@ -5,7 +5,7 @@
 // Usage: npm run build && npm run test:e2e
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { appendFileSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -105,6 +105,31 @@ try {
   r = await get("/panel/");
   check("/panel/ redirects to /panel (which asks for the password)", r.status === 401 || ([301, 308].includes(r.status) && r.headers.get("location")?.endsWith("/panel")), `${r.status} ${r.headers.get("location")}`);
   check("POST /panel.html without password → 401", (await fetch(BASE + "/panel.html", { method: "POST", headers: { origin: BASE, "content-type": "application/x-www-form-urlencoded" }, body: "title=x" })).status === 401);
+
+  // ---------- backups (Kopie): read from next to the database, as deploy/backup.sh leaves them ----------
+  {
+    const page = async (p) => (await get(p, { authorization: auth })).text();
+    const backups = join(dataDir, "backups");
+    const backupLog = join(dataDir, "backup.log");
+    check("/panel/kopie without password → 401", (await get("/panel/kopie")).status === 401);
+    check("Kopie with no backups on this machine says so, no warning bar", (await page("/panel/kopie")).includes("Na tym komputerze nie ma kopii") && !(await page("/panel")).includes("Kopie bazy:"));
+    mkdirSync(backups);
+    const copy = join(backups, "db-2026-11-22.sqlite");
+    writeFileSync(copy, "x");
+    writeFileSync(join(backups, "backup.err"), "SEKRET-S3");
+    writeFileSync(backupLog, "2026-11-21 03:30:04 ok: /x + S3 db-2026-11-21-0330-…\n2026-11-22 03:30:05 FAILED: S3 upload of db-2026-11-22-0330: 403 <Key>SEKRET-S3/x</Key>\n");
+    const kopie = await page("/panel/kopie");
+    check("Kopie shows a failed S3 upload by its code, never S3's reply", kopie.includes("nie trafiła do S3 (kod 403") && !kopie.includes("SEKRET-S3"));
+    check("Kopie lists the server copy and nothing else from its folder", /data-label="Rozmiar"[^>]*>1 KB</.test(kopie) && !kopie.includes("backup.err"));
+    check("panel warning bar when the last copy missed S3", (await page("/panel/zapytania")).includes("Kopie bazy: kopia na serwerze jest, ale nie trafiła do S3"));
+    appendFileSync(backupLog, "2026-11-22 09:00:00 ok: /x + S3 db-2026-11-22-0900-…\n");
+    check("no warning bar once the next run goes fine", !(await page("/panel")).includes("Kopie bazy:"));
+    const dayAndHalfAgo = new Date(Date.now() - 30 * 60 * 60 * 1000);
+    utimesSync(copy, dayAndHalfAgo, dayAndHalfAgo);
+    check("warning bar when the newest copy is over a day old (e.g. cron stopped)", (await page("/panel")).includes("Kopie bazy: nie ma kopii bazy z ostatniej doby"));
+    rmSync(backups, { recursive: true });
+    rmSync(backupLog);
+  }
 
   // ---------- creating terms ----------
   const day = (n) => new Date(Date.now() + n * 86400000).toLocaleDateString("sv-SE", { timeZone: "Europe/Warsaw" });
