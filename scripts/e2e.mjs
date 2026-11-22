@@ -134,8 +134,14 @@ try {
     check("the same problem is mailed once, not every run", alerts().length === alertCount, `${alerts().length - alertCount}`);
     appendFileSync(backupLog, "2026-11-22 09:00:00 ok: /x + S3 db-2026-11-22-0900-…\n");
     check("no warning bar once the next run goes fine", !(await page("/panel")).includes("Kopie bazy:"));
-    // a run that dies after the copy but before its log line: the newest copy is a day ahead of the log
+    // a run still writing its log line (cron.sh starts in the same minute): no bar, no mail
     writeFileSync(join(backups, "db-2026-11-23.sqlite"), "x");
+    const beforeRun = alerts().length;
+    await cron();
+    check("a copy whose run is still going is not a problem yet", !(await page("/panel")).includes("Kopie bazy:") && alerts().length === beforeRun, `${alerts().length - beforeRun}`);
+    // a run that died after the copy but before its log line: the copy is a day ahead of the log, 20 minutes on
+    const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);
+    utimesSync(join(backups, "db-2026-11-23.sqlite"), twentyMinAgo, twentyMinAgo);
     check("warning when the newest copy has no log line (S3 unknown)", (await page("/panel")).includes("Kopie bazy: najnowsza kopia jest na serwerze, ale serwer nie zapisał, czy trafiła do S3"));
     appendFileSync(backupLog, "2026-11-23 03:30:01 FAILED: integrity check of /x/db-2026-11-23.sqlite\n");
     check("a fresh but broken copy is a problem, not a note", (await page("/panel")).includes("Kopie bazy: ostatnia próba 23.11.2026, 03:30: kopia nie przeszła sprawdzenia"));
@@ -1219,6 +1225,7 @@ try {
       booking("R-NEW", "Nowa Osoba");
       rdb.prepare("UPDATE interest SET withdrawn_at = ? WHERE email = 'wycofa@example.com'").run(iso(0));
       rdb.prepare("UPDATE subscribers SET status = 'unsubscribed', unsubscribed_at = ? WHERE email = 'wypisze@example.com'").run(iso(0));
+      rdb.prepare("UPDATE bookings SET status = 'cancelled', cancelled_at = ? WHERE id = 'R-KEEP'").run(iso(0));
       rdb.prepare("INSERT INTO inquiries (kind, name, email, message, created_at) VALUES ('kontakt', 'Pytająca', 'pyta@example.com', 'Pytanie po kopii', ?)").run(iso(0));
 
       check("Kopie offers restore when MAIL_ADMIN is set", (await (await at(A, "/panel/kopie")).text()).includes("Przywróć…"));
@@ -1232,6 +1239,7 @@ try {
       check("the restore page asks for the panel password", (await fetch(A + link.path, { redirect: "manual" })).status === 401);
       let html = await (await at(A, link.path)).text();
       check("the restore page lists what disappears and what comes back", html.includes("Znikną") && html.includes("Nowa Osoba") && html.includes("Wrócą") && html.includes("Usunięta Osoba") && html.includes("20.11.2026"));
+      check("the restore page lists a booking cancelled since the copy with its status change", html.includes("Stała Osoba") && html.includes("teraz anulowana, opłacona, po przywróceniu potwierdzona, opłacona"));
       check("opening the restore page changes nothing", !!one("SELECT 1 AS x FROM bookings WHERE id = 'R-NEW'") && !one("SELECT 1 AS x FROM bookings WHERE id = 'R-GONE'"));
       const t = new URL(link.path, A).searchParams.get("t");
       r = await form(A, "/panel/kopie/przywroc", { t, confirm: "21.11.2026" });

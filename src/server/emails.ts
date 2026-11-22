@@ -449,7 +449,7 @@ export function restoreDone(to: string, copy: string, safety: string): Mail {
     subject: "Baza strony przywrócona z kopii",
     ...render([
       { p: `Baza strony została przywrócona: ${copy}. Terminy, zapisy i chętni są teraz takie jak w tej kopii.` },
-      { p: "Bez zmian zostały: wysłane maile, lista powiadomień (z wypisami), zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a osoby, które w tym czasie wycofały zgłoszenie, nie wrócą na listę." },
+      { p: "Bez zmian zostały: wysłane maile, lista powiadomień (z wypisami), zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a osoby, które w tym czasie wycofały „Pasuje mi”, nie wrócą na listę." },
       { p: `Stan sprzed przywrócenia jest zapisany na serwerze (${safety}) i można do niego wrócić z panelu.` },
       { button: { label: "Otwórz panel", url: url("/panel/kopie") } },
     ], { signature: false }),
