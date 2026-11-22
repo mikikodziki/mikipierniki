@@ -142,7 +142,8 @@ Z panelu: Kopie → „Przywróć…”. Przycisk tylko wysyła jednorazowy link
 zniknie i co wróci, a bazę zmienia dopiero po wpisaniu daty kopii. Szczegóły w `src/server/restore.ts`:
 
 - wracają terminy, rezerwacje i chętni. Wysłane maile, powiadomienia (zgody i wypisy), zapytania
-  i statystyki zostają jak teraz. Przypomnienia wysłane i zgłoszenia wycofane po kopii się nie cofają,
+  i statystyki zostają jak teraz. Przypomnienia wysłane i „Pasuje mi” wycofane po kopii się nie cofają;
+  rezerwacje anulowane albo opłacone po kopii wracają do stanu z kopii (strona potwierdzenia je wypisuje),
 - obecny stan zapisuje się jako `backups/db-przed-przywroceniem-….sqlite` (też znika po 30 dniach)
   i można go przywrócić tak samo, czyli cofnąć przywrócenie,
 - plik bazy nie jest podmieniany, bo na seohost działa naraz kilka procesów aplikacji; kopia

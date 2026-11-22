@@ -58,13 +58,14 @@ const LIMIT = 100;
         <p class="note">
           Terminy, zapisy i chętni wrócą do stanu z kopii. Bez zmian zostaną: wysłane maile, lista powiadomień (z wypisami),
           zapytania z formularzy i statystyki. Przypomnienia wysłane po zrobieniu kopii nie pójdą drugi raz, a kto w tym
-          czasie wycofał zgłoszenie, zostanie wycofany. Obecny stan zapisze się na serwerze, więc przywrócenie da się cofnąć.
+          czasie wycofał „Pasuje mi”, zostanie wycofany. Rezerwacje anulowane albo opłacone po kopii wrócą do stanu z kopii:
+          sprawdź je niżej. Obecny stan zapisze się na serwerze, więc przywrócenie da się cofnąć.
         </p>
       </section>
 
       <section class="box">
         <h2>Co się zmieni</h2>
-        {preview.lost.length + preview.back.length + preview.changed === 0 && <p>Terminy, zapisy i chętni są teraz tacy sami jak w kopii.</p>}
+        {preview.lost.length + preview.back.length + preview.changedBookings.length + preview.changed === 0 && <p>Terminy, zapisy i chętni są teraz tacy sami jak w kopii.</p>}
         {preview.lost.length > 0 && (
           <>
             <h3>Znikną: dodane po zrobieniu kopii ({preview.lost.length})</h3>
@@ -80,7 +81,15 @@ const LIMIT = 100;
             <p class="note">Jeśli ktoś z tej listy prosił o usunięcie swoich danych, po przywróceniu usuń go jeszcze raz.</p>
           </>
         )}
-        {preview.changed > 0 && <p>Zmienione po zrobieniu kopii (wrócą do wersji z kopii): {preview.changed}.</p>}
+        {preview.changedBookings.length > 0 && (
+          <>
+            <h3>Rezerwacje zmienione po zrobieniu kopii ({preview.changedBookings.length})</h3>
+            <ul>{preview.changedBookings.slice(0, LIMIT).map((c) => <li>{c.label}</li>)}</ul>
+            {preview.changedBookings.length > LIMIT && <p class="note">…i {preview.changedBookings.length - LIMIT} więcej.</p>}
+            <p class="note">Ktoś, kto po kopii zrezygnował, znów będzie zapisany i dostanie przypomnienie dzień przed warsztatami. Po przywróceniu anuluj go jeszcze raz.</p>
+          </>
+        )}
+        {preview.changed > 0 && <p>Terminy i zgłoszenia „Pasuje mi” zmienione po zrobieniu kopii (wrócą do wersji z kopii): {preview.changed}.</p>}
       </section>
 
       <section class="box">

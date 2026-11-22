@@ -98,9 +98,13 @@ export interface Preview {
   lost: Change[];
   /** in the copy, deleted since: these come back */
   back: Change[];
-  /** in both, but different (counted, not listed) */
+  /** bookings in both but different, e.g. cancelled or paid since the copy: listed, since they matter most */
+  changedBookings: Change[];
+  /** terms and date picks in both but different (counted) */
   changed: number;
 }
+
+const BOOKING_STATUS: Record<string, string> = { awaiting_payment: "czeka na wpłatę", confirmed: "potwierdzona", waitlist: "lista rezerwowa", cancelled: "anulowana" };
 
 /** Compares the copy with the database now, without changing anything. */
 export function previewRestore(copy: Copy): Preview {
@@ -116,15 +120,26 @@ export function previewRestore(copy: Copy): Preview {
       WHERE NOT EXISTS (SELECT 1 FROM $other.interest o WHERE o.term_id = i.term_id AND o.email = i.email) ORDER BY i.created_at`;
     const side = (from: "main" | "src", other: "main" | "src") =>
       [...list(terms, "termin", from, other), ...list(bookings, "rezerwacja", from, other), ...list(interest, "chętny", from, other)];
-    let changed = 0;
-    for (const t of ["terms", "bookings", "interest"]) {
+    // rows on both sides whose content differs (the carried markers don't count)
+    const differing = (t: string) => {
       const cols = columns(db, "main", t).filter((c) => !CARRIED[t]?.cols.includes(c)).map((c) => `"${c}"`).join(", ");
       const key = (CARRIED[t]?.key ?? ["id"]).map((c) => `"${c}"`).join(", ");
-      // rows on both sides whose content differs (the carried markers don't count)
-      changed += (db.prepare(`SELECT COUNT(*) AS n FROM (SELECT ${key} FROM (SELECT ${cols} FROM main.${t} EXCEPT SELECT ${cols} FROM src.${t})
-        INTERSECT SELECT ${key} FROM src.${t})`).get() as { n: number }).n;
-    }
-    return { lost: side("main", "src"), back: side("src", "main"), changed };
+      return `SELECT ${key} FROM (SELECT ${cols} FROM main.${t} EXCEPT SELECT ${cols} FROM src.${t}) INTERSECT SELECT ${key} FROM src.${t}`;
+    };
+    let changed = 0;
+    for (const t of ["terms", "interest"]) changed += (db.prepare(`SELECT COUNT(*) AS n FROM (${differing(t)})`).get() as { n: number }).n;
+    const rows = db.prepare(`SELECT m.name, m.people, COALESCE(t.title, '?') AS title, COALESCE(t.starts_at, m.created_at) AS starts_at,
+        m.status AS now_status, s.status AS was_status, m.paid_at IS NOT NULL AS now_paid, s.paid_at IS NOT NULL AS was_paid
+      FROM main.bookings m JOIN src.bookings s ON s.id = m.id LEFT JOIN main.terms t ON t.id = m.term_id
+      WHERE m.id IN (${differing("bookings")}) ORDER BY m.created_at`).all() as
+      { name: string; people: number; title: string; starts_at: string; now_status: string; was_status: string; now_paid: number; was_paid: number }[];
+    const state = (status: string, paid: number) => `${BOOKING_STATUS[status] ?? status}${paid ? ", opłacona" : ""}`;
+    const changedBookings = rows.map((r): Change => {
+      const now = state(r.now_status, r.now_paid);
+      const was = state(r.was_status, r.was_paid);
+      return { what: "rezerwacja", label: `${r.name} (${r.people} os.) – ${r.title}, ${shortDate(r.starts_at)}: ${now === was ? "inne dane wrócą do wersji z kopii" : `teraz ${now}, po przywróceniu ${was}`}` };
+    });
+    return { lost: side("main", "src"), back: side("src", "main"), changedBookings, changed };
   });
 }
 

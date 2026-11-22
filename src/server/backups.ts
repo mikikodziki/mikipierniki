@@ -10,6 +10,11 @@ import { config } from "./config";
 
 /** A copy older than this means last night's run did not happen or failed (the run itself takes seconds). */
 const STALE_MS = 26 * 60 * 60 * 1000;
+/**
+ * The copy file appears seconds before its log line, and the S3 upload may take up to 5 minutes
+ * (curl -m 300), while cron.sh starts in the same minute: a newer copy without a line counts only after this.
+ */
+const RUN_GRACE_MS = 15 * 60 * 1000;
 /** backup.sh names the server copy by day; .gz and backup.err exist only for a moment during a run. */
 const COPY = /^db-(\d{4}-\d{2}-\d{2})\.sqlite$/;
 /**
@@ -157,8 +162,11 @@ function judge(copies: BackupCopy[], runs: BackupRun[], now: number): BackupStat
     return { level: "bad", text: `Nie ma kopii bazy z ostatniej doby.${last && !last.ok ? ` Ostatnia próba ${last.at}: ${lowerFirst(last.text)}` : ""}` };
   }
   if (last && !last.copy) return { level: "bad", text: `Ostatnia próba ${last.at}: ${lowerFirst(last.text)}` };
-  // the script stopped after the copy but before its log line, so S3 is unknown
-  if (!last || last.day !== newest.day) return { level: "warn", text: "Najnowsza kopia jest na serwerze, ale serwer nie zapisał, czy trafiła do S3." };
+  // the script stopped after the copy but before its log line, so S3 is unknown (or it is still running)
+  if (!last || last.day !== newest.day) {
+    if (now - newest.madeAt.getTime() < RUN_GRACE_MS) return last && !last.ok ? { level: "warn", text: last.text } : null;
+    return { level: "warn", text: "Najnowsza kopia jest na serwerze, ale serwer nie zapisał, czy trafiła do S3." };
+  }
   // on the server S3 is expected; "off" means backup.env is gone
   if (!last.ok || last.s3 === "off") return { level: "warn", text: last.text };
   return null;
