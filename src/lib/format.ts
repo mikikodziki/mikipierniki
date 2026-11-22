@@ -6,6 +6,7 @@ const dayFmt = new Intl.DateTimeFormat("pl-PL", { day: "numeric", timeZone: TZ }
 const monthFmt = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "long", timeZone: TZ });
 const weekdayFmt = new Intl.DateTimeFormat("pl-PL", { weekday: "long", timeZone: TZ });
 const timeFmt = new Intl.DateTimeFormat("pl-PL", { hour: "2-digit", minute: "2-digit", timeZone: TZ });
+const yearFmt = new Intl.DateTimeFormat("pl-PL", { year: "numeric", timeZone: TZ });
 
 export const day = (iso: string) => dayFmt.format(new Date(iso));
 /** Genitive month name, e.g. "listopada" */
@@ -14,6 +15,11 @@ export const weekday = (iso: string) => weekdayFmt.format(new Date(iso));
 export const timeRange = (t: Pick<Term, "startsAt" | "endsAt">) =>
   `${timeFmt.format(new Date(t.startsAt))}–${timeFmt.format(new Date(t.endsAt))}`;
 export const shortDate = (iso: string) => `${day(iso)} ${month(iso)}`;
+/** "20 grudnia", or "9 stycznia 2027" in another year than today in Poland, so a term after New Year never reads as a past date */
+export const termDate = (iso: string, now = new Date()) => {
+  const year = yearFmt.format(new Date(iso));
+  return year === yearFmt.format(now) ? shortDate(iso) : `${shortDate(iso)} ${year}`;
+};
 
 export const pln = (n: number) => `${n} zł`;
 

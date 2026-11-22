@@ -5,7 +5,7 @@
  */
 import type { Term } from "@/lib/types";
 import { bookingClosed } from "@/lib/api";
-import { shortDate, pln } from "@/lib/format";
+import { termDate, pln } from "@/lib/format";
 import { site } from "@/lib/site";
 import Cookie from "../Cookie.astro";
 
@@ -13,7 +13,7 @@ interface Props {
   terms: Term[];
 }
 // a term less than 48 hours away is shown as closed on its card, so it isn't offered here either
-const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingClosed(t)).map((t) => ({ ...t, label: `${shortDate(t.startsAt)} · ${t.title}` }));
+const payload = Astro.props.terms.filter((t) => t.status === "open" && !bookingClosed(t)).map((t) => ({ ...t, label: `${termDate(t.startsAt)} · ${t.title}` }));
 ---
 {payload.length > 0 && <dialog class="dlg" id="signup-dialog" aria-labelledby="signup-title">
   <script type="application/json" id="signup-terms" set:html={JSON.stringify(payload).replace(/</g, "\\u003c")} />
