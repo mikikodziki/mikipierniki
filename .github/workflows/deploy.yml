@@ -63,7 +63,13 @@ jobs:
             install -m 700 .upload/cron.sh .upload/backup.sh ../mikipierniki-data/
             if ! cmp -s package-lock.json .upload/package-lock.json; then
               cp .upload/package-lock.json .
-              selector install-modules
+              # a failed install must not leave the new lockfile behind, or the next deploy would
+              # see it unchanged and skip the install, shipping the new build on the old modules
+              if ! selector install-modules; then
+                rm -f package-lock.json
+                echo "Installing modules failed; the previous build keeps running"
+                exit 1
+              fi
             fi
             rm -rf dist.prev
             mv dist dist.prev
