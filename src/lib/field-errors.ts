@@ -111,8 +111,9 @@ export function focusFirst(bad: Field[]): void {
   }
   target.focus({ preventScroll: true });
   const box = (bad[0].closest(".field, .check, fieldset") ?? target).getBoundingClientRect();
-  // the site's sticky header (Header.astro), not a page's own <header>
-  const top = (document.querySelector("header.top")?.getBoundingClientRect().bottom ?? 0) + 16;
+  // the site's sticky header (Header.astro), not a page's own <header>; on a phone in landscape
+  // and in a short window it isn't sticky and scrolls away, so it covers nothing above 0
+  const top = Math.max(0, document.querySelector("header.top")?.getBoundingClientRect().bottom ?? 0) + 16;
   // the fixed bar at the bottom on phones and tablets (MobileCta.astro)
   const bar = document.querySelector(".mobile-cta");
   const bottom = (bar && getComputedStyle(bar).display !== "none" ? bar.getBoundingClientRect().top : innerHeight) - 16;
