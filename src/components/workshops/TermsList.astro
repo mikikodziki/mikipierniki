@@ -41,6 +41,44 @@ const types = [...new Set(terms.map((t) => t.type))] as WorkshopType[];
 </div>
 
 <script>
+  /**
+   * With a mouse a card's panel (TermCard.astro) rolls open over the photo, upwards from the bottom
+   * of a 3:4 card. In a narrow column (a laptop window of about 700–800 or 1060–1180 px) a proposed
+   * date's note, an extra fact or a long title make the open panel taller than the card, and its
+   * tags were cut off at the top. So a card is never shorter than its panel fully open, 12 px from
+   * each edge; it is sized up front, not on hover, so nothing on the page moves when it opens.
+   * The script lives here, not in TermCard: Astro puts a component's script where the component
+   * first renders, which would make it a child of .grid and the phone row's :has(> :nth-child(2))
+   * would count it as a second card.
+   */
+  const cards = [...document.querySelectorAll<HTMLElement>(".term")];
+  const touch = matchMedia("(hover: none)");
+  const height = (el: Element) => el.getBoundingClientRect().height;
+  const fit = () => {
+    // all reads first, then all writes, so the browser lays the page out once
+    const need = new Map<Element, number>();
+    if (!touch.matches) for (const card of cards) {
+      // the panel without its folding part, plus that part fully open: the same whether it is open, shut or halfway
+      const open = height(card.querySelector(".panel")!) - height(card.querySelector(".more")!) + card.querySelector(".more-in")!.scrollHeight;
+      // cards side by side keep one height: the list's tallest need
+      const list = card.parentElement!;
+      need.set(list, Math.max(need.get(list) ?? 0, Math.ceil(open + 24)));
+    }
+    for (const card of cards) {
+      const px = need.get(card.parentElement!);
+      card.style.minHeight = px ? `${px}px` : "";
+    }
+  };
+  if (cards.length) {
+    fit();
+    // a narrower column or a late web font rewraps the text, which resizes the panel
+    const watch = new ResizeObserver(fit);
+    cards.forEach((card) => watch.observe(card.querySelector(".panel")!));
+    // a font that changes only the hidden part's wrapping doesn't resize the folded panel
+    document.fonts?.addEventListener("loadingdone", fit);
+    touch.addEventListener("change", fit);
+  }
+
   document.querySelectorAll<HTMLElement>("[data-terms-list]").forEach((root) => {
     const chips = root.querySelectorAll<HTMLButtonElement>("[data-filter]");
     const cards = root.querySelectorAll<HTMLElement>("[data-type]");
