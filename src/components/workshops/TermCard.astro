@@ -4,6 +4,7 @@ import { bookingClosed, venueById } from "@/lib/api";
 import { LOW_SEATS, plural, pln, seatsWord, termDate, timeRange, weekday, workshopTypeLabel } from "@/lib/format";
 import { site } from "@/lib/site";
 import Photo from "../Photo.astro";
+import Glued from "../Glued.astro";
 
 interface Props {
   term: Term;
@@ -37,7 +38,7 @@ const pct = Math.round(((term.capacity - term.seatsLeft) / term.capacity) * 100)
       <div class="more-in">
         <ul class="facts">
           <li>{venue.name}, {venue.city}</li>
-          <li><span class="nw">{term.cookies}</span> pierników do zabrania do domu</li>
+          <li><Glued text={term.cookies} /> pierników do zabrania do domu</li>
           {term.type === "dzieci" && <li>Dzieci <span class="nw">6–12</span> lat z rodzicem</li>}
           {term.type === "wieczor" && <li>Kubek rozgrzewającego ponczu korzennego (bez alkoholu)</li>}
         </ul>
